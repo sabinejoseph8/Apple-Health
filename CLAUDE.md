@@ -10,6 +10,7 @@ The agreed plan is in `docs/`. Read the files a task needs before starting it.
 - `docs/product-spec.md`: what the app must do (requirements R1 to R67).
 - `docs/design.md`: colours, type, spacing, components and screens. The designed screens are in the "Clarivi Screens" canvas: https://claude.ai/artifact/Xc7im7cUsqwwkDbyQRYt8E
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
+- `docs/mvp.pdf`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 to D39) behind the plan. Use it for background on why something was decided. If it disagrees with the four files above, they win, since they are the agreed versions.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.
 
