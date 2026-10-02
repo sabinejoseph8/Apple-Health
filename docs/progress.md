@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 1 October 2026 (build set-up recorded)
+**Last updated:** 2 October 2026 (Supabase region settled: US East)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -9,18 +9,18 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Planning complete. All four Project Memory files are agreed (30 September 2026), and the product is named Clarivi. Build set-up has started: the Supabase project and the GitHub repository exist, both still empty.
-- **Next action:** Settle the Supabase region (see below), then finish the rest of task 1a-03 (switch off new sign-ups; set the 12-character password minimum), add GitHub Actions to the repository, and start Phase 1a with Claude Code: the app, sign-in and push spike.
+- **Overall status:** Planning complete. All four Project Memory files are agreed (30 September 2026), and the product is named Clarivi. Build set-up has started: the Supabase project exists (still empty), and the GitHub repository holds CLAUDE.md and the docs.
+- **Next action:** Finish the rest of task 1a-03 (switch off new sign-ups; set the 12-character password minimum), add GitHub Actions to the repository, and start Phase 1a with Claude Code: the app, sign-in and push spike.
 - **Where ticks live:** tasks are ticked on the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe). This file keeps the task list as written.
 
-**Set-up so far (checked 1 October 2026)**
+**Set-up so far (checked 2 October 2026)**
 | Item | State |
 |---|---|
-| Supabase project | "Clarivi" (ref `pupxkjhhhgeeoqyvtsst`), free plan, created 30 September 2026 in US West (Oregon, `us-west-2`); no tables, migrations or functions yet |
-| GitHub repository | `sabinejoseph8/Apple-Health`, public, empty (no commits, no GitHub Actions yet) |
+| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`); no tables, migrations or functions yet |
+| GitHub repository | `sabinejoseph8/Apple-Health`, public; holds CLAUDE.md and docs (no app code or GitHub Actions yet) |
 | Vercel | Not set up yet |
 
-**Open question: Supabase region.** The plan said US East; the project was created in US West. Either keep US West, which works and makes little difference for a once-a-morning sync, or delete it and create a new project in US East while it is still empty. A Supabase project can't be moved to another region later.
+**Settled: Supabase region (2 October 2026).** The first project was created in US West by mistake. It was replaced while still empty by a new project in US East (ref `vuynnnrijdbvamwfauog`), as the plan said. The old US West project (ref `pupxkjhhhgeeoqyvtsst`) is no longer used.
 
 | Phase | Name | Status |
 |---|---|---|
