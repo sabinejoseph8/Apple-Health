@@ -17,13 +17,14 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # The build ends with scripts/check-build-secrets.mjs, which fails if
+      # anything secret reached the files sent to browsers.
       - run: npm run build
-      - name: No secret values in the built app
+      - name: The secret check catches a planted secret
         run: |
-          if grep -rEl "sb_secret_|service_role|SUPABASE_SECRET_KEY|SUPABASE_JWT_SECRET|POSTGRES_PASSWORD" dist; then
-            echo "A secret value or name was found in the built app."
-            exit 1
-          fi
+          echo 'const k="sb_secret_PLANTEDFAKEVALUE123"' > dist/planted.js
+          if node scripts/check-build-secrets.mjs; then echo "The secret check missed a planted secret."; exit 1; fi
+          rm dist/planted.js
 
   database:
     name: Database (row-level security and cross-user tests)
