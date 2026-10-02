@@ -14,6 +14,24 @@ The agreed plan is in `docs/`. Read the files a task needs before starting it.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.
 
+## Project memory
+
+The four `.md` files in `docs/` are the project memory: the key to understanding the project and continuing it effectively. `docs/mvp.pdf` is a fixed background record and is never edited.
+
+- `docs/product-spec.md`: core requirements and goals.
+- `docs/design.md`: design principles, colour, type and spacing tokens, and component anatomy, matching the "Clarivi Screens" canvas.
+- `docs/tech-spec.md`: key technical decisions and system patterns to stay consistent with.
+- `docs/progress.md`: current focus, recent changes, what's left to build, current status and known issues.
+
+Update the project memory:
+- when you discover a new project pattern
+- after implementing a significant change
+- after completing a major phase of work
+- when a technical decision is made (record decisions Sabine has made; never change an agreed decision without her)
+- when Sabine says "update proj memory"
+
+When Sabine says "update proj memory", review every one of the four files, even if some need no change. Keep them precise and clear: building the project well depends on them.
+
 ## How to work with Sabine
 
 - Sabine is not a developer. Explain what you're doing in plain words and keep updates short.
