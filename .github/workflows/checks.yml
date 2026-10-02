@@ -1,0 +1,39 @@
+name: Checks
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  app:
+    name: App (type check, tests, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: No secret values in the built app
+        run: |
+          if grep -rEl "sb_secret_|service_role|SUPABASE_SECRET_KEY|SUPABASE_JWT_SECRET|POSTGRES_PASSWORD" dist; then
+            echo "A secret value or name was found in the built app."
+            exit 1
+          fi
+
+  database:
+    name: Database (row-level security and cross-user tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx supabase db start
+      - run: npx supabase test db
