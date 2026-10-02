@@ -40,3 +40,120 @@ html, body {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-headline {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.caption {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.emphasis {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.footnote {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.pill {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--separator);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 16px stops iOS zooming in when a field is tapped. */
+.field input {
+  min-height: 44px;
+  border: 1px solid var(--separator);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 12px;
+  font: 16px var(--font);
+}
+
+.field input:focus {
+  outline: 2px solid var(--link-blue);
+  outline-offset: 1px;
+}
+
+.primary {
+  min-height: 50px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--link-blue);
+  color: #ffffff;
+  font: 600 17px var(--font);
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+}
+
+.text-button {
+  align-self: center;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--link-blue);
+  font: 17px var(--font);
+  cursor: pointer;
+}
+
+.form-error {
+  margin: 0;
+  font-size: 15px;
+  color: var(--rest-text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
