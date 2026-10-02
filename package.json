@@ -10,7 +10,8 @@
     "test": "vitest run",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:test": "supabase test db"
+    "db:test": "supabase test db",
+    "check:local": "node scripts/local-1a-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
