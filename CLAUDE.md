@@ -32,7 +32,7 @@ If the docs and the code disagree, or a task needs a decision the docs don't mak
 
 ## Supabase
 
-- Live project: "Clarivi", ref `pupxkjhhhgeeoqyvtsst`, free plan, created in US West (`us-west-2`). The region is an open question in `docs/progress.md`; if Sabine recreates the project in US East, update this line with the new ref.
+- Live project: "Clarivi", ref `vuynnnrijdbvamwfauog`, free plan, in US East (`us-east-1`). It replaced the earlier US West project (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
 - Build and test every database change on the local copy first (`supabase start`, which needs Docker Desktop running). Keep migrations in `supabase/migrations/`.
 - Apply changes to the live project only at release, in a backward-compatible way, and only after asking Sabine. During the four-week test, take a backup first.
 - Every table has row-level security. Never turn it off.
