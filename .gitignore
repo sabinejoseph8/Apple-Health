@@ -1,0 +1,58 @@
+# The repository is public. Never commit secrets, health data,
+# Apple Health exports or database backups (see CLAUDE.md).
+
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Real data: keep anything holding real readings, exports or event notes in private/
+private/
+
+# Apple Health exports
+export.zip
+export.xml
+export_cda.xml
+apple_health_export/
+
+# Database backups (keep them in the encrypted laptop folder, never here)
+backups/
+*.dump
+*.backup
+
+# Node and Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Supabase CLI
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+
+# Vercel
+.vercel/
+
+# Python (pandas reference check)
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# Editors and macOS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
