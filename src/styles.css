@@ -1,0 +1,42 @@
+/* Base tokens from docs/design.md. The full set arrives in Phase 3. */
+:root {
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --text: #000000;
+  --text-secondary: #3a3a3c;
+  --text-muted: #6c6c70;
+  --separator: #e5e5ea;
+  --link-blue: #0a60d8;
+  --rest-text: #a1261d;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  --gutter: 16px;
+  --radius-card: 18px;
+  --radius-control: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: max(env(safe-area-inset-top), 47px) var(--gutter) max(env(safe-area-inset-bottom), 34px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.large-title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
