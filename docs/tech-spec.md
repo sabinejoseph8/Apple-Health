@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 1 October 2026 (live project and repository recorded)
+**Last updated:** 2 October 2026 (US East project recorded; Vercel's Supabase integration and its secret values)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -223,8 +223,8 @@ Each call carries the user's session.
 - The Shortcut is shared as a blank template that asks for the token when it's installed. A configured Shortcut is never shared.
 
 **Secrets**
-- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store.
-- The web app holds only the public key and the push public key.
+- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026).
+- The web app holds only the public key and the push public key. The build reads exactly three values by name (the project address, the publishable key and the push public key), so nothing else can reach the browser.
 - The repository holds no secrets. CI uses GitHub's encrypted secrets.
 
 **Input validation**
@@ -261,9 +261,10 @@ Each call carries the user's session.
 | Local | A local copy on your laptop and in CI, with made-up test data | Runs on your laptop | Building and testing every database change before it goes live |
 | Live | The one Supabase project; free while building and through the test, Pro after the test | Vercel production address and preview addresses | Spikes, real data for the four users, and checking changes on your phone |
 
-- Region: US East, the closest to the Cayman Islands, was the plan (Default). The live project was created in US West instead; see open question 1.
-- **Live project (created 30 September 2026):** Supabase project "Clarivi", ref `pupxkjhhhgeeoqyvtsst`, address `https://pupxkjhhhgeeoqyvtsst.supabase.co`, free plan, US West (Oregon, `us-west-2`). Empty so far.
-- **Repository:** `github.com/sabinejoseph8/Apple-Health`, public. Empty so far; it must never hold secrets or backups.
+- Region: US East (`us-east-1`), the closest to the Cayman Islands.
+- **Live project (created 2 October 2026):** Supabase project "Clarivi", ref `vuynnnrijdbvamwfauog`, address `https://vuynnnrijdbvamwfauog.supabase.co`, free plan, US East. It replaced a project created in US West by mistake (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
+- **Repository:** `github.com/sabinejoseph8/Apple-Health`, public. It must never hold secrets or backups.
+- **Vercel and Supabase:** connected through Vercel's official Supabase integration (D21), which fills in the project address and keys for the web app.
 - Vercel previews talk to the same live project, so preview checks are done signed in as the owner or a test account, never as a tester.
 - A dedicated test account (for example "preview test") holds made-up data for checking previews.
 
@@ -278,9 +279,9 @@ Each call carries the user's session.
 
 **Configuration**
 - **Web app:**
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_PUBLISHABLE_KEY`
-  - `VITE_VAPID_PUBLIC_KEY`
+  - the project address and the publishable key, filled in by Vercel's Supabase integration under its own names (for example `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`); the build maps them to `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `VITE_VAPID_PUBLIC_KEY`, added by hand
+  - on your laptop and in CI, the same values come from a local file that never goes to GitHub
 - **Server functions:**
   - the secret key (provided by Supabase)
   - `VAPID_PRIVATE_KEY`
@@ -358,9 +359,11 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Notifications | Web push to the home-screen app; no third-party service |
 | Environments (30 Sep 2026) | One Supabase project for everything; a local copy of Supabase for building and testing database changes |
 | Supabase plan (30 Sep 2026) | Free while building and through the test; Pro after the test |
+| Region (2 Oct 2026) | US East; the project was recreated there while still empty |
+| Vercel and Supabase (2 Oct 2026) | Connected through Vercel's official Supabase integration; the secret values it copies into Vercel are never read by the app |
 
 ### Open questions (each with a recommended default)
-1. **Region.** Default: US East. The live project was created in US West (`us-west-2`) on 30 September 2026. Keep it, or recreate it in US East while it is still empty; a Supabase project can't change region later.
+1. **Region.** Settled 2 October 2026: US East (see Decisions).
 2. **Retention after the test.** Default: delete testers' data 90 days after it ends unless they agree otherwise.
 3. **Push library.** Default: `@negrel/webpush`, with `npm:web-push` as the fallback.
 4. **Limits.**

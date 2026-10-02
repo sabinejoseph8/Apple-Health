@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 2 October 2026 (Supabase region settled: US East)
+**Last updated:** 2 October 2026 (Phase 1a started)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -11,7 +11,7 @@
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Planning complete. All four Project Memory files are agreed (30 September 2026), and the product is named Clarivi. Build set-up has started: the Supabase project exists (still empty), and the GitHub repository holds CLAUDE.md and the docs.
 - **Next action:** Finish the rest of task 1a-03 (switch off new sign-ups; set the 12-character password minimum), add GitHub Actions to the repository, and start Phase 1a with Claude Code: the app, sign-in and push spike.
-- **Where ticks live:** tasks are ticked on the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe). This file keeps the task list as written.
+- **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
 | Item | State |
