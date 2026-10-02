@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Designed screens:** the "Clarivi Screens" canvas (also in this project as Design screens.html): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
+**Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
 Anything marked **Default** wasn't designed yet. It's a proposed starting point that follows the same patterns.

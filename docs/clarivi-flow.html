@@ -1,0 +1,417 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Clarivi Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; the swimlane figure breaks wider and scrolls on its own at phone width. Navy and copper carry over from the MVP documents. */
+:root {
+  --bg: #F5F6F9;
+  --surface: #FFFFFF;
+  --lane: #EDEFF4;
+  --fg: #1A2033;
+  --muted: #586078;
+  --line: #CDD2DD;
+  --line-strong: #8E97AB;
+  --navy: #1D2951;
+  --accent: #A85C30;
+  --accent-soft: #F6E7DD;
+  --exc: #A8432B;
+  --ok: #2D7A4E;   --ok-bg: #E3F1E8;
+  --pend: #8A6100; --pend-bg: #FBF0D6;
+  --empty: #56607A; --empty-bg: #E8EBF1;
+  --err: #A8322B;  --err-bg: #F8E3E0;
+  --note: #3C5A9A; --note-bg: #E4EAF6;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10131A; --surface: #191E29; --lane: #151A23; --fg: #E5E8EF; --muted: #A1A8B8;
+    --line: #333B4C; --line-strong: #6B7489; --navy: #A9BBEA; --accent: #E3A278; --accent-soft: #3A2A20;
+    --exc: #E9866D;
+    --ok: #7FD1A0; --ok-bg: #173325; --pend: #E6C064; --pend-bg: #33290F;
+    --empty: #AEB6C8; --empty-bg: #232938; --err: #F09088; --err-bg: #3A1C1A;
+    --note: #9DB6EC; --note-bg: #1D2740;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10131A; --surface: #191E29; --lane: #151A23; --fg: #E5E8EF; --muted: #A1A8B8;
+  --line: #333B4C; --line-strong: #6B7489; --navy: #A9BBEA; --accent: #E3A278; --accent-soft: #3A2A20;
+  --exc: #E9866D;
+  --ok: #7FD1A0; --ok-bg: #173325; --pend: #E6C064; --pend-bg: #33290F;
+  --empty: #AEB6C8; --empty-bg: #232938; --err: #F09088; --err-bg: #3A1C1A;
+  --note: #9DB6EC; --note-bg: #1D2740;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; display: grid; gap: 40px; }
+.col { max-width: 720px; }
+h1, h2 { font-family: var(--f-display); color: var(--navy); text-wrap: balance; margin: 0; }
+h1 { font-size: 34px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 21px; line-height: 1.25; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; margin: 0; color: var(--fg); }
+p { margin: 0; }
+.stack { display: grid; gap: 12px; }
+.lede { font-size: 17px; color: var(--fg); max-width: 65ch; }
+.meta { color: var(--muted); font-size: 13px; }
+.scope { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.02em; padding: 3px 9px; border-radius: 999px; background: var(--empty-bg); color: var(--empty); }
+
+/* Figure */
+figure { margin: 0; display: grid; gap: 12px; }
+.fig-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.flow { display: block; width: 100%; min-width: 1000px; height: auto; }
+.flow text { font-family: var(--f-body); }
+.flow .lane-a { fill: var(--surface); }
+.flow .lane-b { fill: var(--lane); }
+.flow .divider { stroke: var(--line); stroke-width: 1; }
+.flow .lane-name { font-size: 12px; font-weight: 600; fill: var(--navy); }
+.flow .lane-sub { font-size: 11px; fill: var(--muted); }
+.flow .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
+.flow .box-end { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.flow .note { fill: none; stroke: var(--exc); stroke-width: 1.1; stroke-dasharray: 5 4; }
+.flow .note-opt { fill: none; stroke: var(--line-strong); stroke-width: 1.1; stroke-dasharray: 2 3; }
+.flow .t { font-size: 12px; font-weight: 600; fill: var(--fg); }
+.flow .t-end { font-size: 12px; font-weight: 600; fill: var(--accent); }
+.flow .s { font-size: 11px; fill: var(--muted); }
+.flow .t-exc { font-size: 11.5px; font-weight: 600; fill: var(--exc); }
+.flow .lbl { font-size: 11px; fill: var(--muted); }
+.flow .lbl-exc { font-size: 11px; fill: var(--exc); }
+.flow .aside { font-size: 11px; font-style: italic; fill: var(--muted); }
+.flow .arr { stroke: var(--fg); stroke-width: 1.4; fill: none; }
+.flow .arr-exc { stroke: var(--exc); stroke-width: 1.3; fill: none; stroke-dasharray: 5 4; }
+.flow .arr-opt { stroke: var(--line-strong); stroke-width: 1.3; fill: none; stroke-dasharray: 2 3; }
+.flow .head { fill: var(--fg); }
+.flow .head-exc { fill: var(--exc); }
+.flow .head-opt { fill: var(--line-strong); }
+figcaption { color: var(--muted); font-size: 13px; max-width: 80ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend svg { width: 34px; height: 8px; }
+.legend .l1 { stroke: var(--fg); stroke-width: 1.6; }
+.legend .l2 { stroke: var(--exc); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.legend .l3 { stroke: var(--line-strong); stroke-width: 1.6; stroke-dasharray: 2 3; }
+
+/* Outcome */
+.outcome { border-left: 3px solid var(--accent); padding-left: 16px; display: grid; gap: 8px; max-width: 720px; }
+.outcome ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* Views */
+.views { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.view { display: grid; grid-template-columns: 200px 1fr; gap: 6px 24px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+.view > div { min-width: 0; }
+.role { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; margin-top: 2px; }
+.role.core { color: var(--accent); }
+.outside { color: var(--muted); font-size: 14px; max-width: 72ch; }
+
+/* States */
+.states { display: grid; gap: 22px; }
+.state-group { display: grid; gap: 8px; }
+.srow { display: grid; grid-template-columns: 92px 190px 1fr; gap: 4px 16px; align-items: baseline; padding-block: 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.srow > * { min-width: 0; }
+.srow .when { color: var(--muted); }
+.chip { font-family: var(--f-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; justify-self: start; }
+.c-ok { color: var(--ok); background: var(--ok-bg); }
+.c-pend { color: var(--pend); background: var(--pend-bg); }
+.c-empty { color: var(--empty); background: var(--empty-bg); }
+.c-err { color: var(--err); background: var(--err-bg); }
+.c-note { color: var(--note); background: var(--note-bg); }
+q { quotes: "\201C" "\201D"; color: var(--fg); }
+
+/* Open points */
+.open { display: grid; gap: 10px; counter-reset: q; max-width: 760px; }
+.open li { list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px 12px 44px; position: relative; }
+.open li::before { counter-increment: q; content: counter(q); position: absolute; left: 14px; top: 12px; font-family: var(--f-mono); font-size: 12px; color: var(--accent); }
+.open ol { margin: 0; padding: 0; display: grid; gap: 10px; }
+.open .why { color: var(--muted); font-size: 14px; display: block; margin-top: 2px; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 27px; }
+  .view { grid-template-columns: 1fr; }
+  .srow { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<main class="wrap">
+
+  <header class="stack col">
+    <h1>Clarivi Flow</h1>
+    <p class="lede">The MVP's one core workflow: from a tester unplugging their phone in the morning to having acted on today's nudge and recorded whether they followed it.</p>
+    <div class="scope" aria-label="Scope of this map">
+      <span class="tag">Daily morning loop</span>
+      <span class="tag">Tester view only</span>
+      <span class="tag">Onboarding already done</span>
+      <span class="tag">MVP scope only</span>
+    </div>
+    <p class="meta">Mapped from the MVP document. On days the nudge asked for a change, a push at 8pm asks whether the tester followed it, and the card shows the question from then; if still unanswered, the next morning's card asks (D32).</p>
+  </header>
+
+  <figure>
+    <div class="fig-scroll">
+      <svg class="flow" viewBox="0 0 1296 480" role="img" aria-label="Swimlane flow of the daily morning loop: the iPhone Shortcut syncs on unplug or on a catch-up app open, with an 11:30am reminder if nothing arrives; the server stores the night, scores it and sends the nudge; the tester opens the card, checks in, reviews why today's status was set and the trend view, acts on the nudge and, from 8pm, marks whether they followed it, on the card or from the 8pm push.">
+        <defs>
+          <marker id="h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="hx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head-exc" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="ho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head-opt" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+
+        <!-- Lanes -->
+        <rect class="lane-a" x="0" y="0" width="1296" height="150"/>
+        <rect class="lane-b" x="0" y="150" width="1296" height="150"/>
+        <rect class="lane-a" x="0" y="300" width="1296" height="180"/>
+        <line class="divider" x1="0" y1="150" x2="1296" y2="150"/>
+        <line class="divider" x1="0" y1="300" x2="1296" y2="300"/>
+        <text class="lane-name" x="16" y="70">iPhone</text>
+        <text class="lane-sub" x="16" y="86">Shortcut</text>
+        <text class="lane-name" x="16" y="220">Server</text>
+        <text class="lane-sub" x="16" y="236">Supabase</text>
+        <text class="lane-name" x="16" y="385">Tester</text>
+        <text class="lane-sub" x="16" y="401">home-screen app</text>
+
+        <!-- Lane 1: iPhone -->
+        <rect class="box" x="120" y="25" width="124" height="50" rx="6"/>
+        <text class="t" x="182" y="46" text-anchor="middle">1  Phone unplugged</text>
+        <text class="s" x="182" y="63" text-anchor="middle">wake trigger</text>
+
+        <rect class="box" x="268" y="92" width="124" height="46" rx="6"/>
+        <text class="t" x="330" y="111" text-anchor="middle">1b  Catch-up</text>
+        <text class="s" x="330" y="127" text-anchor="middle">chosen app opened</text>
+
+        <rect class="box" x="416" y="25" width="124" height="50" rx="6"/>
+        <text class="t" x="478" y="46" text-anchor="middle">2  Read and post</text>
+        <text class="s" x="478" y="63" text-anchor="middle">raw samples + token</text>
+
+        <text class="aside" x="564" y="46">Any later run today:</text>
+        <text class="aside" x="564" y="62">already synced, stops</text>
+
+        <line class="arr" x1="244" y1="50" x2="412" y2="50" marker-end="url(#h)"/>
+        <text class="lbl" x="328" y="42" text-anchor="middle">unlocked</text>
+        <polyline class="arr-exc" points="182,75 182,115 264,115" marker-end="url(#hx)"/>
+        <text class="lbl-exc" x="190" y="106">locked: fails</text>
+        <polyline class="arr" points="392,115 450,115 450,79" marker-end="url(#h)"/>
+        <line class="arr" x1="478" y1="75" x2="478" y2="166" marker-end="url(#h)"/>
+        <text class="lbl" x="486" y="124">posts JSON</text>
+        <line class="arr-exc" x1="330" y1="138" x2="330" y2="166" marker-end="url(#hx)"/>
+
+        <!-- Lane 2: Server -->
+        <rect class="note" x="268" y="170" width="124" height="50" rx="6"/>
+        <text class="t-exc" x="330" y="191" text-anchor="middle">No sync by 11:30</text>
+        <text class="s" x="330" y="208" text-anchor="middle">reminder: run by hand</text>
+
+        <rect class="box" x="416" y="170" width="124" height="50" rx="6"/>
+        <text class="t" x="478" y="191" text-anchor="middle">3  Store and check</text>
+        <text class="s" x="478" y="208" text-anchor="middle">night finished?</text>
+
+        <rect class="box" x="564" y="170" width="124" height="50" rx="6"/>
+        <text class="t" x="626" y="191" text-anchor="middle">4  Clean and score</text>
+        <text class="s" x="626" y="208" text-anchor="middle">score and nudge</text>
+
+        <rect class="box" x="712" y="170" width="124" height="50" rx="6"/>
+        <text class="t" x="774" y="191" text-anchor="middle">5  Send nudge</text>
+        <text class="s" x="774" y="208" text-anchor="middle">one per day</text>
+
+        <rect class="note" x="860" y="170" width="124" height="50" rx="6"/>
+        <text class="t-exc" x="922" y="191" text-anchor="middle">Not delivered</text>
+        <text class="s" x="922" y="208" text-anchor="middle">logged, on card</text>
+
+        <rect class="note" x="416" y="240" width="124" height="42" rx="6"/>
+        <text class="t-exc" x="478" y="257" text-anchor="middle">Night unfinished</text>
+        <text class="s" x="478" y="273" text-anchor="middle">no score, no push</text>
+
+        <rect class="note" x="564" y="240" width="124" height="42" rx="6"/>
+        <text class="t-exc" x="626" y="257" text-anchor="middle">Under 21 nights</text>
+        <text class="s" x="626" y="273" text-anchor="middle">no status, no push</text>
+
+        <line class="arr" x1="540" y1="195" x2="560" y2="195" marker-end="url(#h)"/>
+        <line class="arr" x1="688" y1="195" x2="708" y2="195" marker-end="url(#h)"/>
+        <line class="arr-exc" x1="836" y1="195" x2="856" y2="195" marker-end="url(#hx)"/>
+        <line class="arr-exc" x1="478" y1="220" x2="478" y2="236" marker-end="url(#hx)"/>
+        <line class="arr-exc" x1="626" y1="220" x2="626" y2="236" marker-end="url(#hx)"/>
+
+        <polyline class="arr" points="774,220 774,318 182,318 182,341" marker-end="url(#h)"/>
+        <text class="lbl" x="478" y="311" text-anchor="middle">push: status and reason</text>
+
+        <!-- Lane 3: Tester -->
+        <rect class="box" x="120" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="182" y="366" text-anchor="middle">6  Tap notification</text>
+        <text class="s" x="182" y="383" text-anchor="middle">or app icon</text>
+
+        <rect class="box" x="268" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="330" y="366" text-anchor="middle">7  Daily check-in</text>
+        <text class="s" x="330" y="383" text-anchor="middle">skippable</text>
+
+        <rect class="box" x="416" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="478" y="366" text-anchor="middle">8  Readiness card</text>
+        <text class="s" x="478" y="383" text-anchor="middle">status, why, nudge</text>
+
+        <rect class="box" x="564" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="626" y="366" text-anchor="middle">9  Why today</text>
+        <text class="s" x="626" y="383" text-anchor="middle">how it was decided</text>
+
+        <rect class="box" x="712" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="774" y="366" text-anchor="middle">10  Trend view</text>
+        <text class="s" x="774" y="383" text-anchor="middle">baselines and flags</text>
+
+        <rect class="box" x="860" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="922" y="366" text-anchor="middle">11  Act on nudge</text>
+        <text class="s" x="922" y="383" text-anchor="middle">during the day</text>
+
+        <rect class="box" x="1008" y="345" width="124" height="50" rx="6"/>
+        <text class="t" x="1070" y="366" text-anchor="middle">12  Mark followed</text>
+        <text class="s" x="1070" y="383" text-anchor="middle">from 8pm, card or push</text>
+
+        <rect class="box-end" x="1156" y="345" width="124" height="50" rx="6"/>
+        <text class="t-end" x="1218" y="366" text-anchor="middle">Done</text>
+        <text class="s" x="1218" y="383" text-anchor="middle">acted and marked</text>
+
+        <line class="arr" x1="244" y1="370" x2="264" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="392" y1="370" x2="412" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="540" y1="370" x2="560" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="688" y1="370" x2="708" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="836" y1="370" x2="856" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="984" y1="370" x2="1004" y2="370" marker-end="url(#h)"/>
+        <line class="arr" x1="1132" y1="370" x2="1152" y2="370" marker-end="url(#h)"/>
+
+        <rect class="note-opt" x="416" y="420" width="124" height="42" rx="6"/>
+        <text class="t" x="478" y="437" text-anchor="middle">Weekly digest</text>
+        <text class="s" x="478" y="453" text-anchor="middle">optional, from card</text>
+        <line class="arr-opt" x1="478" y1="395" x2="478" y2="416" marker-end="url(#ho)"/>
+
+        <text class="aside" x="922" y="437" text-anchor="middle">Train as planned:</text>
+        <text class="aside" x="922" y="453" text-anchor="middle">no follow-up, done</text>
+
+        <rect class="note" x="1008" y="420" width="124" height="42" rx="6"/>
+        <text class="t-exc" x="1070" y="437" text-anchor="middle">Unanswered</text>
+        <text class="s" x="1070" y="453" text-anchor="middle">asked next morning</text>
+        <line class="arr-exc" x1="1070" y1="395" x2="1070" y2="416" marker-end="url(#hx)"/>
+      </svg>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span><svg viewBox="0 0 34 8" aria-hidden="true"><line class="l1" x1="0" y1="4" x2="34" y2="4"/></svg>Main path</span>
+      <span><svg viewBox="0 0 34 8" aria-hidden="true"><line class="l2" x1="0" y1="4" x2="34" y2="4"/></svg>Exception or fallback</span>
+      <span><svg viewBox="0 0 34 8" aria-hidden="true"><line class="l3" x1="0" y1="4" x2="34" y2="4"/></svg>Optional detour</span>
+    </div>
+    <figcaption>Twelve steps across three places. The iPhone only reads and posts; the server decides whether the night is finished, scores it and sends the morning push, plus an 8pm follow-up on days the nudge asked for a change, or an 11:30am reminder on a morning with no sync, after which a sync before noon still brings a late nudge; the tester's part starts at the notification and ends when they mark whether they followed the nudge, from 8pm on the card or from the 8pm push, or at step 11 on a train-as-planned day. Every exception either waits for a later run or explains itself on the card.</figcaption>
+  </figure>
+
+  <section class="outcome" aria-labelledby="done-h">
+    <h2 id="done-h">When the flow is complete</h2>
+    <p>The tester has:</p>
+    <ul>
+      <li>recorded how they feel today, before seeing the tool's verdict on the card;</li>
+      <li>seen today's status, the two or three metrics driving it, and one recommended action with its reason;</li>
+      <li>seen how today's score was worked out and how each metric is trending against its baseline;</li>
+      <li>acted on that recommendation during the day;</li>
+      <li>marked whether they followed it, on days the nudge asked for a change, from 8pm, either by answering the 8pm push or on the card. That answer is the evidence the Value target in D9 depends on.</li>
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="views-h">
+    <h2 id="views-h">Minimum screens and views</h2>
+    <p class="col">Six views cover the whole loop: five on the main path, and the weekly digest, which is optional.</p>
+    <div class="views">
+      <div class="view">
+        <div><h3>Push notification</h3><p class="role core">Main path · system surface</p></div>
+        <div><p>A lock-screen message with status and reason in one line; tapping it opens today's card in the home-screen app. On change days, a second push at 8pm asks whether they followed the nudge and opens the card on the question. On a morning with no sync by 11:30am, a reminder push asks the tester to run the Shortcut before noon; the nudge follows if it syncs. None of the follow-up or reminder wording carries health detail; all three need wording, not screens.</p></div>
+      </div>
+      <div class="view">
+        <div><h3>Daily check-in</h3><p class="role core">Main path · first each day</p></div>
+        <div><p>One question with three answers: good, okay or off. Shown before today's status, with a way to skip it; the answer is stored with the day, can be changed until the next morning, and is never used in the score (D33).</p></div>
+      </div>
+      <div class="view">
+        <div><h3>Readiness card</h3><p class="role core">Main path · the app's home</p></div>
+        <div><p>Status (ready, ease off, rest), the two or three drivers in plain words, the nudge and its reason, and when the data was synced. If today's check-in was skipped, it keeps a small prompt to answer it. On change days, from 8pm, it also carries <q>Did you follow today's nudge?</q> with yes and no above the morning's briefing; before 8pm it shows the nudge without the question; it asks about yesterday if that went unanswered, and shows sync or notification problems when there are any.</p></div>
+      </div>
+      <div class="view">
+        <div><h3>Why today</h3><p class="role core">Main path · after the card</p></div>
+        <div><p>Titled with today's status: <q>Why ease off today</q>, <q>Why rest today</q> or <q>Why you're ready today</q>. One card per reading (heart rate variability, sleep, sleeping heart rate) with a line on what it measures, last night's value against your normal, a plain-words verdict and a 4-week chart with your normal range shaded. Tapping <q>Show the numbers</q> on a card gives its normal range, how far last night was from normal and how it compares with the last 4 weeks. A closing section, <q>How today's status is decided</q>, explains in plain words that each reading adds points when it is worse than normal, more for the readings that matter most; on tap it shows each reading's points, today's total and where ready, ease off and rest start. The weights themselves are not shown. Missing inputs are named.</p></div>
+      </div>
+      <div class="view">
+        <div><h3>Trend view</h3><p class="role core">Main path · after Why today</p></div>
+        <div><p>One line per score metric with its baseline band and flagged days. Nights without data show as gaps.</p></div>
+      </div>
+      <div class="view">
+        <div><h3>Weekly digest</h3><p class="role">Optional · from the card</p></div>
+        <div><p>A template-written summary of the past week: what moved against baseline, what was flagged, how many days had data, and how many nudges were followed. A new one each week; the latest is reachable from the card.</p></div>
+      </div>
+    </div>
+    <p class="outside">In the MVP but outside this flow: account setup (you create each tester's account; no email is sent) and onboarding, sign-in (used at first setup and whenever a session has expired, since sessions are long-lived), and a small settings view (reissue the upload token, sign out everywhere, delete my data). The daily loop doesn't need any of them to run.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="states-h">
+    <h2 id="states-h">States that matter</h2>
+    <p class="col">Only the states the MVP rules produce. Descriptions say what the tester needs to see; the exact wording comes later.</p>
+    <div class="states">
+
+      <div class="state-group">
+        <h3>Push notification</h3>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Analysis finished after a sync</span><span>One message with status and reason, e.g. <q>Ease off today: HRV well below your usual, sleep short.</q></span></div>
+        <div class="srow"><span class="chip c-empty">Not sent</span><span class="when">No sync yet, night unfinished, nothing synced by noon, already sent today, or no status (two or more readings missing or still building their baseline)</span><span>Nothing on the lock screen, by design. The card explains why when opened.</span></div>
+        <div class="srow"><span class="chip c-ok">Evening</span><span class="when">8pm on a change day</span><span><q>Did you follow today's nudge?</q> Tapping it opens the card on the question.</span></div>
+        <div class="srow"><span class="chip c-pend">Reminder</span><span class="when">No successful sync by 11:30am</span><span>One push: <q>No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.</q> A sync before noon then brings the nudge, marked as late.</span></div>
+        <div class="srow"><span class="chip c-empty">No evening</span><span class="when">Train-as-planned day, or no morning nudge</span><span>Nothing at 8pm.</span></div>
+        <div class="srow"><span class="chip c-err">Error</span><span class="when">Delivery failed or notifications turned off</span><span>Failure is logged; the card shows that notifications are off and how to turn them back on.</span></div>
+      </div>
+
+      <div class="state-group">
+        <h3>Daily check-in</h3>
+        <div class="srow"><span class="chip c-empty">Empty</span><span class="when">First open of the day</span><span>The question, before anything else.</span></div>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Answer tapped</span><span>Answer saved; today's card appears.</span></div>
+        <div class="srow"><span class="chip c-empty">Skipped</span><span class="when">Tester skips the question</span><span>Today's card appears straight away, with a small prompt to check in later that day.</span></div>
+        <div class="srow"><span class="chip c-note">Changed</span><span class="when">Answer changed from the card, before the next morning</span><span>New answer shown. The first answer and whether the status had been seen are kept for the Signal check.</span></div>
+      </div>
+
+      <div class="state-group">
+        <h3>Readiness card</h3>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Today's night scored</span><span>Status, drivers, nudge with reason, and <q>as of this morning's sync.</q></span></div>
+        <div class="srow"><span class="chip c-pend">Pending</span><span class="when">Nothing synced yet today, before 11:30am</span><span>Waiting for this morning's sync, with the last sync time. Yesterday's status is never presented as today's.</span></div>
+        <div class="srow"><span class="chip c-pend">Pending</span><span class="when">Night not finished in the data</span><span>Sleep still in progress; the card updates after the next sync.</span></div>
+        <div class="srow"><span class="chip c-empty">Empty</span><span class="when">Two or more readings with fewer than 21 valid nights</span><span><q>Learning your normal</q> with progress (e.g. 14 of 21 nights). Last night's values in plain words, with no verdicts, status, push or 8pm follow-up; never shown as Ready (D36). A single reading still building counts as missing (see Partial).</span></div>
+        <div class="srow"><span class="chip c-pend">Partial</span><span class="when">One reading missing, or still building its baseline</span><span>Status from the other two, with the missing reading's weight moved to them, labelled <q>Based on 2 of 3 readings</q> (D35). With two or more missing, or no sleep recorded: <q>Not enough data last night</q>, no status and no push.</span></div>
+        <div class="srow"><span class="chip c-pend">Missed</span><span class="when">No successful sync by 11:30am</span><span>No sync yet this morning, with how to run the Shortcut by hand before noon to get today's nudge (D34).</span></div>
+        <div class="srow"><span class="chip c-ok">Late</span><span class="when">Synced between 11:30am and noon</span><span>Today's status and nudge as usual, marked as late.</span></div>
+        <div class="srow"><span class="chip c-err">No nudge</span><span class="when">Nothing synced by noon</span><span>No sync this morning, so no nudge today and no 8pm question. Tomorrow starts afresh.</span></div>
+        <div class="srow"><span class="chip c-err">Error</span><span class="when">Upload rejected (token revoked or invalid)</span><span>Sync is being rejected, and where to reissue the upload token.</span></div>
+        <div class="srow"><span class="chip c-note">Notice</span><span class="when">Illness and strain composite fired</span><span>A pattern note: several overnight markers moved together. Never a diagnosis.</span></div>
+      </div>
+
+      <div class="state-group">
+        <h3>Follow-through, on the card</h3>
+        <div class="srow"><span class="chip c-empty">Not yet</span><span class="when">Change day, before 8pm</span><span>The card shows the nudge without the question.</span></div>
+        <div class="srow"><span class="chip c-pend">Asked</span><span class="when">Change day, from 8pm</span><span><q>Did you follow today's nudge?</q> with yes and no at the top of the card.</span></div>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Answered on the card after 8pm</span><span>Answer recorded and shown, and can be changed until the next morning; the flow is complete.</span></div>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Answered from the 8pm push</span><span>The push opens the card on the question; the answer is recorded; the flow is complete.</span></div>
+        <div class="srow"><span class="chip c-pend">Carry-over</span><span class="when">Unanswered by next morning</span><span>The next morning's card asks about yesterday before showing today's status.</span></div>
+        <div class="srow"><span class="chip c-empty">Not asked</span><span class="when">Train-as-planned day</span><span>No question; the flow ends once the card has been read.</span></div>
+      </div>
+
+      <div class="state-group">
+        <h3>Why today and trend view</h3>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">Baseline available</span><span>Values against your normal, normal ranges and each reading's points; trend lines with normal-range bands and flagged days.</span></div>
+        <div class="srow"><span class="chip c-empty">Empty</span><span class="when">Baseline still building</span><span>Nights collected so far; no normal ranges or verdicts yet.</span></div>
+        <div class="srow"><span class="chip c-pend">Gaps</span><span class="when">Nights with no data</span><span>Shown as gaps, never as zeros.</span></div>
+      </div>
+
+      <div class="state-group">
+        <h3>Weekly digest</h3>
+        <div class="srow"><span class="chip c-ok">Success</span><span class="when">A full week of data</span><span>The week's summary: what moved, what was flagged, days with data, nudges followed.</span></div>
+        <div class="srow"><span class="chip c-empty">Empty</span><span class="when">Before the first weekly digest is written</span><span>When the first digest will appear.</span></div>
+        <div class="srow"><span class="chip c-pend">Partial</span><span class="when">Days missing in the week</span><span>Summary written from the days available, stating how many days had data.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="stack open" aria-labelledby="open-h">
+    <h2 id="open-h">Open points</h2>
+    <p class="col">None. Every question this flow raised has been answered and recorded in the MVP document (D32 to D34).</p>
+  </section>
+
+</main>
+
+</body></html>

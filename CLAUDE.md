@@ -9,6 +9,8 @@ The agreed plan is in `docs/`. Read the files a task needs before starting it.
 - `docs/progress.md`: the phased build plan, with tasks, automated tests and manual checks. Work from this file.
 - `docs/product-spec.md`: what the app must do (requirements R1 to R67).
 - `docs/design.md`: colours, type, spacing, components and screens. The designed screens are in the "Clarivi Screens" canvas: https://claude.ai/artifact/Xc7im7cUsqwwkDbyQRYt8E
+- `docs/design-screens.html`: a copy of the Clarivi Screens canvas (open it in a browser): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open, all on the sample day of Tuesday 29 September. Use it for exact layout, wording and sample values.
+- `docs/clarivi-flow.html`: the daily morning loop step by step, the six views it needs and every state each view can be in.
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
 - `docs/mvp.pdf`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 to D39) behind the plan. Use it for background on why something was decided. If it disagrees with the four files above, they win, since they are the agreed versions.
 
