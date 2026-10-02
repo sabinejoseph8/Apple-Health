@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 2 October 2026 (Phase 1a started)
+**Last updated:** 3 October 2026 (Phase 1a: app, sign-in and push built and checked locally)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -9,8 +9,8 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done: the app set-up (Vite, React, TypeScript), the local copy of Supabase, the `profiles` and `push_subscriptions` tables with row-level security, and GitHub Actions running the app and database checks on every push (shown to fail when a table lacks row-level security). The live Supabase project is still empty.
-- **Next action:** Build sign-in and the forced "Set a new password" screen, the installable app (manifest and service worker) and the push spike; then put it live (Sabine: Supabase sign-in for the CLI, dashboard settings, Vercel and the two accounts).
+- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done and checked on the local copy: the app (Vite, React, TypeScript) with manifest, service worker and icon; sign-in and the forced "Set a new password" screen; the `profiles` and `push_subscriptions` tables with row-level security; the `send-push` test notification (the `@negrel/webpush` library works in Supabase's function runtime: a fake device decrypted the message). GitHub Actions run the app, secret and database checks on every push. The live Supabase project is still empty.
+- **Next action:** Put it live (step 9 onwards): Sabine signs the Supabase command-line tool in, then the database and functions go to the live project; Supabase dashboard settings; Vercel with the Supabase integration; the two accounts; then the iPhone checks.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
@@ -51,11 +51,11 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] Create the GitHub repository with GitHub Actions
 - [x] Set up the local copy of Supabase (needs Docker) for building and tests
 - [ ] Create the one Supabase project (free plan, US East); switch off new sign-ups; set the 12-character password minimum
-- [ ] Create a Vite + React + TypeScript app with a web app manifest and a service worker
+- [x] Create a Vite + React + TypeScript app with a web app manifest and a service worker
 - [ ] Deploy to Vercel (Hobby) with a production address and preview addresses
 - [ ] Create the owner account and a test account in the dashboard, marked as confirmed (no email)
-- [ ] Build sign-in and the forced "Set a new password" screen on first login
-- [ ] Create two sample tables with row-level security, and a CI check that fails if any table lacks it
+- [x] Build sign-in and the forced "Set a new password" screen on first login
+- [x] Create two sample tables with row-level security, and a CI check that fails if any table lacks it
 - [ ] Generate push signing keys; build `register_push` and a `send-push` function using `@negrel/webpush` (fall back to `npm:web-push` if it fails)
 - [ ] Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it
 
