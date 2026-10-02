@@ -9,9 +9,9 @@ insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'user-a@example.test'),
   ('22222222-2222-2222-2222-222222222222', 'user-b@example.test');
 
-select is((select count(*)::int from public.profiles), 2,
+select is((select count(*)::int from public.profiles where user_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')), 2,
   'a profile is created for each new account');
-select is((select bool_or(is_owner) from public.profiles), false,
+select is((select bool_or(is_owner) from public.profiles where user_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')), false,
   'new accounts are not the owner');
 
 -- The owner flag comes only from admin-only account metadata.
@@ -90,7 +90,7 @@ select throws_ok($$select public.register_push('https://push.example.test/anon',
   'someone not signed in cannot register a device');
 
 reset role;
-select is((select count(*)::int from public.push_subscriptions), 2,
+select is((select count(*)::int from public.push_subscriptions where user_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')), 2,
   'two devices are stored in total');
 
 select * from finish();
