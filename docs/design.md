@@ -1,0 +1,251 @@
+# Design: Clarivi
+
+**Status:** Agreed, v1.0 (30 September 2026)
+**Designed screens:** the "Clarivi Screens" canvas (also in this project as Design screens.html): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
+**Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
+
+Anything marked **Default** wasn't designed yet. It's a proposed starting point that follows the same patterns.
+
+---
+
+## 1. Design principles
+
+- **Answer first.** The status and today's action come before any chart.
+- **Plain words, numbers on tap.** Sentences on the surface; exact numbers one tap away.
+- **Your normal, not anyone else's.** Every reading is compared with the user's own 28-night normal, never with population norms or other users.
+- **Show the working.** Any status can be traced to its readings and points on Why today.
+- **Quiet by default.** Normal readings look calm. Colour and emphasis go only to what is unusual.
+- **One screen in the morning.** The morning card fits on one iPhone screen without scrolling.
+- **Equal choices, honest answers.** Check-in and follow-through answers carry equal visual weight, so the design never nudges the answer.
+- **Never a diagnosis.** Patterns are described as patterns. No condition is ever named.
+- **Say when you don't know.** Missing or building data is stated plainly, never hidden or guessed.
+
+---
+
+## 2. Visual design language
+
+### Colour palette
+
+**Base**
+| Name | Hex | Used for |
+|---|---|---|
+| Background | `#F2F2F7` | Page background behind all cards |
+| Surface | `#FFFFFF` | Cards, rows, buttons on tinted areas |
+| Text | `#000000` | Headlines, values, main text |
+| Text secondary | `#3A3A3C` | Briefing paragraph, body copy, secondary icons |
+| Text muted | `#6C6C70` | Captions, labels, "Normal for you", sync time |
+| Separator | `#E5E5EA` | Row dividers, link-row top borders |
+| Divider strong | `#D1D1D6` | Divider inside the points table |
+| Chevron | `#C4C4C8` | Disclosure chevrons on rows and links |
+
+**Action**
+| Name | Hex | Used for |
+|---|---|---|
+| Link blue | `#0A60D8` | Links, text buttons ("Change", "Show the numbers"), icons in rows, the 8pm emphasis ring |
+| Button blue | `#0A4FB8` | Text on answer buttons; the 8pm "Today's nudge" label |
+| Button tint | `#EEF3FC` | Background of the Yes and No buttons on the 8pm card |
+
+**Status**
+| Name | Hex | Used for |
+|---|---|---|
+| Ease off text | `#8A4100` | Ease off pill text, "Today's nudge" label, "Below normal" verdicts |
+| Ease off pill | `#FFEBD6` | Ease off pill background, today's zone box |
+| Ease off tint | `#FFF4E8` | Nudge block background |
+| Ease off line | `#F1D9BF` | Divider inside the nudge block |
+| Ease off border | `#E6CBAE` | Button borders on the nudge tint |
+| Attention orange | `#E07000` | Last-night dot on a chart when outside normal; today's zone outline |
+| Normal green | `#1F7A35` | "In your normal range" verdict, "Recorded: you followed it" |
+| Ready text / pill | `#1F7A35` / `#E3F4E8` | **Default:** Ready pill |
+| Rest text / pill | `#A1261D` / `#FDE7E5` | **Default:** Rest pill |
+| Neutral text / pill | `#3A3A3C` / `#E5E5EA` | **Default:** pills for Learning your normal, Waiting, No sync, Late |
+
+**Readings** (one colour each, used for the reading's label, icon and chart)
+| Reading | Line | Band (normal range) | Median line |
+|---|---|---|---|
+| Heart rate variability | `#0071A4` | `#E1F0F7` | `#7FB6D2` |
+| Sleep | `#5856D6` | `#ECEBFB` | `#A9A8EC` |
+| Sleeping heart rate | `#C4262F` | `#FBE7E8` | `#E79AA0` |
+
+**Contrast rules**
+- Text meets 4.5:1 on its background (3:1 for text 24 points and larger).
+- Below and in-range verdicts differ in lightness and icon (down arrow vs. tick), not only in hue.
+
+### Typography
+
+System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif`. Values use tabular numbers.
+
+| Style | Size / weight / line height | Used for |
+|---|---|---|
+| Large title | 32 / 700 / 1.15, tracking -0.01em | Card greeting ("Good morning") |
+| Big value | 34 / 700, tracking -0.02em | Reading values on Why today (unit: 17 / 400, muted) |
+| Summary title | 24 / 700 / 1.2 | Top summary on Why today |
+| Card headline | 22 / 700 / 1.25 | Briefing headline; "Train easy today" on the 8pm card |
+| Section title | 20 / 700 | "Last night", "How today's status is decided"; nudge title |
+| Emphasis | 17 / 600 | Nav bar title, values on the right of cards, answer buttons |
+| Body | 15 / 400 / 1.45 to 1.5 | Briefing paragraph, summaries, rows, links |
+| Question | 16 / 400 / 1.4 | "Did you follow it?" |
+| Small | 14 / 400 | Numbers panels, "Recorded" lines |
+| Caption | 13 / 400 / 1.4 | Grey explainer under each reading name, date line |
+| Eyebrow | 12 to 13 / 600, uppercase, tracking 0.03 to 0.04em | "Tuesday 29 September", "Today's nudge" |
+| Micro | 11 to 12 / 400 | Chart labels, footnotes, pill text sits at 13 / 600 |
+
+### Spacing
+- Base unit: 4 points. Common steps are 4, 6, 8, 10, 12, 14, 16 and 20.
+- Page gutter: 16 points on each side.
+- Safe areas: the top 47 points and bottom 34 points stay clear (63 and 42 points of padding on the card frames).
+- Between cards: 16 points.
+- Card padding: 20 points (briefing card), 18 by 20 (8pm card), 16 (Why today cards).
+- Inside cards: 6 to 12 points between lines.
+- Tap targets: at least 44 points high; answer buttons 48.
+
+### Corner radius
+| Element | Radius |
+|---|---|
+| Cards | 16 to 18 points |
+| Nudge block | 14 |
+| Numbers panels, Yes/No buttons, zone boxes | 10 to 12 |
+| Pills | fully rounded |
+| Settings button | circle (22 points radius on a 44 point button) |
+
+### Shadows
+- None. The layout is flat, like Apple Health.
+- Emphasis uses a 2-point inner ring instead: Link blue for the 8pm question card, Attention orange for today's zone box.
+
+### Motion (Default)
+- Expanding and collapsing panels ("Show the numbers", "Show this morning's briefing"): 200ms ease-out height and fade.
+- No animated counters or celebratory effects.
+- With iOS Reduce Motion on, changes happen instantly.
+
+---
+
+## 3. Main UI components
+
+**App header**
+- Contains a date eyebrow, a large title greeting ("Good morning" or "Good evening") and a circular Settings button on the right.
+- The Settings button has the label "Settings" for screen readers.
+
+**Nav bar**
+- Back button "Today" with a chevron, and a centred title ("Why ease off today").
+- The title changes with the status.
+
+**Status pill**
+- States: Ready, Ease off, Rest. **Default:** neutral pills for Learning your normal, Waiting, No sync and Late.
+- Always appears beside the sync time ("Updated from your Watch at 6:42am").
+
+**Briefing card** (readiness card)
+- Contains, in order: status pill, sync time, headline, briefing paragraph, nudge block, and a "Why ease off today" link row.
+- **Morning:** everything shown.
+- **8pm on a change day:** the paragraph folds away and "Show this morning's briefing" toggles it. The nudge block is hidden because the 8pm card repeats it.
+- **Partial:** adds "Based on 2 of 3 readings".
+- **No status** (not enough data, learning, waiting, no sync): neutral pill, one plain sentence, no nudge block.
+
+**Nudge block**
+- Ease off tint background with three lines:
+  - eyebrow "Today's nudge"
+  - the action ("Train easy today")
+  - one line on what it means
+- Never contains a question.
+
+**Follow-through card** (8pm, change days only)
+- Has a Link blue inner ring and contains:
+  - bell icon with "Today's nudge"
+  - the action
+  - "Did you follow it?"
+  - Yes and No buttons of equal size
+  - the hint "You can change your answer until tomorrow morning"
+- States: unanswered; "Recorded: you followed it" (green tick); "Recorded: you didn't follow it" (grey dash). Each recorded state has a Change button that returns to unanswered.
+
+**Check-in row**
+- **Answered:** a face icon, "You said you feel okay today" and Change.
+- **Skipped:** "How do you feel today?" with a prompt to answer.
+
+**Daily check-in screen (Default)**
+- One question, "How do you feel today?", with three equal buttons (Good, Okay, Off) and a quiet Skip text button.
+- Shown before the card on the first open of the day.
+
+**List row**
+- An icon, a label, optional muted detail on the right ("21 to 27 Sep") and a chevron. Used for the weekly digest link.
+
+**Summary card** (Why today)
+- Contains a status pill, "Train easy today", a headline ("Two of your three recovery readings were low last night") and one or two sentences.
+
+**Reading card** (Why today)
+- **Header:** reading name in its colour, an icon, and "Last night" on the right.
+- **Explainer:** one grey line saying what it measures, which direction is good, and its unit.
+- **Values:** the big value and unit; on the right, "Normal for you" and the normal value.
+- **Verdicts:**
+  - "Below your normal range" (Ease off text, down arrow)
+  - "Above your normal range" (Ease off text, up arrow) **Default**
+  - "In your normal range" (green tick)
+  - "No reading last night" (muted) **Default**
+- **Chart:** see "Mini chart" below.
+- **"Show the numbers" / "Hide the numbers":** reveals a grey panel with Your normal range, Last night vs normal, and In the last 4 weeks.
+
+**Mini chart**
+- 4 weeks of nights at full card width, about 72 points tall.
+  - The normal range is a light band in the reading's colour.
+  - Normal itself is a dashed line.
+  - Nights are a 1.8-point line.
+  - Last night is a dot: Attention orange if outside the range, the reading's colour if inside.
+- Labels underneath: "4 weeks ago", "Shaded: your normal range", "Last night".
+- Missing nights are gaps. While the baseline is building, there is no band.
+
+**Also checked card**
+- One sentence on breathing rate, yesterday's resting heart rate and the illness check.
+
+**Status decision section**
+- A plain-words explanation, then "Show the numbers", which reveals:
+  - a points table (reading and points, with a divider and "Today's total")
+  - three zone boxes (Ready under 1, Ease off 1 to 2, Rest 2 or more), with today's box ringed and labelled "Today"
+- Footnote: "Your normal comes from your last 28 nights."
+
+**Primary button**
+- Full width, Link blue fill, white 17 / 600 text, 50 points high ("See your trends").
+
+**Text button and link row**
+- Link blue text.
+- Link rows have a top separator and a chevron.
+
+**Trend chart (Default)**
+- A larger version of the mini chart, one per score reading, covering the last 8 weeks.
+- Flagged nights are marked with an Attention orange dot. Tap a night to see its value and date.
+
+**Forms (Default):** sign in, set new password, change password.
+- Large inputs (at least 44 points) with visible labels, and one primary button.
+- Errors appear in one line under the form.
+- Password fields allow iCloud Keychain autofill and strong-password suggestions.
+
+**Settings list (Default)**
+- Grouped rows: Notifications (on or off, last delivered), Upload token (create or reissue), Setup guide, Change password, Sign out everywhere, Delete my data.
+- Reissuing the token and deleting data ask for the password first. Delete uses red text and a confirmation step.
+
+**Notification text** (system surface, not a screen)
+- **Morning:** status and reason ("Ease off today: HRV well below your usual, sleep short").
+- **11:30 reminder and 8pm question:** contain no health detail.
+
+---
+
+## 4. Screens
+
+| Screen | State shown | Where to see it |
+|---|---|---|
+| Readiness card | 6:50am, after the check-in, ease off day | Clarivi Screens canvas: "Readiness card · 6:50am" |
+| Readiness card | 8pm follow-through, unanswered (Yes and No work in Play) | "Readiness card · 8pm follow-through" |
+| Why today | Default, numbers closed | "Why today" |
+| Why today | Numbers open for heart rate variability | "Why today · numbers open for heart rate variability" |
+
+**Sample data on every designed screen:** Tuesday 29 September. Heart rate variability 38 ms (normal 52, range 40 to 64), sleep 5h 52m (normal 7h 10m), sleeping heart rate 51 bpm (normal 50). Check-in "okay". The points add up to 1.6, which is Ease off.
+
+**Not designed yet; built from the components above:**
+- Daily check-in screen
+- Trend view
+- Weekly digest
+- Sign in, set new password and change password
+- Settings
+- Owner status page (R64)
+- Less common card states (waiting, night not finished, missed, late, no sync by noon, partial, not enough data, learning your normal, notifications off, sync rejected). These are left to the build, following the status pill and briefing card patterns.
+
+**Earlier options kept for reference only:**
+- "Readiness Card Screen" canvas, option B (plan first)
+- "The Working Screen" canvas, option A (contribution breakdown)
+- Both still show Apple's resting heart rate and don't reflect later decisions.
