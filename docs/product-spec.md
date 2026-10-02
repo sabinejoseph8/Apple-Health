@@ -2,9 +2,9 @@
 
 **Status:** Agreed, v1.0 (30 September 2026)
 **Owner:** Sabine Joseph
-**Sources:** MVP.pdf, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
+**Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
-> Numbering note: requirement numbers (R1, R2, and so on) belong to this spec. They don't match the risk numbers in MVP.pdf.
+> Numbering note: requirement numbers (R1, R2, and so on) belong to this spec. They don't match the risk numbers in mvp.md.
 
 ---
 

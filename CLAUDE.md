@@ -12,7 +12,7 @@ The agreed plan is in `docs/`. Read the files a task needs before starting it.
 - `docs/design-screens.html`: a copy of the Clarivi Screens canvas (open it in a browser): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open, all on the sample day of Tuesday 29 September. Use it for exact layout, wording and sample values.
 - `docs/clarivi-flow.html`: the daily morning loop step by step, the six views it needs and every state each view can be in.
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
-- `docs/mvp.pdf`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 to D39) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four `.md` files, they win, since they are the agreed versions: update the MVP document to match.
+- `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 to D39) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.
 
@@ -24,7 +24,7 @@ These five files in `docs/` are the project memory: the key to understanding the
 - `docs/design.md`: design principles, colour, type and spacing tokens, and component anatomy, matching the "Clarivi Screens" canvas.
 - `docs/tech-spec.md`: key technical decisions and system patterns to stay consistent with.
 - `docs/progress.md`: current focus, recent changes, what's left to build, current status and known issues.
-- `docs/mvp.pdf`: the MVP scope, success criteria, risks and decisions (D1 to D39). Record new or changed decisions, risks, assumptions and spike results here as the project progresses.
+- `docs/mvp.md`: the MVP scope, success criteria, risks and decisions (D1 to D39). Record new or changed decisions, risks, assumptions and spike results here as the project progresses.
 
 Update the project memory:
 - when you discover a new project pattern

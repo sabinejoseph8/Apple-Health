@@ -2,7 +2,7 @@
 
 **Status:** Agreed, v1.0 (30 September 2026)
 **Last updated:** 1 October 2026 (live project and repository recorded)
-**Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), MVP.pdf
+**Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
 Requirement numbers (R1 to R67) refer to product-spec.md. Anything marked **Default** is a proposal waiting for your agreement.
