@@ -9,15 +9,15 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Planning complete. All four Project Memory files are agreed (30 September 2026), and the product is named Clarivi. Build set-up has started: the Supabase project exists (still empty), and the GitHub repository holds CLAUDE.md and the docs.
-- **Next action:** Finish the rest of task 1a-03 (switch off new sign-ups; set the 12-character password minimum), add GitHub Actions to the repository, and start Phase 1a with Claude Code: the app, sign-in and push spike.
+- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done: the app set-up (Vite, React, TypeScript), the local copy of Supabase, the `profiles` and `push_subscriptions` tables with row-level security, and GitHub Actions running the app and database checks on every push (shown to fail when a table lacks row-level security). The live Supabase project is still empty.
+- **Next action:** Build sign-in and the forced "Set a new password" screen, the installable app (manifest and service worker) and the push spike; then put it live (Sabine: Supabase sign-in for the CLI, dashboard settings, Vercel and the two accounts).
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
 | Item | State |
 |---|---|
 | Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`); no tables, migrations or functions yet |
-| GitHub repository | `sabinejoseph8/Apple-Health`, public; holds CLAUDE.md and docs (no app code or GitHub Actions yet) |
+| GitHub repository | `sabinejoseph8/Apple-Health`, public; app code and GitHub Actions on the `phase-1a` branch |
 | Vercel | Not set up yet |
 
 **Settled: Supabase region (2 October 2026).** The first project was created in US West by mistake. It was replaced while still empty by a new project in US East (ref `vuynnnrijdbvamwfauog`), as the plan said. The old US West project (ref `pupxkjhhhgeeoqyvtsst`) is no longer used.
@@ -48,8 +48,8 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 **Status:** In progress (set-up started)
 
 ### 1a. App, sign-in and push
-- [ ] Create the GitHub repository with GitHub Actions
-- [ ] Set up the local copy of Supabase (needs Docker) for building and tests
+- [x] Create the GitHub repository with GitHub Actions
+- [x] Set up the local copy of Supabase (needs Docker) for building and tests
 - [ ] Create the one Supabase project (free plan, US East); switch off new sign-ups; set the 12-character password minimum
 - [ ] Create a Vite + React + TypeScript app with a web app manifest and a service worker
 - [ ] Deploy to Vercel (Hobby) with a production address and preview addresses
