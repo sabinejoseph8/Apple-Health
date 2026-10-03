@@ -43,11 +43,13 @@ more, usually a workout), the Shortcut takes the day's first 1,000 and last
 the middle of the day, which the server sets aside anyway (D43). The other
 readings are small and are read a month at a time.
 
-A month is sent in parts: whenever the gathered heart rate days reach about
-300,000 characters, they go as one backfill post for that month. iOS timed
-out a 682 KB post before it left the phone, while 385 KB went through in 12
-seconds (1c send checks). The month's last post carries the small readings,
-and only then is the month written to import-done.txt. In the import, heart
+A month is sent in parts: first the small readings (sleep, HRV, breathing
+rate, resting heart rate) on their own, then heart rate, as one backfill post
+whenever the gathered days reach about 250,000 characters, and a last post
+with the days left over. iOS timed out a 682 KB post before it left the
+phone, while 385 KB went through in 12 seconds (1c send checks); a last post
+that carried the leftover days and the small readings together failed. Only
+after the last post is the month written to import-done.txt. In the import, heart
 rate goes without its end time (always its start) and unit (always count/min),
 which the server fills in.
 After each month it adds the month to Clarivi/import-done.txt and shows
@@ -386,7 +388,7 @@ DAY_LIMIT = 1000
 MAX_DAYS_IN_MONTH = 31
 
 # A part of a month goes once the gathered heart rate days reach this size.
-PART_CHARACTERS = 300_000
+PART_CHARACTERS = 250_000
 
 # Heart rate columns in the import (the server fills in end and unit).
 LEAN_COLUMNS = [c for c in COLUMNS if c[0] in ('start', 'value', 'source')]
@@ -455,22 +457,23 @@ def import_history(b, url, words):
     to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
     whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
                                                 'AnotherDate': attachment(next_month.ref())}}
+    def send(*series):
+        """Posts one backfill part of this month and stops if Clarivi refuses it."""
+        body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
+                      variable('Offset'), '","trigger":"manual","series":[', *series, ']}')
+        reply = b.post(body, url)
+        b.stop_if_refused(reply)
+        return reply
+
     small = [series_text(b, clarivi_type, b.find_health(label, whole_month))
              for label, clarivi_type in HEALTH_TYPES if clarivi_type != 'heart_rate']
-
-    def send_part():
-        part = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
-                      variable('Offset'), '","trigger":"manual","series":[' + EMPTY_HEART_RATE, variable('HeartRateDays'), ']}')
-        b.stop_if_refused(b.post(part, url))
-
-    heart_rate_by_day(b, month_id, send_part=send_part)
     joined = []
     for i, text in enumerate(small):
         joined += ([','] if i else []) + [text.ref()]
-    body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
-                  variable('Offset'), '","trigger":"manual","series":[', *joined, variable('HeartRateDays'), ']}')
-    reply = b.post(body, url)
-    b.stop_if_refused(reply)
+    send(*joined)
+
+    heart_rate_by_day(b, month_id, send_part=lambda: send(EMPTY_HEART_RATE, variable('HeartRateDays')))
+    reply = send(EMPTY_HEART_RATE, variable('HeartRateDays'))
     b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
     b.save_file(IMPORT_FILE, variable('Done'))
     b.notify(b.dictionary_value(reply, 'message').ref())
