@@ -1,14 +1,14 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phases 2a to 2c done and live; Phase 1b's locked-phone check collecting over a week; decisions D42 to D60)
+**Last updated:** 3 October 2026 (Phase 2 done, reviewed and live, self-test started; Phase 1b's locked-phone check collecting over a week; decisions D42 to D60)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
 
 ## Summary
 
-- **Current phase:** Phase 2, Data and analysis (In progress), while Phase 1's last check collects itself
+- **Current phase:** Phase 2 done (self-test running); Phase 3 next, while Phase 1's last check collects itself
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
 - **Phase 2a (3 October 2026):** nights, normals and the analysis queue are built on branch `phase-2a-nights` (from `phase-1b-daily-sync`) and pass their tests on the local copy. The night rules are D48. Released the same day: the every-minute scheduler built Sabine's 239 nights and their normals within a minute. The first look at them found overlapping sleep records on 18 nights, which counted sleep twice; Sabine chose to count each moment once with awake winning (D49), released as a second migration. Checking one night against the Health app then showed the 90-minute rule cutting nights with a long awake spell (41 of 239 nights); Sabine chose to count all sleep from 6pm to noon as the night (D50), a third migration. With all three live, Sabine's year has 237 nights with all five normals built, and two nights checked against the Health app (one imported, one from a daily sync) each match within 2 minutes. 2a done on 3 October 2026.
 - **Phase 2b (3 October 2026):** score settings, the daily status (points, zones, missing and building readings, the nudge, the illness check) and insights are built on branch `phase-2b-status` (from `phase-2a-nights`) and pass their tests on the local copy, with Sabine's decisions D51 to D53. Phase 2's manual check 2 now uses an automated test for the design's made-up sample day. Released the same day: Sabine's year has 237 days with a status row (105 Ready, 19 Ease off, 4 Rest, 108 learning your normal, 1 not enough data); the illness check ran on 128 and showed its note on 12. Sabine checked 3 October's breakdown by hand (Ready, 0.47 points, all from a short sleep). 2b done on 3 October 2026.
@@ -21,7 +21,8 @@
 - **2c done (3 October 2026):** version 2 is live and frozen; Sabine's year has 181 Ready, 25 Ease off, 3 Rest and 27 learning days; the reference check matches on all 237 nights, 1,185 normals and 237 statuses under version 2. Phase 2 manual checks: 1 (reference) passed; 2 (sample day) is an automated test, and a recent real morning was checked by hand; 3 (Signal on her year) measured and not met, recorded in mvp.md; 4 (no-push imports) holds in the queue (imports never ask to notify, tested), and is checked again on the outbox in Phase 4.
 - **Phase 2 code review (3 October 2026):** 14 findings. Fixed: Sabine's readings, dates and trip had been written into the public docs, migration comments and two tests (removed, and the Phase 2 branches rewritten on GitHub so the old commits are gone); a morning sync with no night yet now says "night not finished" on the day, not "not enough data"; failed analysis work is retried (3 attempts); every settings version must give each reading a positive smallest spread; the job log is trimmed daily; tests now prove signed-in users can't run any analysis function; the owner's session file is private from the moment it's written; the workout extractor leaves out impossible and copied workouts; small clean-ups. Decided by Sabine: record what each person was shown each morning in Phase 4 (D61, a new Phase 4 task); keep the 6pm rule (a sleep starting just before 6pm with no wake-up counts as a nap, a known limit). Not changed: the Watch-sources lookup reads all heart rate (about 0.04 seconds a year; fine for v1).
 - **Self-test helper:** `.venv/bin/python scripts/reference/today.py` prints this morning's status in plain words (or a given date's), using the remembered sign-in.
-- **Next action:** Sabine starts the two-to-three-week self-test (each morning after her sync, run the helper and note whether the status matches how she feels); Phase 1's last check (the locked-phone rate) is read around 10 October 2026, then Phase 1 closes and the branches merge to `main`. Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
+- **Phase 2 done (3 October 2026):** all tasks ticked; the self-test started the same day and runs each morning until about 17 to 24 October 2026 (Sabine runs `today.py` after her sync and notes whether the status matches how she feels).
+- **Next action:** plan Phase 3 (readiness card, check-in and Why today) while the self-test runs. Phase 1's last check (the locked-phone rate) is read around 10 October 2026; then Phase 1 closes and the branches merge to `main` (Sabine runs the merge, as it deploys production). Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -40,7 +41,7 @@
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Spikes: the riskiest unknowns first | In progress |
-| 2 | Data and analysis | In progress (built and reviewed; self-test next) |
+| 2 | Data and analysis | Done (self-test running) |
 | 3 | Readiness card, check-in and Why today | Not started |
 | 4 | Notifications and follow-through | Not started |
 | 5 | Trends, digest, settings and owner page | Not started |
@@ -164,7 +165,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 
 **Goal:** turn raw readings into correct nights, baselines, a daily status and a nudge. Prove them against an independent check, and set the score numbers.
 
-**Status:** In progress (2a, 2b, 2c and the code review done on 3 October 2026; the self-test is next)
+**Status:** Done (3 October 2026); the self-test runs until about 17 to 24 October
 
 Split into four groups (agreed 3 October 2026): 2a nights and normals, 2b the daily status, 2c proving and tuning, then the end step.
 
@@ -194,7 +195,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 ### End of Phase 2
 - [x] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (3 October 2026: 14 findings, 11 fixed, 3 decided by Sabine; fixes live, reference check still matches)
-- [ ] Start the two-to-three-week self-test: read your own status each morning before the screens exist
+- [x] Start the two-to-three-week self-test: read your own status each morning before the screens exist (started 3 October 2026 with `scripts/reference/today.py`; runs until about 17 to 24 October)
 
 ### Automated tests
 - Night dating: a known night is assigned the right date, including across a time-zone change.
