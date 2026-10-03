@@ -94,6 +94,13 @@ export const wording = {
     testBody: 'Test notification. Tap to open Clarivi.',
   },
 
+  // Times in the design's style: "today at 6:42am", "3 Oct at 6:42am".
+  time: {
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    todayAt: (time: string) => `today at ${time}`,
+    dayAt: (day: string, time: string) => `${day} at ${time}`,
+  },
+
   general: {
     offline: "Couldn't reach Clarivi. Check your connection and try again.",
     notConfigured: "Clarivi isn't set up on this address yet.",

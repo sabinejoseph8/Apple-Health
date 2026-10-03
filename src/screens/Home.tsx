@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
+import UploadToken from './UploadToken'
 import { currentPushSupport, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
 const w = wording.notifications
@@ -89,6 +90,8 @@ export default function Home({ session }: { session: Session }) {
         {devices !== null && <p className="caption">{w.devices(devices)}</p>}
         {message && <p className="body" role="status">{message}</p>}
       </section>
+
+      <UploadToken />
 
       <button className="text-button" type="button" onClick={() => supabase.auth.signOut({ scope: 'local' })}>
         {wording.home.signOut}

@@ -143,6 +143,26 @@ html, body {
   cursor: pointer;
 }
 
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+/* A new upload token, shown once. Selectable in one tap if Copy fails. */
+.token {
+  display: block;
+  padding: 12px;
+  border: 1px solid var(--separator);
+  border-radius: 10px;
+  background: var(--bg);
+  font: 15px/1.4 ui-monospace, 'SF Mono', Menlo, monospace;
+  overflow-wrap: anywhere;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
 .form-error {
   margin: 0;
   font-size: 15px;
