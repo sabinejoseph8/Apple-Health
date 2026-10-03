@@ -2,7 +2,7 @@
 
 Scoping the smallest version that proves the idea | Apple Health Analytics Tool | Sabine Joseph
 
-**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44).
+**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45).
 
 **Format note:** converted from MVP.pdf on 2 October 2026. This Markdown file is now the version that is kept up to date; a PDF can be made from it when one is needed.
 
@@ -209,6 +209,7 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
 - **D42** The Shortcut sends readings as columns: for each reading type, one list of start times, one of end times, one of values, units and sources (decided 3 October 2026, from the Phase 1b spike). On Sabine's iPhone, building one line per reading took 14 minutes 28 seconds for a day of heart rate (1,063 readings); joining each column as a list took 1.3 seconds. Consequences: the ingest function lines the columns up into the same stored readings, so nothing downstream changes; the one-year import (R20) becomes practical; posts in the original one-object-per-reading shape are still accepted, so a future HealthKit app can use either.
 - **D43** The 6pm-to-noon heart-rate window (D18) is applied by the server as readings arrive, using each reading's own local time (decided 3 October 2026, from the Phase 1b spike). Health searches in Shortcuts only work in whole days: "after a time" finds nothing, and "between two times" or "in the last N hours" widen to whole days. So the Shortcut fetches yesterday and today, and the server keeps heart rate only from 6pm to noon. Consequences: storage stays as D18 planned; posts are larger (about 100 KB a day); sleep stages, HRV, breathing rate and resting heart rate are kept in full, as they are small.
 - **D44** The tester-phone part of the Phase 1b sync spike moves to the Phase 6 dry run (decided 3 October 2026). Phase 1b finishes on Sabine's iPhone alone. Consequences: 1b doesn't wait for a tester's consent and account; a tester's Watch model (Ultra or second-generation SE), charging habits and first setup are first seen in the dry-run week (A7, R11), when a problem would cost more to fix; the main 1b unknowns (whole-day Health searches, speed, sleep stages) were already settled on Sabine's phone.
+- **D45** The one-year import keeps its progress on the phone, and the tester's import timing moves to the Phase 6 dry run (decided 3 October 2026, planning Phase 1c). The Clarivi Sync Shortcut lists each finished month in `iCloud Drive/Shortcuts/Clarivi/import-done.txt` and skips those months when the import is run again. Consequences: the upload token stays strictly write-only (the server only replies how many months have arrived, for the progress message); if the file is lost, months are sent again and ignored as duplicates; as with D44, a tester's import is first timed in the dry-run week.
 
 ### Reversal and its consequences
 
@@ -269,6 +270,7 @@ All scoping decisions are now made, and the D9 targets are confirmed. The D24 nu
 | D42 Post format (DECIDED) | The Shortcut sends one list per column for each reading type. | About a second instead of 14 minutes on the phone; the server lines columns up into the same readings; the original row shape is still accepted. |
 | D43 Heart-rate window (DECIDED) | The server applies D18's 6pm-to-noon window on arrival, by each reading's local time. | Shortcuts can only search Health by whole days; storage stays as planned; posts are about 100 KB a day. |
 | D44 Tester phone in 1b (DECIDED) | Moved to the Phase 6 dry run; 1b finishes on Sabine's phone. | 1b doesn't wait for a tester; tester-phone issues surface in the dry-run week. |
+| D45 Import on the phone (DECIDED) | Import progress kept on the phone; the tester's import timing moves to the Phase 6 dry run. | The token stays write-only; a lost progress file only means re-sending months, which are ignored as duplicates. |
 
 ## 7. Clarifying Questions and Answers
 

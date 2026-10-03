@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** Collect about a week of mornings on Sabine's iPhone for the locked-phone check (check 2, the last open 1b task); deploy the unknown-trigger change (committed; sleep has no source in Shortcuts, so there's nothing to fix there). The Shortcut, both automations and checks 1 and 3 are done.
+- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings. Meanwhile 1c (the one-year import) is built and tested locally: release the `import_progress` migration and the `ingest` function, reinstall the Shortcut with a reissued token, then run the import on Sabine's iPhone, interrupt it once, and count the nights with HRV during sleep.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -74,7 +74,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 
 ### 1c. One-year import
 - [ ] Add monthly import to the Shortcut (12 parts, resumable)
-- [ ] Time a full import on your phone and a tester's; measure the size of one month's post
+- [ ] Time a full import on your phone and measure the size of one month's post (the tester's import moved to the Phase 6 dry run, D45)
 - [ ] Interrupt an import on purpose and confirm it continues from the last finished month
 - [ ] Count the nights in your year with at least one HRV reading inside the sleep window
 
@@ -310,7 +310,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact). From the 1b spike: turn on Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data"; run Clarivi Sync by hand once and allow Health and file access (automations can't ask for permission); ask whether they use a third-party sleep app (sleep has no source in Shortcuts, so Watch sleep is recognised by its stages); build each automation from the Automation tab (iOS 27 shows it as "When ... is Opened"/"When power Disconnects"), with a Text action holding exactly `charger` or `app`, then Run Shortcut with that Text as input
 - [ ] Publish Shortcut template v1 (blank, asks for the token at install)
 - [ ] Check the one-screen fit on each tester's iPhone model
-- [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone part of 1b (D44): both automations on their phone, the locked-phone rate and the sleep stages from their Watch
+- [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone parts of 1b and 1c (D44, D45): both automations on their phone, the locked-phone rate, the sleep stages from their Watch, and timing their one-year import
 - [ ] Freeze the score settings; tag the release; write the changelog
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 

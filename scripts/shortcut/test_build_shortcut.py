@@ -90,11 +90,16 @@ class ShortcutTests(unittest.TestCase):
                     stack.pop()
         self.assertEqual(stack, [])
 
-    def test_there_are_no_loops(self):
+    def test_there_is_no_loop_per_reading(self):
         # One loop pass per reading took over 14 minutes for a day of heart
-        # rate on an iPhone (Phase 1b spike), so readings go as columns.
-        loops = [a for a in self.actions if a['WFWorkflowActionIdentifier'].startswith('is.workflow.actions.repeat')]
-        self.assertEqual(loops, [])
+        # rate on an iPhone (Phase 1b spike), so readings go as columns. The
+        # only loop is the import's, once per month.
+        each = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('repeat.each')]
+        self.assertEqual(each, [])
+        counts = [a['WFWorkflowActionParameters'] for a in self.actions
+                  if a['WFWorkflowActionIdentifier'].endswith('repeat.count')
+                  and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
+        self.assertEqual([c['WFRepeatCount'] for c in counts], [bs.IMPORT_MONTHS])
 
     def test_the_token_is_asked_for_at_install_and_nothing_secret_is_built_in(self):
         [question] = self.wf['WFWorkflowImportQuestions']
@@ -107,7 +112,7 @@ class ShortcutTests(unittest.TestCase):
     def test_posts_go_to_the_ingest_function_with_the_token(self):
         posts = [a['WFWorkflowActionParameters'] for a in self.actions
                  if a['WFWorkflowActionIdentifier'].endswith('downloadurl')]
-        self.assertEqual(len(posts), 2)
+        self.assertEqual(len(posts), 3, 'ping, daily post and one month of the import')
         for p in posts:
             self.assertEqual(p['WFURL']['Value']['string'], bs.INGEST_URL)
             self.assertEqual(p['WFHTTPMethod'], 'POST')
@@ -130,31 +135,62 @@ class ShortcutTests(unittest.TestCase):
             parsed = json.loads(filled)
             self.assertIsInstance(parsed, dict)
             checked += 1
-        self.assertEqual(checked, 2 + len(bs.HEALTH_TYPES), 'ping, daily post and one series per reading type')
+        self.assertEqual(checked, 3 + 2 * len(bs.HEALTH_TYPES),
+                         'ping, daily post, import post, and one series per reading type in each post')
 
     def test_each_reading_type_is_read_once_with_its_clarivi_name(self):
         finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
         labels = [f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][0]
                   ['Values']['Enumeration']['Value'] for f in finds]
-        self.assertEqual(labels, [label for label, _ in bs.HEALTH_TYPES])
+        self.assertEqual(labels, [label for label, _ in bs.HEALTH_TYPES] * 2, 'once for the import, once for the sync')
         lines = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"type"')]
-        self.assertEqual(len(lines), len(bs.HEALTH_TYPES))
-        for (_, clarivi_type), line in zip(bs.HEALTH_TYPES, lines):
+        self.assertEqual(len(lines), 2 * len(bs.HEALTH_TYPES))
+        for (_, clarivi_type), line in zip(bs.HEALTH_TYPES * 2, lines):
             self.assertTrue(line.startswith('{"type":"' + clarivi_type + '"'), line)
             for key, _ in bs.COLUMNS:
                 self.assertIn(f'"{key}":["{OBJ}"]', line)
 
     def test_health_searches_use_whole_days(self):
-        # Finer date filters don't work on Health samples (Phase 1b spike).
+        # Finer date filters don't work on Health samples (Phase 1b spike):
+        # the sync asks for yesterday and today, the import for whole months.
         finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
-        for f in finds:
-            row = f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][1]
+        rows = [f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][1]
+                for f in finds]
+        n = len(bs.HEALTH_TYPES)
+        for row in rows[:n]:
+            self.assertEqual((row['Property'], row['Operator'], set(row['Values'])), ('Start Date', 1003, {'Date', 'AnotherDate'}))
+            self.assertEqual(row['Values']['Date']['Value'], {'Type': 'Variable', 'VariableName': 'Month'})
+        for row in rows[n:]:
             self.assertEqual((row['Property'], row['Operator'], row['Values']), ('Start Date', 1001, {'Number': '1', 'Unit': 16}))
+
+    def test_the_import_sends_each_month_as_a_backfill_and_remembers_it(self):
+        bodies = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"schema_version"')]
+        backfill = [t for t in bodies if '"kind":"backfill"' in t]
+        self.assertEqual(len(backfill), 1)
+        self.assertIn('"month_id":"' + OBJ + '"', backfill[0])
+        files = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('setitemname')]
+        self.assertIn(bs.IMPORT_FILE, [f['WFName'] for f in files])
+        opened = [a['WFWorkflowActionParameters']['WFGetFilePath'] for a in self.actions
+                  if a['WFWorkflowActionIdentifier'].endswith('documentpicker.open')]
+        self.assertEqual(sorted(opened), sorted(['Clarivi/' + bs.IMPORT_FILE, 'Clarivi/' + bs.MARKER_FILE]))
+        skips = [a['WFWorkflowActionParameters'] for a in self.actions
+                 if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 999]
+        self.assertEqual(len(skips), 1, 'months already in import-done.txt are skipped')
+
+    def test_the_menu_words_come_from_the_wording_module(self):
+        words = bs.shortcut_wording()
+        self.assertEqual(set(words), {'menuPrompt', 'syncNow', 'importHistory', 'importFinished'})
+        [menu] = [a['WFWorkflowActionParameters'] for a in self.actions
+                  if a['WFWorkflowActionIdentifier'].endswith('choosefrommenu') and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
+        self.assertEqual(menu['WFMenuPrompt'], words['menuPrompt'])
+        self.assertEqual(menu['WFMenuItems'], [words['syncNow'], words['importHistory']])
+        for text in words.values():
+            self.assertNotIn('\u2014', text)
 
     def test_each_column_is_joined_as_a_json_list_of_text(self):
         combines = [a['WFWorkflowActionParameters'] for a in self.actions
                     if a['WFWorkflowActionIdentifier'].endswith('text.combine')]
-        self.assertEqual(len(combines), len(bs.HEALTH_TYPES) * len(bs.COLUMNS))
+        self.assertEqual(len(combines), 2 * len(bs.HEALTH_TYPES) * len(bs.COLUMNS))
         for c in combines:
             self.assertEqual((c['WFTextSeparator'], c['WFTextCustomSeparator']), ('Custom', '","'))
             details = [a['PropertyName'] for a in c['text']['Value'].get('Aggrandizements', []) if 'PropertyName' in a]

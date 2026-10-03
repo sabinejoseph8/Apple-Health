@@ -150,3 +150,22 @@ Deno.test('replies contain the exact text the Shortcut looks for', async () => {
   const fine = fakeStore(stored)
   assert(!(await (await handleIngest(post(body), fine.deps)).text()).includes('"error"'))
 })
+
+Deno.test('a month of history replies with the import progress', async () => {
+  const { deps } = fakeStore({ accepted: 3, duplicates: 0, night_complete: false, already_complete_today: false, months_imported: 5 })
+  const month = { schema_version: 1, kind: 'backfill', month_id: '2026-03', device_tz_offset_min: -240, samples: [{ ...body.samples[0], start: '2026-03-15T03:10:00-04:00', end: '2026-03-15T03:10:00-04:00' }] }
+  const reply = await (await handleIngest(post(month), deps)).json()
+  assertEquals(reply.months_imported, 5)
+  assertEquals(reply.message, wording.sync.importProgress(5))
+  assertEquals(reply.message, 'Your history: 5 of 12 months imported.')
+})
+
+Deno.test('each post is logged with its size and counts, never its readings', async () => {
+  const entries: unknown[] = []
+  const { deps } = fakeStore(stored)
+  deps.log = (entry) => entries.push(entry)
+  const text = JSON.stringify(body)
+  await handleIngest(post(body), deps)
+  assertEquals(entries, [{ kind: 'daily', month_id: null, bytes: new TextEncoder().encode(text).byteLength, readings: 1, result: 'accepted' }])
+  assert(!JSON.stringify(entries).includes('52'), 'no reading value in the log')
+})

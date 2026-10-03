@@ -80,12 +80,23 @@ export const wording = {
     alreadyIn: "Last night's readings are already in.",
     notYet: 'Not synced yet today.',
     monthIn: "This month's readings are in.",
+    importProgress: (months: number) => `Your history: ${months} of 12 months imported.`,
     unknownToken: "Clarivi doesn't recognise this Shortcut's upload token. Create a token in Clarivi and paste it into the Shortcut.",
     tokenReplaced: 'This upload token has been replaced. Paste your new token from Clarivi into the Shortcut.',
     tooMany: 'Too many syncs in the last hour. Try again later.',
     notReadable: "Clarivi couldn't read this sync. Contact Sabine.",
     tooLarge: 'This sync is too large for Clarivi. Contact Sabine.',
     failed: "Clarivi couldn't save this sync. Try again later.",
+  },
+
+  // Words the Clarivi Sync Shortcut shows itself when run by hand.
+  // scripts/shortcut/build_shortcut.py reads them from this file, so keep
+  // each one a plain single-quoted string.
+  shortcut: {
+    menuPrompt: 'What would you like to do?',
+    syncNow: 'Sync this morning',
+    importHistory: 'Import my last 12 months',
+    importFinished: 'Your history import is finished.',
   },
 
   // Push notification text. Test and reminder texts carry no health detail.

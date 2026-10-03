@@ -26,6 +26,17 @@ What the Shortcut does, each run:
 5. Saves today's date to last-sync.txt once the night is complete, and shows
    Clarivi's message when run by hand.
 
+Run by hand, it first asks: sync this morning, or import the last 12 months
+(R12). The import sends this month and the 11 before it, oldest first, one
+post per month ("backfill" with its month_id), using whole-month searches.
+After each month it adds the month to Clarivi/import-done.txt and shows
+Clarivi's progress message; months already in that file are skipped, so an
+interrupted import carries on where it stopped. Progress is kept on the phone
+so the upload token stays write-only (decided 3 October 2026).
+
+Every word the Shortcut shows itself (the menu, the "finished" line) comes
+from the shortcut section of supabase/functions/_shared/wording.ts.
+
 The Shortcut tests the reply's JSON text for "already_complete_today":true,
 "night_complete":true and "error", which the ingest function's tests pin
 down (supabase/functions/ingest/handler.test.ts).
@@ -33,6 +44,7 @@ down (supabase/functions/ingest/handler.test.ts).
 
 import json
 import plistlib
+import re
 import subprocess
 import sys
 import uuid
@@ -42,6 +54,9 @@ INGEST_URL = 'https://vuynnnrijdbvamwfauog.supabase.co/functions/v1/ingest'
 TOKEN_PLACEHOLDER = 'Paste your upload token here'
 MARKER_FOLDER = 'Clarivi/'
 MARKER_FILE = 'last-sync.txt'
+IMPORT_FILE = 'import-done.txt'
+IMPORT_MONTHS = 12
+WORDING = Path(__file__).resolve().parents[2] / 'supabase' / 'functions' / '_shared' / 'wording.ts'
 OBJ = '￼'  # where a variable sits inside a text field
 
 # Health types: Find Health Samples picker label, Clarivi type.
@@ -63,6 +78,15 @@ COLUMN_SEPARATOR = '","'
 # (after a time, between two times, in the last N hours) don't work on Health
 # samples in Shortcuts (Phase 1b spike, 3 October 2026).
 LAST_DAY = {'Operator': 1001, 'Values': {'Number': '1', 'Unit': 16}}
+
+
+def shortcut_wording():
+    """The plain strings in wording.ts's shortcut section."""
+    source = WORDING.read_text()
+    block = re.search(r'\n  shortcut: \{\n(.*?)\n  \},', source, re.S)
+    if not block:
+        raise SystemExit('wording.ts has no shortcut section')
+    return dict(re.findall(r"^\s+(\w+): '([^'\\]*)',$", block.group(1), re.M))
 
 ISO_TIME = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
 
@@ -191,6 +215,43 @@ class Builder:
         self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens('Clarivi'),
                                   'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
 
+    def date_from(self, *parts):
+        action_id = new_id()
+        self.add('date', {'UUID': action_id, 'WFDateActionMode': 'Specified Date', 'WFDateActionDate': tokens(*parts)})
+        return Out(action_id, 'Date')
+
+    def adjust(self, date_ref, operation, magnitude, unit):
+        """Add or Subtract a fixed amount. The source date goes in as text with
+        a variable, the only form that worked in the 1b spike."""
+        action_id = new_id()
+        self.add('adjustdate', {
+            'UUID': action_id,
+            'WFDate': tokens(date_ref),
+            'WFAdjustOperation': operation,
+            'WFDuration': {'Value': {'Magnitude': str(magnitude), 'Unit': unit}, 'WFSerializationType': 'WFQuantityFieldValue'},
+        })
+        return Out(action_id, 'Adjusted Date')
+
+    def menu(self, prompt, items):
+        group = new_id()
+        self.add('choosefrommenu', {'GroupingIdentifier': group, 'WFControlFlowMode': 0,
+                                    'WFMenuPrompt': prompt, 'WFMenuItems': list(items)})
+        return group
+
+    def menu_case(self, group, title):
+        self.add('choosefrommenu', {'GroupingIdentifier': group, 'WFControlFlowMode': 1, 'WFMenuItemTitle': title})
+
+    def end_menu(self, group):
+        self.add('choosefrommenu', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
+    def repeat_count(self, count):
+        group = new_id()
+        self.add('repeat.count', {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFRepeatCount': count})
+        return group
+
+    def end_repeat(self, group):
+        self.add('repeat.count', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
     def find_health(self, label, date_row=LAST_DAY):
         action_id = new_id()
         self.add('filter.health.quantity', {
@@ -247,19 +308,26 @@ class Builder:
                                     'WFDictionaryKey': key, 'WFInput': attachment(out.ref())})
         return Out(action_id, 'Dictionary Value')
 
-    def get_marker(self):
+    def get_file(self, name):
         action_id = new_id()
-        self.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': MARKER_FOLDER + MARKER_FILE,
+        self.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': MARKER_FOLDER + name,
                                          'WFFileErrorIfNotFound': False, 'WFShowFilePicker': False})
         return Out(action_id, 'File')
 
-    def save_marker(self):
-        today = self.text(variable('Today'))
+    def save_file(self, name, ref):
+        """Saves text to iCloud Drive/Shortcuts/Clarivi/<name>, replacing it."""
+        text = self.text(ref)
         named_id = new_id()
-        self.add('setitemname', {'UUID': named_id, 'WFInput': attachment(today.ref()), 'WFName': MARKER_FILE})
+        self.add('setitemname', {'UUID': named_id, 'WFInput': attachment(text.ref()), 'WFName': name})
         self.add('documentpicker.save', {'UUID': new_id(), 'WFInput': attachment(output(named_id, 'Renamed Item')),
                                          'WFAskWhereToSave': False, 'WFFileDestinationPath': MARKER_FOLDER,
                                          'WFSaveFileOverwrite': True})
+
+    def get_marker(self):
+        return self.get_file(MARKER_FILE)
+
+    def save_marker(self):
+        self.save_file(MARKER_FILE, variable('Today'))
 
     def stop_if_refused(self, reply):
         group = self.if_(reply.ref(as_text()), 99, string='"error"')
@@ -280,7 +348,39 @@ def series_text(b, clarivi_type, samples):
     return b.text(*parts)
 
 
+def import_history(b, url, words):
+    """The one-year import: this month and the 11 before it, one post each."""
+    b.comment('Import the last 12 months, oldest first, one month per post. Months already listed in '
+              'Clarivi/import-done.txt are skipped, so an interrupted import carries on where it stopped.')
+    first_of_month = b.date_from(current_date(date_format('yyyy-MM-01')))
+    b.set_variable('Month', b.adjust(first_of_month.ref(), 'Subtract', IMPORT_MONTHS - 1, 'mon'))
+    b.set_variable('Done', b.text(b.get_file(IMPORT_FILE).ref(as_text())))
+    loop = b.repeat_count(IMPORT_MONTHS)
+    month_id = b.text(variable('Month', date_format('yyyy-MM')))
+    next_month = b.adjust(variable('Month'), 'Add', 1, 'mon')
+    to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
+    whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
+                                                'AnotherDate': attachment(next_month.ref())}}
+    series = [series_text(b, clarivi_type, b.find_health(label, whole_month)) for label, clarivi_type in HEALTH_TYPES]
+    joined = []
+    for i, text in enumerate(series):
+        joined += ([','] if i else []) + [text.ref()]
+    body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
+                  variable('Offset'), '","trigger":"manual","series":[', *joined, ']}')
+    reply = b.post(body, url)
+    b.stop_if_refused(reply)
+    b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
+    b.save_file(IMPORT_FILE, variable('Done'))
+    b.notify(b.dictionary_value(reply, 'message').ref())
+    b.end_if(to_do)
+    b.set_variable('Month', next_month)
+    b.end_repeat(loop)
+    b.notify(words['importFinished'])
+    b.stop()
+
+
 def build(url=INGEST_URL):
+    words = shortcut_wording()
     b = Builder()
     b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from two automations '
               '(charger unplugged, and an app you open each morning) and can be run by hand.')
@@ -298,6 +398,22 @@ def build(url=INGEST_URL):
     b.set_variable('Trigger', b.text('manual'))
     b.end_if(group)
 
+    b.set_variable('Today', b.text(current_date(date_format('yyyy-MM-dd'))))
+    b.set_variable('Offset', b.text(current_date(date_format('XXXXX'))))
+
+    b.comment('Run by hand, choose between this morning\'s sync and the one-year import.')
+    b.set_variable('Mode', b.text('sync'))
+    by_hand = b.if_(variable('Trigger'), 4, string='manual')
+    menu = b.menu(words['menuPrompt'], [words['syncNow'], words['importHistory']])
+    b.menu_case(menu, words['syncNow'])
+    b.menu_case(menu, words['importHistory'])
+    b.set_variable('Mode', b.text('import'))
+    b.end_menu(menu)
+    b.end_if(by_hand)
+    importing = b.if_(variable('Mode'), 4, string='import')
+    import_history(b, url, words)
+    b.end_if(importing)
+
     b.comment('Automations only act between 4am and noon.')
     hour = b.number(b.text(current_date(date_format('H'))))
     automatic = b.if_(variable('Trigger'), 5, string='manual')
@@ -308,9 +424,6 @@ def build(url=INGEST_URL):
     b.stop()
     b.end_if(late)
     b.end_if(automatic)
-
-    b.set_variable('Today', b.text(current_date(date_format('yyyy-MM-dd'))))
-    b.set_variable('Offset', b.text(current_date(date_format('XXXXX'))))
 
     b.comment('Stop if this phone already finished today\'s sync.')
     marker = b.get_marker()
