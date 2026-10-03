@@ -9,6 +9,10 @@ Run:  python3 scripts/shortcut/build_check_shortcut.py
 The --trip form builds "Clarivi Trip Check" instead: the sleep readings
 between two dates (the second not included) as local times with their
 offsets, for the time-zone check (does a past trip keep its time zone?).
+      python3 scripts/shortcut/build_check_shortcut.py --files
+The --files form builds "Clarivi File Check": three ways of saving a small
+file to iCloud Drive/Shortcuts/Clarivi, each read back and shown, to find a
+save that works for the "synced today" file.
 Writes and signs private/shortcut/Clarivi Check.shortcut (kept private, like
 the Sync Shortcut, because the signature carries the signer's Apple account).
 
@@ -94,6 +98,42 @@ def build_trip(first_day, end_day):
     return wf
 
 
+def build_files():
+    b = CheckBuilder()
+    b.comment('Clarivi File Check tries three ways of saving a small file, then reads each back.')
+    today = bs.current_date(date_format('yyyy-MM-dd'))
+
+    def save(text_out, path, input_ref=None):
+        b.add('documentpicker.save', {'UUID': new_id(), 'WFInput': attachment(input_ref or text_out.ref()),
+                                      'WFAskWhereToSave': False, 'WFFileDestinationPath': path,
+                                      'WFSaveFileOverwrite': True})
+
+    # A: the file name in the path, with a leading slash.
+    save(b.text(today), '/Clarivi/check-a.txt')
+    # B: the file name in the path, without the slash.
+    save(b.text(today), 'Clarivi/check-b.txt')
+    # C: what Clarivi Sync does now: name the text, then save it into the folder.
+    named = new_id()
+    c_text = b.text(today)
+    b.add('setitemname', {'UUID': named, 'WFInput': attachment(c_text.ref()), 'WFName': 'check-c.txt'})
+    save(c_text, 'Clarivi/', bs.output(named, 'Renamed Item'))
+
+    lines = []
+    for label in ['a', 'b', 'c']:
+        action_id = new_id()
+        b.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': f'Clarivi/check-{label}.txt',
+                                      'WFFileErrorIfNotFound': False, 'WFShowFilePicker': False})
+        found = Out(action_id, 'File')
+        lines += [f'{label.upper()}: ', found.ref(bs.prop('Name')), ' says ', found.ref(bs.as_text()), '\n']
+    b.show(*lines[:-1])
+
+    wf = bs.build()
+    wf['WFWorkflowActions'] = b.actions
+    wf['WFWorkflowImportQuestions'] = []
+    wf['WFWorkflowInputContentItemClasses'] = []
+    return wf
+
+
 def main():
     root = Path(__file__).resolve().parents[2]
     out_dir = root / 'private' / 'shortcut'
@@ -103,6 +143,8 @@ def main():
     if '--trip' in sys.argv:
         i = sys.argv.index('--trip')
         name, wf = 'Clarivi Trip Check', build_trip(sys.argv[i + 1], sys.argv[i + 2])
+    if '--files' in sys.argv:
+        name, wf = 'Clarivi File Check', build_files()
     unsigned = out_dir / f'{name} (unsigned).shortcut'
     signed = out_dir / f'{name}.shortcut'
     with open(unsigned, 'wb') as f:

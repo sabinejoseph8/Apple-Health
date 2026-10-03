@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** Collect about a week of mornings on Sabine's iPhone for the locked-phone check (the first one also confirms a complete night and the "synced today" file); fix the missing sleep source, then deploy it with the unknown-trigger change (already committed). Checks 1 (sleep stages) and 3 (time zones) are answered.
+- **Next action:** Collect about a week of mornings on Sabine's iPhone for the locked-phone check (check 2, the last open 1b task); fix the missing sleep source, then deploy it with the unknown-trigger change (already committed). The Shortcut, both automations and checks 1 and 3 are done.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -66,8 +66,8 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 ### 1b. Daily sync
 - [x] Build the `ingest` function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (`night_complete`, `already_complete_today`)
 - [x] Build token creation (shown once) and revocation
-- [ ] Build the Shortcut template: ping first, then read and post readings; save "synced today" to iCloud Drive when the night is complete
-- [ ] Set up both automations (charger unplugged; chosen app opened) on your phone (the tester's phone moved to the Phase 6 dry run, D44)
+- [x] Build the Shortcut template: ping first, then read and post readings; save "synced today" to iCloud Drive when the night is complete
+- [x] Set up both automations (charger unplugged; chosen app opened) on your phone (the tester's phone moved to the Phase 6 dry run, D44)
 - [x] **Check:** do Watch sleep stages arrive, or only "asleep"?
 - [ ] **Check:** how often does the unplug run fail because the phone is locked?
 - [x] **Check:** do readings from a past trip keep their recorded time zone?
@@ -123,7 +123,10 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - Known issue: sleep readings arrived without their source name; the other types have it. To fix before Phase 2, which uses the source to keep Watch readings only (D10).
 - Both automations are set up on Sabine's iPhone (iOS 27's new editor: the trigger is the first block of the automation). The tester-phone part moved to the Phase 6 dry run (D44, 3 October 2026).
 - **Past time zones (check 3, answered): lost.** Sleep readings from a 2026 trip one hour ahead of home all came back with the home offset (-05:00), not the trip's (-04:00): Shortcuts stamps every reading with the phone's current time zone. Daily syncs are unaffected (each morning's readings get the phone's zone at the time, even while travelling); the one-year import is. Fallback from the tech spec, for Phase 2: take trips from the calendar (Sabine's trip dates are kept in `private/`, as the repository is public) and, for testers, ask about travel or detect it from shifts in sleep timing. A one-hour shift doesn't change which date a night belongs to; larger ones can.
-- Still to measure: the locked-phone rate (check 2) and the "already synced" file on real mornings.
+- **First real morning (3 October 2026):** both automations ran on their own. Repeat runs stored nothing twice (every reading recognised as a duplicate). Two charger runs (4:47am and 5:04am) sent their ping but never read Health, the pattern of a locked phone; charger runs at 4:09am and 8:40am got through.
+- **The Watch's sleep record reached the iPhone after waking**, later than the 8:40am charger run and the 8:45am app run, so neither could complete the night. Until it arrived, Clarivi correctly said the night wasn't finished (no false "complete"). The next app run, at 9:14am, sent it (16 sleep stages, 5:05am to 8:35am, plus 26 breathing-rate readings) and the night was marked complete. This is what the catch-up trigger is for; how often it leaves the night incomplete until late morning is part of check 2.
+- **"Synced today" file:** the first automation runs couldn't save it: iOS needs a one-time permission for a shortcut to use iCloud Drive and can't ask while an automation runs in the background, so the save was quietly refused (the folder was created, the file wasn't). After one run by hand (permission allowed), the app automation found the file and stopped without contacting the server. The setup guide must include: run Clarivi Sync by hand once and allow Health and file access.
+- Still to measure: the locked-phone rate (check 2), over about a week of mornings.
 
 ---
 
@@ -304,7 +307,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Make the first `db dump` backup to an encrypted laptop folder; practise one restore on the local copy
 - [ ] Check the Cayman Data Protection Act's rules for health data and storage in the US
 - [ ] Write the consent form (including lock-screen visibility and US storage) and collect signatures
-- [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact). From the 1b spike: turn on Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data"; build each automation from the Automation tab (iOS 27 shows it as "When ... is Opened"/"When power Disconnects"), with a Text action holding exactly `charger` or `app`, then Run Shortcut with that Text as input
+- [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact). From the 1b spike: turn on Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data"; run Clarivi Sync by hand once and allow Health and file access (automations can't ask for permission); build each automation from the Automation tab (iOS 27 shows it as "When ... is Opened"/"When power Disconnects"), with a Text action holding exactly `charger` or `app`, then Run Shortcut with that Text as input
 - [ ] Publish Shortcut template v1 (blank, asks for the token at install)
 - [ ] Check the one-screen fit on each tester's iPhone model
 - [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone part of 1b (D44): both automations on their phone, the locked-phone rate and the sleep stages from their Watch
