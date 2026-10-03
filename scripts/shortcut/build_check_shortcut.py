@@ -13,6 +13,9 @@ offsets, for the time-zone check (does a past trip keep its time zone?).
 The --files form builds "Clarivi File Check": three ways of saving a small
 file to iCloud Drive/Shortcuts/Clarivi, each read back and shown, to find a
 save that works for the "synced today" file.
+      python3 scripts/shortcut/build_check_shortcut.py --sources
+The --sources form builds "Clarivi Source Check": what the phone reports as
+the source of each sleep reading, to fix sleep readings arriving without one.
 Writes and signs private/shortcut/Clarivi Check.shortcut (kept private, like
 the Sync Shortcut, because the signature carries the signer's Apple account).
 
@@ -134,6 +137,24 @@ def build_files():
     return wf
 
 
+def build_sources():
+    b = CheckBuilder()
+    b.comment('Clarivi Source Check shows what the phone reports as the source of sleep readings.')
+    sleep = b.find_health('Sleep')
+    n = b.count(sleep.ref())
+    sources = b.combine(sleep.ref(bs.prop('Source')), ' | ')
+    names = b.combine(sleep.ref(bs.prop('Name')), ' | ')
+    first = b.item(sleep, 'First Item')
+    b.show('Sleep readings: ', n.ref(), '\nSources: ', sources.ref(), '\nNames: ', names.ref(),
+           '\nFirst source: ', first.ref(bs.prop('Source')))
+
+    wf = bs.build()
+    wf['WFWorkflowActions'] = b.actions
+    wf['WFWorkflowImportQuestions'] = []
+    wf['WFWorkflowInputContentItemClasses'] = []
+    return wf
+
+
 def main():
     root = Path(__file__).resolve().parents[2]
     out_dir = root / 'private' / 'shortcut'
@@ -143,6 +164,8 @@ def main():
     if '--trip' in sys.argv:
         i = sys.argv.index('--trip')
         name, wf = 'Clarivi Trip Check', build_trip(sys.argv[i + 1], sys.argv[i + 2])
+    if '--sources' in sys.argv:
+        name, wf = 'Clarivi Source Check', build_sources()
     if '--files' in sys.argv:
         name, wf = 'Clarivi File Check', build_files()
     unsigned = out_dir / f'{name} (unsigned).shortcut'
