@@ -9,14 +9,14 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done and checked on the local copy: the app (Vite, React, TypeScript) with manifest, service worker and icon; sign-in and the forced "Set a new password" screen; the `profiles` and `push_subscriptions` tables with row-level security; the `send-push` test notification (the `@negrel/webpush` library works in Supabase's function runtime: a fake device decrypted the message). GitHub Actions run the app, secret and database checks on every push. The live Supabase project is still empty.
-- **Next action:** Put it live (step 9 onwards): Sabine signs the Supabase command-line tool in, then the database and functions go to the live project; Supabase dashboard settings; Vercel with the Supabase integration; the two accounts; then the iPhone checks.
+- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done and checked on the local copy: the app (Vite, React, TypeScript) with manifest, service worker and icon; sign-in and the forced "Set a new password" screen; the `profiles` and `push_subscriptions` tables with row-level security; the `send-push` test notification (the `@negrel/webpush` library works in Supabase's function runtime: a fake device decrypted the message). GitHub Actions run the app, secret and database checks on every push. The database change and functions are on the live Supabase project.
+- **Next action:** Sabine: Supabase dashboard settings (no new sign-ups, 12-character minimum), then Vercel with the Supabase integration, then the two accounts; then the iPhone checks.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
 | Item | State |
 |---|---|
-| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`); no tables, migrations or functions yet |
+| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live since 3 October 2026: `profiles` and `push_subscriptions` (row-level security on), `register_push`, the `account-first-login` and `send-push` functions, and the live notification keys in the secret store. The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
 | GitHub repository | `sabinejoseph8/Apple-Health`, public; app code and GitHub Actions on the `phase-1a` branch |
 | Vercel | Not set up yet |
 
@@ -56,7 +56,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Create the owner account and a test account in the dashboard, marked as confirmed (no email)
 - [x] Build sign-in and the forced "Set a new password" screen on first login
 - [x] Create two sample tables with row-level security, and a CI check that fails if any table lacks it
-- [ ] Generate push signing keys; build `register_push` and a `send-push` function using `@negrel/webpush` (fall back to `npm:web-push` if it fails)
+- [x] Generate push signing keys; build `register_push` and a `send-push` function using `@negrel/webpush` (fall back to `npm:web-push` if it fails)
 - [ ] Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it
 
 ### 1b. Daily sync
