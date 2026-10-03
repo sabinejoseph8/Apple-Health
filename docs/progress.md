@@ -1,14 +1,14 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 2 done, reviewed and live, self-test started; Phase 1b's locked-phone check collecting over a week; decisions D42 to D60)
+**Last updated:** 3 October 2026 (Phase 2 done, reviewed and live, self-test started; Phase 1b's locked-phone check collecting over a week; Phase 3 planned and started, decisions D62 to D64)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
 
 ## Summary
 
-- **Current phase:** Phase 2 is done and Sabine's two-to-three-week self-test is running (started 3 October 2026, until about 17 to 24 October). Phase 3 (readiness card, check-in and Why today) is next. Phase 1 has one check left.
+- **Current phase:** Phase 2 is done and Sabine's two-to-three-week self-test is running (started 3 October 2026, until about 17 to 24 October). Phase 3 (readiness card, check-in and Why today) is in progress. Phase 1 has one check left.
 - **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, which collects itself from the uploads log until about 10 October 2026; then Phase 1 closes.
 - **Phase 2 (Data and analysis), done 3 October 2026:**
   - Nights from the Watch's sleep stages (D48 to D50), normals (D11, now from 42 nights), the daily status, nudge and illness check (D51 to D53), insights, versioned score settings, and the every-minute analysis queue, all live.
@@ -19,7 +19,8 @@
   - Code review: 14 findings, 11 fixed, 3 decided by Sabine (D61 moves "record what was shown each morning" to Phase 4; the 6pm rule is kept). Her readings had been quoted in the public docs; removed, and the Phase 2 branches were rewritten on GitHub.
 - **Self-test:** each morning Sabine runs `.venv/bin/python scripts/reference/today.py` and saves how she felt with `--felt good|okay|off` (kept in `private/selftest.csv`, never committed). Day 1 (3 October): Ready, but she felt off after a short night, the case 2c flagged. At the end, compare her answers with the statuses; if "Ready after a short night" keeps meeting "off", a new settings version can still change it before the test (D59).
 - **Branches:** `main` holds 1a and the first part of 1b (what Vercel serves in production); `phase-1b-daily-sync` holds the rest of Phase 1; `phase-2c-tuning` holds Phase 2 on top of it (one clean commit plus follow-ups; `phase-2a-nights` and `phase-2b-status` were deleted in the history rewrite). The live database already has every migration through `20261004040000_phase2_review_fixes.sql`, and the `ingest` and `account-token` functions are deployed. When Phase 1 closes, Sabine merges into `main`, which deploys the app changes.
-- **Next action:** plan Phase 3 with Sabine while the self-test runs; read the locked-phone check around 10 October 2026.
+- **Phase 3 plan (agreed 3 October 2026):** built on branch `phase-3-card` (from `phase-2c-tuning`) in three steps, each ending with something Sabine can look at: 1, groundwork (design tokens; the wording module, with a sample sheet of every state's words for Sabine to approve; the database additions: check-ins, the usage log and the zone-numbers function); 2, the check-in and the readiness card with every state; 3, Why today. Decisions: D62 (the zone numbers come from a small database function, never the weights), D63 (until Phase 5, Settings opens the temporary account screen, and the digest row and trends button are left out), D64 (the rejected-sync and import-progress card states are built in Phase 3).
+- **Next action:** Phase 3, step 1; read the locked-phone check around 10 October 2026.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (D41). Phases 1 and 2 are reviewed.
 - **Working with Sabine:** every action for her is written under "Step for you", with each terminal command in its own command box (Run and Copy buttons) at the end of the message, and a phone notification. The owner's scripts remember her sign-in in `private/` (typed once, in the Mac's Terminal app, because the Claude app's terminal panel showed a password at a hidden prompt).
@@ -225,7 +226,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 **Goal:** build the screens testers use every morning, matching design.md and handling every state.
 
-**Status:** Not started
+**Status:** In progress (planned and started 3 October 2026, on branch `phase-3-card`; decisions D62 to D64)
 
 ### Tasks
 - [ ] Add design tokens (colours, type, spacing, radius) from design.md as CSS variables
@@ -235,10 +236,13 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
   - header, status pill, briefing card, nudge block, Why link and digest row
   - the morning layout
   - every no-status and partial state (R25 to R34). From Phase 2: `daily_status` gives `night_unfinished` on today when a sync came but the night hasn't arrived, which the card shows as "sleep still in progress" before noon and "not enough data" after; "waiting", "no sync" and "late" are worked out by the card from the clock and the last sync
+  - "Sync is being rejected" with a link to Settings (R11), and import progress ("Importing your history: 5 of 12 months", R12) (D64)
+  - until Phase 5, the Settings button opens the temporary account screen, and the weekly digest row is left out (D63)
 - [ ] Build Why today:
   - summary card, three reading cards with mini charts and "Show the numbers"
   - "Also checked"
-  - "How today's status is decided" with the points table and zone boxes (zone numbers and the "last 42 nights" footnote come from the active score settings, version 2: 1.2 and 2.4; the design canvas still shows the placeholders 1, 2 and 28; users can't read the settings table, so the numbers reach the app another way, for example a small function or the wording module)
+  - "How today's status is decided" with the points table and zone boxes (zone numbers and the "last 42 nights" footnote come from the active score settings, version 2: 1.2 and 2.4; the design canvas still shows the placeholders 1, 2 and 28; users can't read the settings table, so a small database function gives the app a version's zone limits and normal window, never the weights, D62)
+  - no "See your trends" button until the trend view exists (Phase 5, D63)
   - missing and building states
 - [ ] Log card views and Why today opens
 - [ ] Check safe areas and the one-screen fit on 390-point iPhones
