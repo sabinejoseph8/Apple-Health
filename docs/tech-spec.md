@@ -330,6 +330,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - import timing, and an interrupted import resuming
 - **Local end-to-end check** (`npm run check:local`, Phase 1a): with the local copy and functions running, it signs in made-up accounts, runs the password change, sends a test push to a fake device that decrypts it, and checks a second account sees nothing of the first.
 - **Build secret check:** see pattern 12.
+- **Code review at the end of each phase:** everything the phase changed is reviewed for bugs and security problems, findings are fixed, and the phase's automated tests are re-run before the phase is called done (added 3 October 2026).
 - **Every push runs all automated tests.** A failure blocks the release.
 
 ---

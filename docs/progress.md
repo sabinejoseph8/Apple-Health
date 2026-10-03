@@ -12,6 +12,7 @@
 - **Overall status:** Phase 1a done (3 October 2026): the app is live at https://clarivi-zeta.vercel.app, sign-in with a forced new password works on Sabine's iPhone, a test notification arrives through Apple's push service and opens the app signed in, and the test account sees none of the owner's data. All 1a tasks are ticked; results are under "Spike results" below. Phase 1b (daily sync) is next.
 - **Next action:** Plan task group 1b (daily sync: ingest function, upload tokens, Shortcut template, both automations and the three checks) and wait for Sabine's approval.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
+- **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together.
 
 **Set-up so far (checked 3 October 2026)**
 | Item | State |
@@ -74,6 +75,9 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Interrupt an import on purpose and confirm it continues from the last finished month
 - [ ] Count the nights in your year with at least one HRV reading inside the sleep window
 
+### End of Phase 1
+- [ ] Code review of everything changed in Phase 1 (1a to 1c); fix what it finds, then re-run the Phase 1 automated tests
+
 ### Automated tests
 - Row-level security: a test user can't read or write another user's rows in any table.
 - Upload path: one user's token can't write rows for another user, and no token can read data.
@@ -130,6 +134,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing
 - [ ] Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them
 - [ ] Start the two-to-three-week self-test: read your own status each morning before the screens exist
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests
 - Night dating: a known night is assigned the right date, including across a time-zone change.
@@ -171,6 +176,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
   - missing and building states
 - [ ] Log card views and Why today opens
 - [ ] Check safe areas and the one-screen fit on 390-point iPhones
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests
 - Wording rules: no condition names; no numbers in briefings; at most three sentences.
@@ -205,6 +211,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Build next-morning carry-over for unanswered questions
 - [ ] Show notification health on the card and in Settings
 - [ ] Add the late-sync marking (11:30 to noon) and the no-sync-by-noon state
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests
 - At most one morning, one reminder and one follow-up per user per day, even if analysis runs twice.
@@ -245,6 +252,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Build `owner-status` and the owner-only page: last sync, reminder days, delivery failures, import progress, project activity
 - [ ] Write the owner admin script to reset a password and set the change-password flag
 - [ ] Write the events loader script
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests
 - Delete my data removes every reading, result, answer, token and subscription for that user only.
@@ -284,6 +292,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Check the one-screen fit on each tester's iPhone model
 - [ ] Run a one-week dry run with one tester; fix what breaks
 - [ ] Freeze the score settings; tag the release; write the changelog
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests
 - The full suite passes on the release tag: database, functions, front end and end to end.
@@ -312,6 +321,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Make no changes to score logic or settings during the test
 - [ ] Hold the end-of-test conversation with each tester
 - [ ] Move the project to Supabase Pro after the test, and switch on the 30-day inactivity sign-out
+- [ ] Code review of anything changed during the test (fixes only; score logic stays frozen); fix what it finds, then re-run the full test suite
 
 ### Manual verification
 1. **Daily:** check the owner page.
@@ -346,3 +356,4 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Build the main demo story: one week from your data where the tool flagged something early, starting from Apple Health's plain numbers
 - [ ] Build the appendix: arithmetic, trends, the SQL-versus-pandas check, the disrupted-day check, every target and its result, limitations, and the causal layer as a worked method
 - [ ] Apply the retention rule to testers' data (90 days after the test unless they agree otherwise)
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run the full test suite

@@ -42,6 +42,7 @@ When Sabine says "update proj memory", review every one of the five files, even 
 - Work one task group at a time from `docs/progress.md` (1a, then 1b, then 1c, and so on). Start each group with a plan and wait for her approval before changing files.
 - When a step needs her (a dashboard setting, an account, a sign-in, something on her iPhone), say so clearly and give one step at a time.
 - Before saying a task group is done, run the automated tests listed for its phase, then walk her through the manual verification steps.
+- At the end of each phase (after its last task group), run a code review of everything the phase changed, using the code-review skill. Fix what it finds, re-run the phase's automated tests, then tell Sabine in plain words what was found and what was fixed. Only then tick the phase's code-review task and call the phase done. Anything the review raises that needs a decision goes to Sabine first.
 - When a task is done and its checks pass, change its `- [ ]` to `- [x]` in `docs/progress.md`, tick it on the Clarivi Memory site too (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe), and update the Summary at the top of `docs/progress.md`.
 - Commit small, working changes with clear messages, and push to GitHub at the end of each task group.
 
