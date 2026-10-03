@@ -87,13 +87,22 @@ Deno.test('only POST is accepted', async () => {
 
 Deno.test('a bad body is logged with its reason and rejected', async () => {
   const { deps, calls } = fakeStore({ error: 'invalid_body' })
-  const res = await handleIngest(post({ ...body, samples: [{ ...body.samples[0], type: 'steps' }] }), deps)
+  const res = await handleIngest(post({ ...body, schema_version: 2 }), deps)
   assertEquals(res.status, 400)
   const reply = await res.json()
   assertEquals(reply.message, wording.sync.notReadable)
-  assertEquals(reply.detail, 'sample 1: unknown type')
+  assertEquals(reply.detail, 'unknown schema_version')
   assertEquals(calls[0].upload, null)
-  assertEquals(calls[0].rejection, 'sample 1: unknown type')
+  assertEquals(calls[0].rejection, 'unknown schema_version')
+})
+
+Deno.test('a bad reading is set aside and the rest of the post is stored', async () => {
+  const { deps, calls } = fakeStore(stored)
+  const res = await handleIngest(post({ ...body, samples: [body.samples[0], { ...body.samples[0], type: 'steps' }] }), deps)
+  assertEquals(res.status, 200)
+  assertEquals(calls[0].upload?.samples.length, 1)
+  assertEquals(calls[0].upload?.set_aside, 1)
+  assertEquals(calls[0].upload?.set_aside_note, 'sample 2: unknown type')
 })
 
 Deno.test('text that is not JSON is rejected', async () => {
@@ -166,6 +175,6 @@ Deno.test('each post is logged with its size and counts, never its readings', as
   deps.log = (entry) => entries.push(entry)
   const text = JSON.stringify(body)
   await handleIngest(post(body), deps)
-  assertEquals(entries, [{ kind: 'daily', month_id: null, bytes: new TextEncoder().encode(text).byteLength, readings: 1, result: 'accepted' }])
+  assertEquals(entries, [{ kind: 'daily', month_id: null, bytes: new TextEncoder().encode(text).byteLength, readings: 1, set_aside: 0, result: 'accepted' }])
   assert(!JSON.stringify(entries).includes('52'), 'no reading value in the log')
 })

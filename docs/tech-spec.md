@@ -97,7 +97,7 @@ Built in Phase 1a (3 October 2026):
 **Raw data (never changed after arrival)**
 | Table | Holds | Key fields |
 |---|---|---|
-| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `status` (accepted, rejected), `error` |
+| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `set_aside_count`, `set_aside_note`, `status` (accepted, rejected), `error` |
 | `samples` | Every reading | `id`, `user_id`, `upload_id`, `type` (heart_rate, hrv_sdnn, sleep_stage, resting_hr, respiratory_rate), `start_at`, `end_at`, `tz_offset_min`, `value`, `unit`, `stage`, `source_name`, `source_device`, `sample_hash` (unique per user) |
 | `workouts` | Owner only, for the Signal check | `id`, `user_id`, `activity`, `start_at`, `end_at`, `duration_min`, `avg_hr` |
 
@@ -256,7 +256,8 @@ Each call carries the user's session.
 
 **Input validation**
 - Every ingest body is checked against the shared schema.
-- Rejected: unknown types, unknown schema versions, timestamps in the future or outside the expected window, and values outside sensible ranges (Default: heart rate 25 to 250 bpm, HRV 1 to 300 ms, breathing rate 4 to 60 per minute).
+- Rejected: unknown types, unknown schema versions, timestamps in the future or outside the expected window, and values outside sensible ranges (Default: heart rate 25 to 250 bpm, HRV 1 to 300 ms, breathing rate 4 to 60 per minute). A reading longer than a day is rejected, except resting heart rate, which may span up to a week (seen in the 1c import).
+- A reading that fails a check is set aside and the rest of the post is stored; the upload row records how many were set aside (`set_aside_count`) and the first few reasons (`set_aside_note`), never the values. A post that is malformed as a whole (not JSON, an unknown schema version or kind, a bad month) is refused (agreed by Sabine, 3 October 2026, after one resting heart rate reading blocked a month of the import).
 - Limits: 5 MB per request and 50,000 readings per request (Default). One month of history is expected to be a few hundred kilobytes.
 - Database functions check their own inputs (for example, a follow-through answer only on change days, from 8pm).
 

@@ -15,6 +15,17 @@ function error(body: unknown): string {
   return r.error
 }
 
+// A post with one bad reading next to a good one: the bad one is set aside
+// and the good one kept. Returns the note on why.
+function setAside(bad: Record<string, unknown>, extra: Record<string, unknown> = {}, good: unknown = hr): string {
+  const r = parseUpload({ ...daily([good, bad]), ...extra }, NOW)
+  assert(r.ok, 'one bad reading should not refuse the whole post')
+  assertEquals(r.upload.samples.length, 1, 'the good reading is kept')
+  assertEquals(r.upload.set_aside, 1)
+  assert(r.upload.set_aside_note)
+  return r.upload.set_aside_note
+}
+
 Deno.test('a good daily post is accepted and converted to UTC', () => {
   const r = parseUpload(daily([hr]), NOW)
   assert(r.ok)
@@ -78,33 +89,54 @@ Deno.test('the phone time zone can be sent as an offset like -04:00', () => {
   assertEquals(india.upload.device_tz_offset_min, 330)
 })
 
-Deno.test('an unknown reading type is rejected', () => {
-  assertStringIncludes(error(daily([{ ...hr, type: 'steps' }])), 'unknown type')
+Deno.test('a reading of an unknown type is set aside', () => {
+  assertStringIncludes(setAside({ ...hr, type: 'steps' }), 'unknown type')
 })
 
-Deno.test('out-of-range values are rejected', () => {
-  assertStringIncludes(error(daily([{ ...hr, value: 300 }])), 'out of range')
-  assertStringIncludes(error(daily([{ ...hr, value: 20 }])), 'out of range')
-  assertStringIncludes(error(daily([{ ...hr, type: 'hrv_sdnn', value: 0, unit: 'ms' }])), 'out of range')
-  assertStringIncludes(error(daily([{ ...hr, type: 'respiratory_rate', value: 70 }])), 'out of range')
+Deno.test('out-of-range values are set aside', () => {
+  assertStringIncludes(setAside({ ...hr, value: 300 }), 'out of range')
+  assertStringIncludes(setAside({ ...hr, value: 20 }), 'out of range')
+  assertStringIncludes(setAside({ ...hr, type: 'hrv_sdnn', value: 0, unit: 'ms' }), 'out of range')
+  assertStringIncludes(setAside({ ...hr, type: 'respiratory_rate', value: 70 }), 'out of range')
   assert(parseUpload(daily([{ ...hr, type: 'hrv_sdnn', value: 300, unit: 'ms' }]), NOW).ok, '300 ms is the top of the range')
 })
 
-Deno.test('a rejection never repeats the reading itself', () => {
-  const reason = error(daily([{ ...hr, value: 251 }]))
+Deno.test('the note on a set-aside reading never repeats the reading itself', () => {
+  const reason = setAside({ ...hr, value: 251 })
   assert(!reason.includes('251'), reason)
 })
 
-Deno.test('times without an offset, impossible dates and readings that end first are rejected', () => {
-  assertStringIncludes(error(daily([{ ...hr, start: '2026-10-03T03:10:00', end: '2026-10-03T03:10:00' }])), 'offset')
-  assertStringIncludes(error(daily([{ ...hr, start: '3 Oct 2026 at 03:10', end: '3 Oct 2026 at 03:10' }])), 'ISO 8601')
-  assertStringIncludes(error(daily([{ ...hr, start: '2026-02-30T03:10:00-04:00', end: '2026-02-30T03:10:00-04:00' }])), 'ISO 8601')
-  assertStringIncludes(error(daily([{ ...hr, start: '2026-10-03T03:10:00-04:00', end: '2026-10-03T03:00:00-04:00' }])), 'ends before')
+Deno.test('times without an offset, impossible dates and readings that end first are set aside', () => {
+  assertStringIncludes(setAside({ ...hr, start: '2026-10-03T03:10:00', end: '2026-10-03T03:10:00' }), 'offset')
+  assertStringIncludes(setAside({ ...hr, start: '3 Oct 2026 at 03:10', end: '3 Oct 2026 at 03:10' }), 'ISO 8601')
+  assertStringIncludes(setAside({ ...hr, start: '2026-02-30T03:10:00-04:00', end: '2026-02-30T03:10:00-04:00' }), 'ISO 8601')
+  assertStringIncludes(setAside({ ...hr, start: '2026-10-03T03:10:00-04:00', end: '2026-10-03T03:00:00-04:00' }), 'ends before')
 })
 
-Deno.test('readings in the future or too old for a daily sync are rejected', () => {
-  assertStringIncludes(error(daily([{ ...hr, start: '2026-10-03T07:30:00-04:00', end: '2026-10-03T07:30:00-04:00' }])), 'future')
-  assertStringIncludes(error(daily([{ ...hr, start: '2026-09-20T03:10:00-04:00', end: '2026-09-20T03:10:00-04:00' }])), 'too old')
+Deno.test('readings in the future or too old for a daily sync are set aside', () => {
+  assertStringIncludes(setAside({ ...hr, start: '2026-10-03T07:30:00-04:00', end: '2026-10-03T07:30:00-04:00' }), 'future')
+  assertStringIncludes(setAside({ ...hr, start: '2026-09-20T03:10:00-04:00', end: '2026-09-20T03:10:00-04:00' }), 'too old')
+})
+
+Deno.test('resting heart rate may span more than a day, other readings may not', () => {
+  const rhr = { ...hr, type: 'resting_hr', start: '2026-10-01T00:05:00-04:00', end: '2026-10-02T06:00:00-04:00', value: 57 }
+  const r = parseUpload(daily([rhr]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples.length, 1, 'a 30-hour resting heart rate reading is kept (seen in the 1c import)')
+  assertEquals(r.upload.set_aside, 0)
+  assertStringIncludes(setAside({ ...rhr, end: '2026-10-09T06:00:00-04:00' }, {}, rhr), 'lasts too long')
+  assertStringIncludes(setAside({ ...hr, start: '2026-10-01T00:05:00-04:00', end: '2026-10-02T06:00:00-04:00' }), 'lasts too long')
+})
+
+Deno.test('the note keeps the first few reasons and the count is exact', () => {
+  const bad = Array.from({ length: 5 }, () => ({ ...hr, value: 400 }))
+  const r = parseUpload(daily([hr, ...bad]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.set_aside, 5)
+  assertEquals(r.upload.set_aside_note?.split('; ').length, 3)
+  const clean = parseUpload(daily([hr]), NOW)
+  assert(clean.ok)
+  assertEquals([clean.upload.set_aside, clean.upload.set_aside_note], [0, null])
 })
 
 Deno.test('the post itself must be well formed', () => {
@@ -143,7 +175,10 @@ Deno.test('a backfill needs a month and keeps its readings inside it', () => {
   assert(ok.ok)
   assertEquals(ok.upload.month_id, '2026-03')
   assertStringIncludes(error({ schema_version: 1, kind: 'backfill', device_tz_offset_min: -240, samples: [old] }), 'month_id')
-  assertStringIncludes(error({ schema_version: 1, kind: 'backfill', month_id: '2026-05', device_tz_offset_min: -240, samples: [old] }), 'outside month')
+  const outside = parseUpload({ schema_version: 1, kind: 'backfill', month_id: '2026-05', device_tz_offset_min: -240, samples: [old] }, NOW)
+  assert(outside.ok)
+  assertEquals(outside.upload.samples, [])
+  assertStringIncludes(outside.upload.set_aside_note ?? '', 'outside month')
   assertStringIncludes(error({ schema_version: 1, kind: 'backfill', month_id: '2024-03', device_tz_offset_min: -240, samples: [] }), 'import window')
 })
 

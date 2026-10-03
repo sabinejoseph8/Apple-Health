@@ -28,6 +28,7 @@ export interface IngestLogEntry {
   month_id: string | null
   bytes: number
   readings: number
+  set_aside: number
   result: string
 }
 
@@ -117,6 +118,7 @@ export async function handleIngest(req: Request, deps: IngestDeps): Promise<Resp
     month_id: upload?.month_id ?? null,
     bytes: raw === null ? declared : new TextEncoder().encode(raw).byteLength,
     readings: upload?.samples.length ?? 0,
+    set_aside: upload?.set_aside ?? 0,
     result: 'error' in result ? result.error : 'accepted',
   })
   if ('error' in result) return rejected(result.error, rejection, raw === null)

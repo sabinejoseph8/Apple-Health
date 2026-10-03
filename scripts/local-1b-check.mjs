@@ -101,10 +101,13 @@ const c1 = await ingest(token1, columns)
 ok(c1.status === 200 && c1.body.accepted === 2, 'a post in columns, shaped like the Shortcut\'s, stores its readings')
 
 // Rejections.
-const bad = await ingest(token1, daily([{ ...night[0], type: 'steps' }]))
-ok(bad.status === 400 && bad.body.detail === 'sample 1: unknown type', 'an unknown reading type is rejected with its reason')
-const range = await ingest(token1, daily([{ ...night[0], value: 400 }]))
-ok(range.status === 400 && !JSON.stringify(range.body).includes('400'), 'an out-of-range value is rejected without repeating it')
+const bad = await ingest(token1, daily([night[0], { ...night[0], type: 'steps' }, { ...night[0], value: 400 }]))
+ok(bad.status === 200 && bad.body.duplicates === 1, 'bad readings are set aside and the rest of the post is stored')
+const { data: setAsideRow } = await a.app.from('uploads').select('set_aside_count, set_aside_note').eq('set_aside_count', 2).maybeSingle()
+ok(setAsideRow?.set_aside_note?.includes('unknown type') && !setAsideRow.set_aside_note.includes('400'),
+  'the upload row says why, without repeating any value')
+const malformed = await ingest(token1, { ...daily(night), schema_version: 2 })
+ok(malformed.status === 400 && malformed.body.detail === 'unknown schema_version', 'a malformed post is still refused with its reason')
 const none = await ingest(null, ping)
 ok(none.status === 401, 'a post without a token is refused')
 const unknown = await ingest(`clv_${'Z'.repeat(43)}`, ping)

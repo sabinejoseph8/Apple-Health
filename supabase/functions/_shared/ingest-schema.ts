@@ -15,6 +15,13 @@
 // Heart rate is kept only from 6pm to noon, by each reading's own local time
 // (D18). The Shortcut can only fetch whole days, so the window is applied here.
 //
+// A reading that fails a check (an unknown type, an impossible time, a value
+// out of range) is set aside and the rest of the post is stored; the post's
+// upload row records how many were set aside and why, never the values
+// (agreed by Sabine, 3 October 2026, after one resting heart rate reading
+// blocked a month of the import). A post that is malformed as a whole (not
+// JSON, an unknown schema version or kind, a bad month) is still refused.
+//
 // A later HealthKit app can post either shape (tech-spec pattern 9).
 
 export const SCHEMA_VERSION = 1
@@ -70,6 +77,8 @@ const FUTURE_SLACK = 10 * MINUTE
 const DAILY_LOOKBACK = 4 * DAY
 const BACKFILL_MONTHS = 13
 const MAX_SAMPLE_LENGTH = DAY
+// Resting heart rate is one reading per day that can run past a day (1c).
+const MAX_LENGTH: Partial<Record<SampleType, number>> = { resting_hr: 7 * DAY }
 // Heart rate window (D18): from 6pm to noon, local time.
 const HR_WINDOW_START = 18 * 60
 const HR_WINDOW_END = 12 * 60
@@ -93,7 +102,12 @@ export interface CleanUpload {
   device_tz_offset_min: number
   trigger: Trigger | null
   samples: CleanSample[]
+  // Readings that failed a check and were left out, and the first few reasons.
+  set_aside: number
+  set_aside_note: string | null
 }
+
+const SET_ASIDE_REASONS_KEPT = 3
 
 export type ParseResult = { ok: true; upload: CleanUpload } | { ok: false; error: string }
 
@@ -180,7 +194,8 @@ function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | 
   if (!start) reject(`${label}: start must be an ISO 8601 time with its offset`)
   if (!end) reject(`${label}: end must be an ISO 8601 time with its offset`)
   if (end.ms < start.ms) reject(`${label}: ends before it starts`)
-  if (end.ms - start.ms > MAX_SAMPLE_LENGTH) reject(`${label}: lasts more than a day`)
+  const maxLength = MAX_LENGTH[type as SampleType] ?? MAX_SAMPLE_LENGTH
+  if (end.ms - start.ms > maxLength) reject(`${label}: lasts too long`)
   if (start.ms > nowMs + FUTURE_SLACK || end.ms > nowMs + FUTURE_SLACK) reject(`${label}: is in the future`)
 
   if (kind === 'backfill' && monthId) {
@@ -310,9 +325,17 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
     if (rows.length > MAX_SAMPLES) reject(`more than ${MAX_SAMPLES} samples`)
 
     const nowMs = now.getTime()
-    const samples = rows
-      .map((s, i) => parseSample(s, i, kind as Kind, monthId, nowMs))
-      .filter((s): s is CleanSample => s !== null)
+    const samples: CleanSample[] = []
+    const reasons: string[] = []
+    rows.forEach((row, i) => {
+      try {
+        const sample = parseSample(row, i, kind as Kind, monthId, nowMs)
+        if (sample) samples.push(sample)
+      } catch (e) {
+        if (!(e instanceof Rejected)) throw e
+        reasons.push(e.message)
+      }
+    })
 
     return {
       ok: true,
@@ -323,6 +346,8 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
         device_tz_offset_min: deviceOffset,
         trigger,
         samples,
+        set_aside: reasons.length,
+        set_aside_note: reasons.length ? reasons.slice(0, SET_ASIDE_REASONS_KEPT).join('; ').slice(0, 300) : null,
       },
     }
   } catch (e) {
