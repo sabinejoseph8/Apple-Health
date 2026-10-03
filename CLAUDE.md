@@ -35,6 +35,17 @@ Update the project memory:
 
 When Sabine says "update proj memory", review every one of the five files, even if some need no change. Keep them precise and clear: building the project well depends on them.
 
+## Interview notes
+
+Maintain a file called `interview-notes.md` (in the project root). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
+
+- who the app is for and why
+- key decisions and tradeoffs
+- major bugs and how she fixed them
+- significant improvements
+
+Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+
 ## How to work with Sabine
 
 - Sabine is not a developer. Explain what you're doing in plain words and keep updates short.
