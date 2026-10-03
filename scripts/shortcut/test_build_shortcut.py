@@ -177,6 +177,27 @@ class ShortcutTests(unittest.TestCase):
                  if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 999]
         self.assertEqual(len(skips), 1, 'months already in import-done.txt are skipped')
 
+    def test_dates_only_move_in_hours(self):
+        # Adjust Date ignored a step in months on Sabine's iPhone (1c), while
+        # steps in hours worked (1b), so every date step is in hours.
+        units = [a['WFWorkflowActionParameters']['WFDuration']['Value']['Unit'] for a in self.actions
+                 if a['WFWorkflowActionIdentifier'].endswith('adjustdate')]
+        self.assertTrue(units)
+        self.assertEqual(set(units), {'hr'})
+
+    def test_month_steps_always_land_in_the_right_month(self):
+        # From noon on the 1st of any month, the forward step lands in the next
+        # month and the backward step in the previous one (DST moves noon by an
+        # hour at most, which can't change the day).
+        import datetime
+        for year in (2025, 2026, 2028):
+            for month in range(1, 13):
+                first = datetime.datetime(year, month, 1, 12)
+                later = first + datetime.timedelta(hours=bs.HOURS_TO_NEXT_MONTH)
+                earlier = first - datetime.timedelta(hours=bs.HOURS_TO_PREVIOUS_MONTH)
+                self.assertEqual((later.year * 12 + later.month) - (year * 12 + month), 1)
+                self.assertEqual((year * 12 + month) - (earlier.year * 12 + earlier.month), 1)
+
     def test_the_menu_words_come_from_the_wording_module(self):
         words = bs.shortcut_wording()
         self.assertEqual(set(words), {'menuPrompt', 'syncNow', 'importHistory', 'importFinished'})

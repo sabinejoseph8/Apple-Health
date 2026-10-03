@@ -27,8 +27,12 @@ What the Shortcut does, each run:
    Clarivi's message when run by hand.
 
 Run by hand, it first asks: sync this morning, or import the last 12 months
-(R12). The import sends this month and the 11 before it, oldest first, one
-post per month ("backfill" with its month_id), using whole-month searches.
+(R12). The import sends this month and the 11 before it, newest first (so an
+interrupted import already has the recent months a baseline needs), one post
+per month ("backfill" with its month_id), using whole-month searches.
+Month steps use hours only: Adjust Date ignored a step of whole months on
+Sabine's iPhone (1c, 3 October 2026), so the Shortcut moves 40 days on or 15
+days back in hours and snaps to the 1st of that month.
 After each month it adds the month to Clarivi/import-done.txt and shows
 Clarivi's progress message; months already in that file are skipped, so an
 interrupted import carries on where it stopped. Progress is kept on the phone
@@ -348,16 +352,24 @@ def series_text(b, clarivi_type, samples):
     return b.text(*parts)
 
 
+# Moving between months in hours: from noon on the 1st, 40 days on is always
+# inside the next month and 15 days back inside the one before.
+HOURS_TO_NEXT_MONTH = 40 * 24
+HOURS_TO_PREVIOUS_MONTH = 15 * 24
+
+
 def import_history(b, url, words):
     """The one-year import: this month and the 11 before it, one post each."""
-    b.comment('Import the last 12 months, oldest first, one month per post. Months already listed in '
+    b.comment('Import the last 12 months, newest first, one month per post. Months already listed in '
               'Clarivi/import-done.txt are skipped, so an interrupted import carries on where it stopped.')
-    first_of_month = b.date_from(current_date(date_format('yyyy-MM-01')))
-    b.set_variable('Month', b.adjust(first_of_month.ref(), 'Subtract', IMPORT_MONTHS - 1, 'mon'))
+    # "yyyy-MM-01" becomes noon on the 1st, which is fine: Health searches
+    # only work in whole days.
+    b.set_variable('Month', b.date_from(current_date(date_format('yyyy-MM-01'))))
     b.set_variable('Done', b.text(b.get_file(IMPORT_FILE).ref(as_text())))
     loop = b.repeat_count(IMPORT_MONTHS)
     month_id = b.text(variable('Month', date_format('yyyy-MM')))
-    next_month = b.adjust(variable('Month'), 'Add', 1, 'mon')
+    later = b.adjust(variable('Month'), 'Add', HOURS_TO_NEXT_MONTH, 'hr')
+    next_month = b.date_from(later.ref(date_format('yyyy-MM-01')))
     to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
     whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
                                                 'AnotherDate': attachment(next_month.ref())}}
@@ -373,7 +385,8 @@ def import_history(b, url, words):
     b.save_file(IMPORT_FILE, variable('Done'))
     b.notify(b.dictionary_value(reply, 'message').ref())
     b.end_if(to_do)
-    b.set_variable('Month', next_month)
+    earlier = b.adjust(variable('Month'), 'Subtract', HOURS_TO_PREVIOUS_MONTH, 'hr')
+    b.set_variable('Month', b.date_from(earlier.ref(date_format('yyyy-MM-01'))))
     b.end_repeat(loop)
     b.notify(words['importFinished'])
     b.stop()
