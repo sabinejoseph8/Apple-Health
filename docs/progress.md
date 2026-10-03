@@ -18,7 +18,7 @@
 |---|---|
 | Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live since 3 October 2026: `profiles` and `push_subscriptions` (row-level security on), `register_push`, the `account-first-login` and `send-push` functions, and the live notification keys in the secret store. The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
 | GitHub repository | `sabinejoseph8/Apple-Health`, public; app code and GitHub Actions on the `phase-1a` branch |
-| Vercel | Project `clarivi` (Hobby) under `sabine5`, deploying from GitHub: production from `main`, a preview for every other branch. Connected to Supabase through the official integration (Production values); preview values and the push public key added by hand (3 October 2026) |
+| Vercel | Project `clarivi` (Hobby) under `sabine5`, deploying from GitHub: production from `main` at https://clarivi-zeta.vercel.app, a preview for every other branch. Connected to Supabase through the official integration (Production values); preview values and the push public key added by hand (3 October 2026) |
 
 **Settled: Supabase region (2 October 2026).** The first project was created in US West by mistake. It was replaced while still empty by a new project in US East (ref `vuynnnrijdbvamwfauog`), as the plan said. The old US West project (ref `pupxkjhhhgeeoqyvtsst`) is no longer used.
 
