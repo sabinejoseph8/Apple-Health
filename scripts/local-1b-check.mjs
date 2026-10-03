@@ -84,6 +84,22 @@ ok(p2.status === 200 && p2.body.already_complete_today === true, 'a second run s
 const { count } = await a.app.from('samples').select('id', { count: 'exact', head: true })
 ok(count === night.length, 'user A sees their readings once, with no duplicates')
 
+// The shape the Shortcut sends: one list per column, an empty type as [""],
+// and heart rate kept only from 6pm to noon by its own local time.
+const atLocal = (hhmm) => {
+  const day = new Date(now.getTime() + off * 60_000).toISOString().slice(0, 10)
+  return `${day}T${hhmm}:00${off < 0 ? '-' : '+'}${pad(Math.trunc(off / 60))}:${pad(off % 60)}`
+}
+const columns = {
+  schema_version: 1, kind: 'daily', device_tz_offset_min: iso(0).slice(-6), trigger: 'app',
+  series: [
+    { type: 'heart_rate', start: [atLocal('06:01'), atLocal('06:02')], end: [atLocal('06:01'), atLocal('06:02')], value: ['50', '49'], unit: ['count/min', 'count/min'], source: ['Test Watch', 'Test Watch'] },
+    { type: 'respiratory_rate', start: [''], end: [''], value: [''], unit: [''], source: [''] },
+  ],
+}
+const c1 = await ingest(token1, columns)
+ok(c1.status === 200 && c1.body.accepted === 2, 'a post in columns, shaped like the Shortcut\'s, stores its readings')
+
 // Rejections.
 const bad = await ingest(token1, daily([{ ...night[0], type: 'steps' }]))
 ok(bad.status === 400 && bad.body.detail === 'sample 1: unknown type', 'an unknown reading type is rejected with its reason')

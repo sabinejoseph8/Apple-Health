@@ -168,3 +168,95 @@ Deno.test('a post shaped like the Shortcut\'s is accepted', () => {
   const empty = parseUpload({ schema_version: 1, kind: 'daily', device_tz_offset_min: '-04:00', trigger: 'app', samples: [] }, NOW)
   assert(empty.ok, 'a daily post with no readings is still logged')
 })
+
+// Columns, the shape the Shortcut sends since the 3 October 2026 spike.
+function seriesPost(series: unknown[]) {
+  return { schema_version: 1, kind: 'daily', device_tz_offset_min: '-04:00', trigger: 'charger', series }
+}
+
+Deno.test('columns are lined up into one reading each', () => {
+  const r = parseUpload(seriesPost([
+    {
+      type: 'heart_rate',
+      start: ['2026-10-03T03:10:00-04:00', '2026-10-03T03:15:00-04:00'],
+      end: ['2026-10-03T03:10:00-04:00', '2026-10-03T03:15:00-04:00'],
+      value: ['52', '50'],
+      unit: ['count/min', 'count/min'],
+      source: ['Ultra Watch', 'Ultra Watch'],
+    },
+    {
+      type: 'sleep_stage',
+      start: ['2026-10-03T01:00:00-04:00'],
+      end: ['2026-10-03T01:40:00-04:00'],
+      value: ['Core'],
+      unit: [''],
+      source: ['Ultra Watch'],
+    },
+  ]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples.length, 3)
+  assertEquals(r.upload.samples.map((s) => [s.type, s.value, s.stage]), [['heart_rate', 52, null], ['heart_rate', 50, null], ['sleep_stage', null, 'core']])
+  assertEquals(r.upload.samples[1].start_at, '2026-10-03T07:15:00.000Z')
+  assertEquals(r.upload.samples[0].source_name, 'Ultra Watch')
+  assertEquals(r.upload.samples[2].unit, null)
+})
+
+Deno.test('a reading type with no readings arrives as [""] and adds nothing', () => {
+  const r = parseUpload(seriesPost([
+    { type: 'respiratory_rate', start: [''], end: [''], value: [''], unit: [''], source: [''] },
+  ]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples, [])
+})
+
+Deno.test('columns of different lengths are rejected', () => {
+  assertStringIncludes(error(seriesPost([
+    { type: 'heart_rate', start: ['2026-10-03T03:10:00-04:00', '2026-10-03T03:15:00-04:00'], end: ['2026-10-03T03:10:00-04:00'], value: ['52', '50'] },
+  ])), 'different number of entries')
+  assertStringIncludes(error(seriesPost([{ type: 'heart_rate', start: '2026-10-03T03:10:00-04:00' }])), 'must be a list')
+  assertStringIncludes(error(seriesPost([{ type: 'heart_rate', value: ['52'] }])), 'start is missing')
+})
+
+Deno.test('heart rate is kept only from 6pm to noon by its own local time (D18)', () => {
+  const at = (time: string, offset = '-04:00') => `2026-10-02T${time}${offset}`
+  const r = parseUpload(seriesPost([
+    {
+      type: 'heart_rate',
+      start: [at('11:59:00'), at('12:00:00'), at('17:59:00'), at('18:00:00'), at('14:00:00', '+01:00')],
+      end: [at('11:59:00'), at('12:00:00'), at('17:59:00'), at('18:00:00'), at('14:00:00', '+01:00')],
+      value: ['60', '61', '62', '63', '64'],
+    },
+    { type: 'hrv_sdnn', start: [at('15:00:00')], end: [at('15:01:00')], value: ['40'], unit: ['ms'] },
+  ]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples.map((s) => s.value), [60, 63, 40])
+})
+
+Deno.test(`more than ${MAX_SAMPLES} readings across columns are rejected`, () => {
+  const many = Array.from({ length: MAX_SAMPLES + 1 }, () => '2026-10-03T03:10:00-04:00')
+  assertStringIncludes(error(seriesPost([{ type: 'heart_rate', start: many, end: many, value: many.map(() => '52') }])), 'more than')
+})
+
+Deno.test('a ping carries no columns either', () => {
+  assertStringIncludes(error({
+    schema_version: 1, kind: 'ping', device_tz_offset_min: -240,
+    series: [{ type: 'heart_rate', start: ['2026-10-03T03:10:00-04:00'], value: ['52'] }],
+  }), 'no samples')
+})
+
+Deno.test('an extra column of the wrong length is set aside, not the whole post', () => {
+  const r = parseUpload(seriesPost([{
+    type: 'sleep_stage',
+    start: ['2026-10-03T01:00:00-04:00', '2026-10-03T01:40:00-04:00'],
+    end: ['2026-10-03T01:40:00-04:00', '2026-10-03T02:10:00-04:00'],
+    value: ['Core', 'REM'],
+    unit: [''],
+    source: ['Ultra Watch', 'Ultra Watch'],
+  }]), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples.map((s) => [s.stage, s.unit, s.source_name]), [['core', null, 'Ultra Watch'], ['rem', null, 'Ultra Watch']])
+  assertStringIncludes(error(seriesPost([{
+    type: 'sleep_stage', start: ['2026-10-03T01:00:00-04:00', '2026-10-03T01:40:00-04:00'],
+    end: ['2026-10-03T01:40:00-04:00'], value: ['Core', 'REM'],
+  }])), 'end has a different number of entries')
+})

@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import build_check_shortcut as check  # noqa: E402
 import build_shortcut as bs  # noqa: E402
 
 OBJ = bs.OBJ
@@ -89,15 +90,11 @@ class ShortcutTests(unittest.TestCase):
                     stack.pop()
         self.assertEqual(stack, [])
 
-    def test_repeat_item_is_only_used_inside_a_repeat(self):
-        depth = 0
-        for action in self.actions:
-            params = action['WFWorkflowActionParameters']
-            if action['WFWorkflowActionIdentifier'].endswith('repeat.each'):
-                depth += 1 if params['WFControlFlowMode'] == 0 else -1
-                continue
-            uses = any(d.get('VariableName') == 'Repeat Item' for d in walk(params))
-            self.assertFalse(uses and depth == 0)
+    def test_there_are_no_loops(self):
+        # One loop pass per reading took over 14 minutes for a day of heart
+        # rate on an iPhone (Phase 1b spike), so readings go as columns.
+        loops = [a for a in self.actions if a['WFWorkflowActionIdentifier'].startswith('is.workflow.actions.repeat')]
+        self.assertEqual(loops, [])
 
     def test_the_token_is_asked_for_at_install_and_nothing_secret_is_built_in(self):
         [question] = self.wf['WFWorkflowImportQuestions']
@@ -124,24 +121,63 @@ class ShortcutTests(unittest.TestCase):
             text = text_of(action)
             if not text or not text.startswith('{'):
                 continue
-            # A list of readings goes where the text says "[", a plain value elsewhere.
+            # A reading type's columns go inside the series list ("[" or "," before
+            # the variable); anywhere else a variable is plain text inside quotes.
             filled = ''.join(
-                ('{"type":"heart_rate"}' if i and text[i - 1] == '[' else 'x') if ch == OBJ else ch
+                ('{}' if i and text[i - 1] in '[,' else 'x') if ch == OBJ else ch
                 for i, ch in enumerate(text)
             )
             parsed = json.loads(filled)
             self.assertIsInstance(parsed, dict)
             checked += 1
-        self.assertEqual(checked, 2 + len(bs.HEALTH_TYPES), 'ping, daily post and one line per reading type')
+        self.assertEqual(checked, 2 + len(bs.HEALTH_TYPES), 'ping, daily post and one series per reading type')
 
     def test_each_reading_type_is_read_once_with_its_clarivi_name(self):
         finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
         labels = [f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][0]
                   ['Values']['Enumeration']['Value'] for f in finds]
-        self.assertEqual(labels, [label for label, _, _ in bs.HEALTH_TYPES])
+        self.assertEqual(labels, [label for label, _ in bs.HEALTH_TYPES])
         lines = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"type"')]
-        for (_, clarivi_type, _), line in zip(bs.HEALTH_TYPES, lines):
+        self.assertEqual(len(lines), len(bs.HEALTH_TYPES))
+        for (_, clarivi_type), line in zip(bs.HEALTH_TYPES, lines):
             self.assertTrue(line.startswith('{"type":"' + clarivi_type + '"'), line)
+            for key, _ in bs.COLUMNS:
+                self.assertIn(f'"{key}":["{OBJ}"]', line)
+
+    def test_health_searches_use_whole_days(self):
+        # Finer date filters don't work on Health samples (Phase 1b spike).
+        finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
+        for f in finds:
+            row = f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][1]
+            self.assertEqual((row['Property'], row['Operator'], row['Values']), ('Start Date', 1001, {'Number': '1', 'Unit': 16}))
+
+    def test_each_column_is_joined_as_a_json_list_of_text(self):
+        combines = [a['WFWorkflowActionParameters'] for a in self.actions
+                    if a['WFWorkflowActionIdentifier'].endswith('text.combine')]
+        self.assertEqual(len(combines), len(bs.HEALTH_TYPES) * len(bs.COLUMNS))
+        for c in combines:
+            self.assertEqual((c['WFTextSeparator'], c['WFTextCustomSeparator']), ('Custom', '","'))
+            details = [a['PropertyName'] for a in c['text']['Value'].get('Aggrandizements', []) if 'PropertyName' in a]
+            self.assertEqual(len(details), 1)
+
+
+class CheckShortcutTests(unittest.TestCase):
+    """The diagnostic Shortcut: well formed, sends nothing, asks for nothing."""
+
+    def test_it_is_well_formed_and_never_connects(self):
+        wf = check.build()
+        seen = set()
+        for action in wf['WFWorkflowActions']:
+            params = action['WFWorkflowActionParameters']
+            self.assertNotIn('downloadurl', action['WFWorkflowActionIdentifier'])
+            for d in walk(params):
+                if d.get('Type') == 'ActionOutput':
+                    self.assertIn(d['OutputUUID'], seen)
+                if 'attachmentsByRange' in d:
+                    self.assertEqual(d['string'].count(OBJ), len(d['attachmentsByRange']))
+            if 'UUID' in params:
+                seen.add(params['UUID'])
+        self.assertEqual(wf['WFWorkflowImportQuestions'], [])
 
 
 if __name__ == '__main__':

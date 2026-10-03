@@ -17,9 +17,12 @@ What the Shortcut does, each run:
    today's date (the second "already synced" check).
 3. Sends a ping. Stops if the reply says today is already complete, or shows
    the reply's message if Clarivi refused it.
-4. Reads last night's readings (heart rate, HRV, breathing rate and sleep
-   stages from 6pm yesterday, resting heart rate from yesterday) and posts
-   them as one daily post.
+4. Reads yesterday's and today's readings (heart rate, HRV, breathing rate,
+   resting heart rate and sleep stages) and posts them as one daily post,
+   one list per column. Health searches in Shortcuts only work in whole days,
+   so the server keeps heart rate from 6pm to noon (D18). Building one line
+   per reading took over 14 minutes for a day of heart rate on an iPhone;
+   columns take about a second (Phase 1b spike, 3 October 2026).
 5. Saves today's date to last-sync.txt once the night is complete, and shows
    Clarivi's message when run by hand.
 
@@ -41,14 +44,25 @@ MARKER_FOLDER = 'Clarivi/'
 MARKER_FILE = 'last-sync.txt'
 OBJ = '￼'  # where a variable sits inside a text field
 
-# Health types: Find Health Samples picker label, Clarivi type, window.
+# Health types: Find Health Samples picker label, Clarivi type.
 HEALTH_TYPES = [
-    ('Heart Rate', 'heart_rate', 'evening'),
-    ('Heart Rate Variability', 'hrv_sdnn', 'evening'),
-    ('Respiratory Rate', 'respiratory_rate', 'evening'),
-    ('Resting Heart Rate', 'resting_hr', 'yesterday'),
-    ('Sleep', 'sleep_stage', 'evening'),
+    ('Heart Rate', 'heart_rate'),
+    ('Heart Rate Variability', 'hrv_sdnn'),
+    ('Respiratory Rate', 'respiratory_rate'),
+    ('Resting Heart Rate', 'resting_hr'),
+    ('Sleep', 'sleep_stage'),
 ]
+
+# Columns sent for each type, and the Health sample detail each comes from.
+COLUMNS = [('start', 'Start Date'), ('end', 'End Date'), ('value', 'Value'), ('unit', 'Unit'), ('source', 'Source')]
+
+# Joins a column's entries into the inside of a JSON list of text: a","b","c.
+COLUMN_SEPARATOR = '","'
+
+# "Start Date is in the last 1 day": yesterday and today. Finer date filters
+# (after a time, between two times, in the last N hours) don't work on Health
+# samples in Shortcuts (Phase 1b spike, 3 October 2026).
+LAST_DAY = {'Operator': 1001, 'Values': {'Number': '1', 'Unit': 16}}
 
 ISO_TIME = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
 
@@ -148,9 +162,6 @@ class Builder:
     def set_variable(self, name, out):
         self.add('setvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
 
-    def append_variable(self, name, out):
-        self.add('appendvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
-
     def number(self, out):
         action_id = new_id()
         self.add('number', {'UUID': action_id, 'WFNumberActionNumber': attachment(out.ref())})
@@ -173,14 +184,6 @@ class Builder:
     def end_if(self, group):
         self.add('conditional', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
 
-    def repeat_each(self, out):
-        group = new_id()
-        self.add('repeat.each', {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFInput': attachment(out.ref())})
-        return group
-
-    def end_repeat(self, group):
-        self.add('repeat.each', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
-
     def stop(self):
         self.add('exit', {})
 
@@ -188,22 +191,7 @@ class Builder:
         self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens('Clarivi'),
                                   'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
 
-    def date_from(self, *parts):
-        action_id = new_id()
-        self.add('date', {'UUID': action_id, 'WFDateActionMode': 'Specified Date', 'WFDateActionDate': tokens(*parts)})
-        return Out(action_id, 'Date')
-
-    def subtract(self, date, magnitude, unit):
-        action_id = new_id()
-        self.add('adjustdate', {
-            'UUID': action_id,
-            'WFDate': tokens(date.ref()),
-            'WFAdjustOperation': 'Subtract',
-            'WFDuration': {'Value': {'Magnitude': str(magnitude), 'Unit': unit}, 'WFSerializationType': 'WFQuantityFieldValue'},
-        })
-        return Out(action_id, 'Adjusted Date')
-
-    def find_health(self, label, since):
+    def find_health(self, label, date_row=LAST_DAY):
         action_id = new_id()
         self.add('filter.health.quantity', {
             'UUID': action_id,
@@ -214,8 +202,7 @@ class Builder:
                     'WFActionParameterFilterTemplates': [
                         {'Bounded': True, 'Operator': 4, 'Property': 'Type', 'Removable': False,
                          'Values': {'Enumeration': {'Value': label, 'WFSerializationType': 'WFStringSubstitutableState'}}},
-                        {'Bounded': True, 'Operator': 2, 'Property': 'Start Date', 'Removable': True,
-                         'Values': {'Date': attachment(since.ref())}},
+                        dict({'Bounded': True, 'Property': 'Start Date', 'Removable': True}, **date_row),
                     ],
                 },
                 'WFSerializationType': 'WFContentPredicateTableTemplate',
@@ -282,18 +269,15 @@ class Builder:
         self.end_if(group)
 
 
-def sample_line(clarivi_type):
-    item = 'Repeat Item'
-    start = variable(item, prop('Start Date'), date_format(ISO_TIME))
-    end = variable(item, prop('End Date'), date_format(ISO_TIME))
-    value = variable(item, prop('Value'))
-    source = variable(item, prop('Source'))
-    if clarivi_type == 'sleep_stage':
-        return ('{"type":"sleep_stage","start":"', start, '","end":"', end,
-                '","stage":"', value, '","source":"', source, '"}')
-    unit = variable(item, prop('Unit'))
-    return ('{"type":"' + clarivi_type + '","start":"', start, '","end":"', end, '","value":"', value,
-            '","unit":"', unit, '","source":"', source, '"}')
+def series_text(b, clarivi_type, samples):
+    """One reading type as columns: {"type":..,"start":[..],"end":[..],...}."""
+    parts = ['{"type":"' + clarivi_type + '"']
+    for key, detail in COLUMNS:
+        aggr = [prop(detail)] + ([date_format(ISO_TIME)] if detail.endswith('Date') else [])
+        column = b.combine(samples.ref(*aggr), COLUMN_SEPARATOR)
+        parts += [',"' + key + '":["', column.ref(), '"]']
+    parts.append('}')
+    return b.text(*parts)
 
 
 def build(url=INGEST_URL):
@@ -344,19 +328,18 @@ def build(url=INGEST_URL):
     b.stop()
     b.end_if(already)
 
-    b.comment('Read last night\'s readings from 6pm yesterday, and resting heart rate from yesterday.')
-    start_of_today = b.date_from(current_date(date_format('yyyy-MM-dd')))
-    since = {'evening': b.subtract(start_of_today, 6, 'hr'), 'yesterday': b.subtract(start_of_today, 1, 'days')}
-    for label, clarivi_type, window in HEALTH_TYPES:
-        samples = b.find_health(label, since[window])
-        loop = b.repeat_each(samples)
-        b.append_variable('Samples', b.text(*sample_line(clarivi_type)))
-        b.end_repeat(loop)
+    b.comment('Read yesterday\'s and today\'s readings, one list per column. Clarivi keeps heart rate '
+              'from 6pm to noon.')
+    series = []
+    for label, clarivi_type in HEALTH_TYPES:
+        series.append(series_text(b, clarivi_type, b.find_health(label)))
 
     b.comment('Send the readings.')
-    joined = b.combine(variable('Samples'), ',')
+    joined = []
+    for i, text in enumerate(series):
+        joined += ([','] if i else []) + [text.ref()]
     body = b.text('{"schema_version":1,"kind":"daily","device_tz_offset_min":"', variable('Offset'),
-                  '","trigger":"', variable('Trigger'), '","samples":[', joined.ref(), ']}')
+                  '","trigger":"', variable('Trigger'), '","series":[', *joined, ']}')
     reply = b.post(body, url)
     b.stop_if_refused(reply)
     complete = b.if_(reply.ref(as_text()), 99, string='"night_complete":true')
