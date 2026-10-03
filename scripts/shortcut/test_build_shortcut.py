@@ -112,7 +112,7 @@ class ShortcutTests(unittest.TestCase):
     def test_posts_go_to_the_ingest_function_with_the_token(self):
         posts = [a['WFWorkflowActionParameters'] for a in self.actions
                  if a['WFWorkflowActionIdentifier'].endswith('downloadurl')]
-        self.assertEqual(len(posts), 5, 'ping, daily post, and the import\'s small-readings, part and last posts')
+        self.assertEqual(len(posts), 4, 'ping, daily post, and the import\'s small-readings and heart rate part posts')
         for p in posts:
             self.assertEqual(p['WFURL']['Value']['string'], bs.INGEST_URL)
             self.assertEqual(p['WFHTTPMethod'], 'POST')
@@ -138,8 +138,8 @@ class ShortcutTests(unittest.TestCase):
             self.assertIsInstance(parsed, dict)
             checked += 1
         n = len(bs.HEALTH_TYPES)
-        self.assertEqual(checked, 5 + n + (n - 1) + 2,
-                         'ping, daily and three import posts; the sync\'s series; '
+        self.assertEqual(checked, 4 + n + (n - 1) + 2,
+                         'ping, daily and two import posts; the sync\'s series; '
                          'the import\'s monthly series; two heart rate day series')
 
     def test_each_reading_type_is_read_once_with_its_clarivi_name(self):
@@ -174,12 +174,26 @@ class ShortcutTests(unittest.TestCase):
     def test_the_import_sends_each_month_as_a_backfill_and_remembers_it(self):
         bodies = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"schema_version"')]
         backfill = [t for t in bodies if '"kind":"backfill"' in t]
-        self.assertEqual(len(backfill), 3, 'the small readings, a part of heart rate, and the last heart rate post')
+        self.assertEqual(len(backfill), 2, 'the small readings, and a part of heart rate')
         for body in backfill:
             self.assertIn('"month_id":"' + OBJ + '"', body)
         self.assertNotIn(bs.EMPTY_HEART_RATE, backfill[0], 'the small readings go on their own')
         self.assertIn(bs.EMPTY_HEART_RATE, backfill[1])
-        self.assertIn(bs.EMPTY_HEART_RATE, backfill[2])
+
+    def test_nothing_is_sent_just_after_the_day_loop(self):
+        # A post made just after the day-by-day loop failed every time on
+        # Sabine's iPhone (1c), so the month's last part goes inside the loop.
+        actions = self.actions
+        ends = [i for i, a in enumerate(actions) if a['WFWorkflowActionIdentifier'].endswith('repeat.count')
+                and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 2]
+        day_loop_end = ends[0]
+        month_loop_end = ends[1]
+        between = [a['WFWorkflowActionIdentifier'] for a in actions[day_loop_end + 1:month_loop_end]]
+        self.assertNotIn('is.workflow.actions.downloadurl', between)
+        conditions = [a['WFWorkflowActionParameters'] for a in actions[:day_loop_end]
+                      if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 5
+                      and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
+        self.assertTrue(any('yyyy-MM' in json.dumps(c) for c in conditions), 'a part is sent on the month\'s last day')
         files = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('setitemname')]
         self.assertIn(bs.IMPORT_FILE, [f['WFName'] for f in files])
         opened = [a['WFWorkflowActionParameters']['WFGetFilePath'] for a in self.actions

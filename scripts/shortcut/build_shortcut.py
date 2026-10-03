@@ -45,11 +45,13 @@ readings are small and are read a month at a time.
 
 A month is sent in parts: first the small readings (sleep, HRV, breathing
 rate, resting heart rate) on their own, then heart rate, as one backfill post
-whenever the gathered days reach about 250,000 characters, and a last post
-with the days left over. iOS timed out a 682 KB post before it left the
-phone, while 385 KB went through in 12 seconds (1c send checks); a last post
-that carried the leftover days and the small readings together failed. Only
-after the last post is the month written to import-done.txt. In the import, heart
+whenever the gathered days reach about 250,000 characters or the month's last
+day is reached. iOS timed out a 682 KB post before it left the phone, while
+385 KB went through in 12 seconds (1c send checks). Posts sent before or
+inside the day-by-day loop worked, but a post made just after the loop ended
+failed every time, whatever its size, so nothing is sent after the loop: the
+last part goes inside it, on the month's last day. Only after that is the
+month written to import-done.txt. In the import, heart
 rate goes without its end time (always its start) and unit (always count/min),
 which the server fills in.
 After each month it adds the month to Clarivi/import-done.txt and shows
@@ -331,10 +333,12 @@ class Builder:
         })
         return Out(action_id, 'Contents of URL')
 
-    def dictionary_value(self, out, key):
+    def dictionary_value(self, source, key):
+        """source: an action's Out, or a reference such as variable('LastReply')."""
         action_id = new_id()
+        ref = source.ref() if isinstance(source, Out) else source
         self.add('getvalueforkey', {'UUID': action_id, 'WFGetDictionaryValueType': 'Value',
-                                    'WFDictionaryKey': key, 'WFInput': attachment(out.ref())})
+                                    'WFDictionaryKey': key, 'WFInput': attachment(ref)})
         return Out(action_id, 'Dictionary Value')
 
     def get_file(self, name):
@@ -402,8 +406,9 @@ def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
     """Gathers the month's heart rate, one day per search, into HeartRateDays
     as ',{series},{series}...' (empty if there's none). With send_part, the
     gathered days are sent as a part of the month whenever they reach
-    PART_CHARACTERS, and HeartRateDays starts again. notify_each_day is for
-    the Clarivi Import Check diagnostic only."""
+    PART_CHARACTERS and on the month's last day, and HeartRateDays starts
+    again; send_part returns the reply, kept in LastReply. notify_each_day is
+    for the Clarivi Import Check diagnostic only."""
     label = next(label for label, clarivi_type in HEALTH_TYPES if clarivi_type == 'heart_rate')
     b.set_variable('Day', b.date_from(variable('Month', date_format('yyyy-MM-dd'))))
     b.set_variable('HeartRateDays', b.text(''))
@@ -430,13 +435,22 @@ def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
                  current_date(date_format('HH:mm:ss')))
     b.end_if(heavy)
     if send_part:
+        # Send when the part is full, or on the month's last day (the next day
+        # is in another month). Two separate checks set one flag.
+        b.set_variable('SendNow', b.text('no'))
         size_id = new_id()
         b.add('count', {'UUID': size_id, 'WFCountType': 'Characters', 'Input': attachment(variable('HeartRateDays')),
                         'WFInput': attachment(variable('HeartRateDays'))})
         full = b.if_(output(size_id, 'Count'), 3, number=PART_CHARACTERS)
-        send_part()
-        b.set_variable('HeartRateDays', b.text(''))
+        b.set_variable('SendNow', b.text('yes'))
         b.end_if(full)
+        last_day = b.if_(next_day.ref(date_format('yyyy-MM')), 5, string=tokens(month_id.ref()))
+        b.set_variable('SendNow', b.text('yes'))
+        b.end_if(last_day)
+        sending = b.if_(variable('SendNow'), 4, string='yes')
+        b.set_variable('LastReply', send_part())
+        b.set_variable('HeartRateDays', b.text(''))
+        b.end_if(sending)
     b.end_if(in_month)
     b.set_variable('Day', next_day)
     b.end_repeat(days)
@@ -473,10 +487,10 @@ def import_history(b, url, words):
     send(*joined)
 
     heart_rate_by_day(b, month_id, send_part=lambda: send(EMPTY_HEART_RATE, variable('HeartRateDays')))
-    reply = send(EMPTY_HEART_RATE, variable('HeartRateDays'))
+    # The month's last part was sent inside the loop; its reply is in LastReply.
     b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
     b.save_file(IMPORT_FILE, variable('Done'))
-    b.notify(b.dictionary_value(reply, 'message').ref())
+    b.notify(b.dictionary_value(variable('LastReply'), 'message').ref())
     b.end_if(to_do)
     earlier = b.adjust(variable('Month'), 'Subtract', HOURS_TO_PREVIOUS_MONTH, 'hr')
     b.set_variable('Month', b.date_from(earlier.ref(date_format('yyyy-MM-01'))))
