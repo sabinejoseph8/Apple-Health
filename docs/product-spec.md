@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (password minimum settled; how shared phones behave noted under Access rules)
+**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -44,7 +44,7 @@
 - There is no public sign-up. Nobody can create an account except the owner.
 - The app sends no email at all.
 - Testers never see each other's data or each other at all.
-- How it works now (built in Phase 1a, not yet a decision): a phone's notifications go to whoever signed in on it last, so a shared phone never shows another person's notifications (R9).
+- A phone's notifications go to whoever signed in on it last, so a shared phone never shows another person's notifications (R9). Decided 3 October 2026.
 
 ---
 
@@ -305,6 +305,7 @@
 | Laptop layout (30 Sep 2026) | The same single column as the iPhone, centred, at most 480 points wide; no separate desktop design |
 | Name (30 Sep 2026) | The product is called Clarivi (previously the working name Morning Readiness) |
 | Password minimum (3 Oct 2026) | 12 characters (R3) |
+| Shared phones (3 Oct 2026) | A phone's notifications go to whoever signed in on it last (R9) |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Default: heart rate variability 40%, sleeping heart rate 35%, sleep 25%. Ease off starts at 1 point and Rest at 2. Set from the owner's backfilled year, then frozen.

@@ -91,7 +91,7 @@ The first-login password change is tracked by a flag in the login system's admin
 
 Built in Phase 1a (3 October 2026):
 - A trigger creates each `profiles` row when an account is created, and copies the owner flag from admin-only metadata (`is_owner`) whenever it changes.
-- `push_subscriptions.endpoint` is unique. A phone belongs to whoever signed in on it last: signing in as another account moves the phone's notifications to that account, so a shared phone never shows the wrong person's notifications.
+- `push_subscriptions.endpoint` is unique. A phone belongs to whoever signed in on it last: signing in as another account moves the phone's notifications to that account, so a shared phone never shows the wrong person's notifications (decided by Sabine, 3 October 2026; product-spec.md).
 - Signed-in users can only read their own rows. Direct inserts, updates and deletes are revoked; rows change only through the trigger and named functions such as `register_push`.
 
 **Raw data (never changed after arrival)**
