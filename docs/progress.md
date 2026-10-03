@@ -8,39 +8,40 @@
 
 ## Summary
 
-- **Current phase:** Phase 2 done (self-test running); Phase 3 next, while Phase 1's last check collects itself
-- **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Phase 2a (3 October 2026):** nights, normals and the analysis queue are built on branch `phase-2a-nights` (from `phase-1b-daily-sync`) and pass their tests on the local copy. The night rules are D48. Released the same day: the every-minute scheduler built Sabine's 239 nights and their normals within a minute. The first look at them found overlapping sleep records on 18 nights, which counted sleep twice; Sabine chose to count each moment once with awake winning (D49), released as a second migration. Checking one night against the Health app then showed the 90-minute rule cutting nights with a long awake spell (41 of 239 nights); Sabine chose to count all sleep from 6pm to noon as the night (D50), a third migration. With all three live, Sabine's year has 237 nights with all five normals built, and two nights checked against the Health app (one imported, one from a daily sync) each match within 2 minutes. 2a done on 3 October 2026.
-- **Phase 2b (3 October 2026):** score settings, the daily status (points, zones, missing and building readings, the nudge, the illness check) and insights are built on branch `phase-2b-status` (from `phase-2a-nights`) and pass their tests on the local copy, with Sabine's decisions D51 to D53. Phase 2's manual check 2 now uses an automated test for the design's made-up sample day. Released the same day: Sabine's year has 237 days with a status row (105 Ready, 19 Ease off, 4 Rest, 108 learning your normal, 1 not enough data); the illness check ran on 128 and showed its note on 12. Sabine checked 3 October's breakdown by hand (Ready, 0.47 points, all from a short sleep). 2b done on 3 October 2026.
-- **Notes for 2c:** 108 of 237 days are "learning your normal" because gaps in Watch tracking leave fewer than 21 valid nights in 28 (the window and minimum are settings now); Ease off or Rest fire on 23 of 128 scored days (about 1 in 6, above the "about 1 in 7" limit); a short night can still be Ready because Sabine's sleep varies widely (a wide normal range) and sleep weighs 25%; "prioritise sleep" never fires on her year; Sabine doesn't remember the flagged days, so the calendar check matters.
-- **Phase 2c (3 October 2026):** the events and workouts tables, the owner's loader scripts, the pandas reference with its check and the Signal measurement are built on branch `phase-2c-tuning` (from `phase-2b-status`) and pass their tests; the reference matches the database on a made-up history. Decisions D54 and D55.
-- **First reference check on Sabine's year (3 October 2026):** statuses matched on all 237 days; nights differed on 1 value (one night's resting heart rate) and normals on 62 (its knock-on), because two watches gave resting heart rates for the same day and an app (Athlytic) also wrote some. Fixed with D56 and D57 (migration `20261004020000_watch_sources.sql`). The terminal panel showed Sabine's password at the hidden prompt, so the scripts now remember the sign-in and she is changing her password.
-- **Reference check passed (3 October 2026):** after the Watch-only fix (released) and Sabine's password change, `check.py --live` matches the database on all 237 nights, 1,185 normals and 237 statuses (the D9 correctness gate, for settings version 1; rerun after any change to the rules or settings).
-- **Events (3 October 2026):** no calendar illness or major events (Sabine doesn't remember any; D58); the trip's two travel days are loaded from `private/events.csv`.
-- **Workouts and measurement (3 October 2026):** the Health export gave 280 workouts (242 from the Ultra, 18 from the second watch, 20 from apps, which don't count); loaded. Measured on her year: version 1 fired on about 1 day in 6 and caught 0 of 11 disrupted days with a status; judged by day (D60), 1 of 13. Sabine set the final numbers (D59): version 2, normals from 42 nights, Ease off from 1.2, Rest from 2.4, frozen. **Signal on her year: not met** (1 of 13; the evidence is thin, D58), recorded in mvp.md; the testers' check-ins carry the Signal.
-- **2c done (3 October 2026):** version 2 is live and frozen; Sabine's year has 181 Ready, 25 Ease off, 3 Rest and 27 learning days; the reference check matches on all 237 nights, 1,185 normals and 237 statuses under version 2. Phase 2 manual checks: 1 (reference) passed; 2 (sample day) is an automated test, and a recent real morning was checked by hand; 3 (Signal on her year) measured and not met, recorded in mvp.md; 4 (no-push imports) holds in the queue (imports never ask to notify, tested), and is checked again on the outbox in Phase 4.
-- **Phase 2 code review (3 October 2026):** 14 findings. Fixed: Sabine's readings, dates and trip had been written into the public docs, migration comments and two tests (removed, and the Phase 2 branches rewritten on GitHub so the old commits are gone); a morning sync with no night yet now says "night not finished" on the day, not "not enough data"; failed analysis work is retried (3 attempts); every settings version must give each reading a positive smallest spread; the job log is trimmed daily; tests now prove signed-in users can't run any analysis function; the owner's session file is private from the moment it's written; the workout extractor leaves out impossible and copied workouts; small clean-ups. Decided by Sabine: record what each person was shown each morning in Phase 4 (D61, a new Phase 4 task); keep the 6pm rule (a sleep starting just before 6pm with no wake-up counts as a nap, a known limit). Not changed: the Watch-sources lookup reads all heart rate (about 0.04 seconds a year; fine for v1).
-- **Self-test helper:** `.venv/bin/python scripts/reference/today.py` prints this morning's status in plain words (or a given date's), using the remembered sign-in; `--felt good|okay|off "note"` saves how Sabine felt beside that day's status in `private/selftest.csv` (never committed), for the end-of-self-test review. Watch for: Ready after a short night on mornings she feels off (a risk noted in 2c); if it's a pattern, a new settings version can still change it before the test (D59).
-- **Phase 2 done (3 October 2026):** all tasks ticked; the self-test started the same day and runs each morning until about 17 to 24 October 2026 (Sabine runs `today.py` after her sync and notes whether the status matches how she feels).
-- **Next action:** plan Phase 3 (readiness card, check-in and Why today) while the self-test runs. Phase 1's last check (the locked-phone rate) is read around 10 October 2026; then Phase 1 closes and the branches merge to `main` (Sabine runs the merge, as it deploys production). Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
+- **Current phase:** Phase 2 is done and Sabine's two-to-three-week self-test is running (started 3 October 2026, until about 17 to 24 October). Phase 3 (readiness card, check-in and Why today) is next. Phase 1 has one check left.
+- **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, which collects itself from the uploads log until about 10 October 2026; then Phase 1 closes.
+- **Phase 2 (Data and analysis), done 3 October 2026:**
+  - Nights from the Watch's sleep stages (D48 to D50), normals (D11, now from 42 nights), the daily status, nudge and illness check (D51 to D53), insights, versioned score settings, and the every-minute analysis queue, all live.
+  - Only Watch readings count, a Watch being any source that records heart rate; two watches' resting heart rates give their median (D56, D57).
+  - Final numbers: settings version 2, frozen (D59): weights 40/35/25, Ease off from 1.2, Rest from 2.4. On Sabine's year: 181 Ready, 25 Ease off, 3 Rest, 27 learning days (about 1 in 7.5).
+  - Correctness gate met: the independent pandas reference (`scripts/reference/check.py`) matches the database on all 237 nights, 1,185 normals and 237 statuses of her year, and on a made-up history on every push.
+  - Signal on her year: not met (1 of 13 disrupted mornings called Ease off or Rest); the evidence is thin (no calendar events, D58), so the testers' check-ins carry the Signal. Recorded in mvp.md.
+  - Code review: 14 findings, 11 fixed, 3 decided by Sabine (D61 moves "record what was shown each morning" to Phase 4; the 6pm rule is kept). Her readings had been quoted in the public docs; removed, and the Phase 2 branches were rewritten on GitHub.
+- **Self-test:** each morning Sabine runs `.venv/bin/python scripts/reference/today.py` and saves how she felt with `--felt good|okay|off` (kept in `private/selftest.csv`, never committed). Day 1 (3 October): Ready, but she felt off after a short night, the case 2c flagged. At the end, compare her answers with the statuses; if "Ready after a short night" keeps meeting "off", a new settings version can still change it before the test (D59).
+- **Branches:** `main` holds 1a and the first part of 1b (what Vercel serves in production); `phase-1b-daily-sync` holds the rest of Phase 1; `phase-2c-tuning` holds Phase 2 on top of it (one clean commit plus follow-ups; `phase-2a-nights` and `phase-2b-status` were deleted in the history rewrite). The live database already has every migration through `20261004040000_phase2_review_fixes.sql`, and the `ingest` and `account-token` functions are deployed. When Phase 1 closes, Sabine merges into `main`, which deploys the app changes.
+- **Next action:** plan Phase 3 with Sabine while the self-test runs; read the locked-phone check around 10 October 2026.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
-- **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
-- **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
-- **Recent changes since 1a:** Playwright end-to-end tests run in WebKit at iPhone size on every push (`npm run test:e2e`; the first tests cover the sign-in screen); `interview-notes.md` keeps Sabine's first-person PM story and is updated after significant features, bug fixes and design changes; a Playwright MCP server is set up in Claude Code for this folder (from the next session).
-- **Known issues:** the app icon is a placeholder and needs replacing before testers install the app; the home screen is a temporary stand-in until the readiness card (Phase 3).
+- **Code reviews:** every phase ends with a code review of everything it changed (D41). Phases 1 and 2 are reviewed.
+- **Working with Sabine:** every action for her is written under "Step for you", with each terminal command in its own command box (Run and Copy buttons) at the end of the message, and a phone notification. The owner's scripts remember her sign-in in `private/` (typed once, in the Mac's Terminal app, because the Claude app's terminal panel showed a password at a hidden prompt).
+- **Known issues:**
+  - The app icon is a placeholder and needs replacing before testers install the app; the home screen is a temporary stand-in until the readiness card (Phase 3).
+  - A short night can still be Ready when the person's sleep varies widely (sleep weighs 25% and is judged against a wide normal); watch it in the self-test.
+  - A sleep that starts just before 6pm and runs on without a wake-up counts as a nap (D50, kept).
+  - A status shown in the morning can be corrected later (for example when the rest of a night arrives the next day); Phase 4 records what was shown (D61).
+  - The old Phase 2 commits removed from GitHub may stay reachable by their exact address for a while before GitHub cleans them up.
 
-**Set-up so far (checked 3 October 2026)**
+**Set-up so far (checked 3 October 2026, end of Phase 2)**
 | Item | State |
 |---|---|
-| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live since 3 October 2026: `profiles` and `push_subscriptions` (row-level security on), `register_push`, the `account-first-login` and `send-push` functions, the live notification keys in the secret store, and two accounts (Sabine as owner, and the test account), both past their first password change. The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
-| GitHub repository | `sabinejoseph8/Apple-Health`, public; Phase 1a merged into `main` on 3 October 2026; GitHub Actions run the app, secret and database checks on every push |
+| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live: accounts and push (1a); the upload path (`upload_tokens`, `uploads`, `samples`, `ingest_upload`, the `ingest` and `account-token` functions; 1b, 1c); the analysis (`nights`, `baselines`, `daily_status`, `insights`, `score_settings` version 2, `analysis_queue`, `events`, `workouts`; Phase 2), with two pg_cron jobs (`run-analysis-queue` every minute, `trim-cron-log` daily). Two accounts (Sabine as owner, and the test account). The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
+| GitHub repository | `sabinejoseph8/Apple-Health`, public; `main` has 1a and the first part of 1b; Phase 1's rest is on `phase-1b-daily-sync` and Phase 2 on `phase-2c-tuning`. GitHub Actions run, on every push: the app (type check, tests, build, secret check), the Shortcut checks, the pandas reference's tests, the database tests, end-to-end tests in WebKit at iPhone size, and the local end-to-end checks (sync, import, and the database matched against the pandas reference) |
 | Vercel | Project `clarivi` (Hobby) under `sabine5`, deploying from GitHub: production from `main` at https://clarivi-zeta.vercel.app, a preview for every other branch. Connected to Supabase through the official integration (Production values); preview values and the push public key added by hand (3 October 2026) |
 
 **Settled: Supabase region (2 October 2026).** The first project was created in US West by mistake. It was replaced while still empty by a new project in US East (ref `vuynnnrijdbvamwfauog`), as the plan said. The old US West project (ref `pupxkjhhhgeeoqyvtsst`) is no longer used.
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Spikes: the riskiest unknowns first | In progress |
+| 1 | Spikes: the riskiest unknowns first | In progress (one check left, until about 10 October) |
 | 2 | Data and analysis | Done (self-test running) |
 | 3 | Readiness card, check-in and Why today | Not started |
 | 4 | Notifications and follow-through | Not started |
@@ -61,7 +62,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - a year can be imported
 - users' data stays separate
 
-**Status:** In progress (1a done on 3 October 2026; 1b next)
+**Status:** In progress (1a, 1c and the Phase 1 code review done on 3 October 2026; 1b's last check, the locked-phone rate, collects itself until about 10 October)
 
 ### 1a. App, sign-in and push
 - [x] Create the GitHub repository with GitHub Actions
@@ -171,7 +172,7 @@ Split into four groups (agreed 3 October 2026): 2a nights and normals, 2b the da
 
 ### 2a. Nights and normals
 - [x] Build `nights`: sleep window from Watch sleep stages, local wake date, finished flag, sleeping heart rate (median while asleep), HRV median and count, breathing rate, yesterday's resting heart rate, coverage and confidence (rules in D48, D49 and D50)
-- [x] Build `baselines`: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range
+- [x] Build `baselines`: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range (the window is a setting: 42 nights from version 2, D59)
 - [x] Build `analysis_queue` and the every-minute scheduler; imports recompute once at the end and never notify
 
 ### 2b. The daily status
@@ -233,11 +234,11 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [ ] Build the readiness card:
   - header, status pill, briefing card, nudge block, Why link and digest row
   - the morning layout
-  - every no-status and partial state (R25 to R34)
+  - every no-status and partial state (R25 to R34). From Phase 2: `daily_status` gives `night_unfinished` on today when a sync came but the night hasn't arrived, which the card shows as "sleep still in progress" before noon and "not enough data" after; "waiting", "no sync" and "late" are worked out by the card from the clock and the last sync
 - [ ] Build Why today:
   - summary card, three reading cards with mini charts and "Show the numbers"
   - "Also checked"
-  - "How today's status is decided" with the points table and zone boxes
+  - "How today's status is decided" with the points table and zone boxes (zone numbers and the "last 42 nights" footnote come from the active score settings, version 2: 1.2 and 2.4; the design canvas still shows the placeholders 1, 2 and 28; users can't read the settings table, so the numbers reach the app another way, for example a small function or the wording module)
   - missing and building states
 - [ ] Log card views and Why today opens
 - [ ] Check safe areas and the one-screen fit on 390-point iPhones

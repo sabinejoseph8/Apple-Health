@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided)
+**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -314,6 +314,8 @@
 | Disrupted days for the Signal check (3 Oct 2026) | Each day of illness; the morning after a travel day or a major event; the morning of a workout far below the owner's usual |
 | Watch readings (3 Oct 2026) | A Watch is recognised as any source that records heart rate; other apps' and the iPhone's readings are ignored (R15). When two watches give a resting heart rate for the same day, the middle value is used |
 | Score numbers (3 Oct 2026) | Weights 40/35/25; Ease off from 1.2, Rest from 2.4; normals from the last 42 nights with at least 21 valid; frozen for the test |
+| A sync before the night arrives (3 Oct 2026) | If a morning sync comes before last night's sleep has arrived from the Watch, the card treats it as sleep still in progress (R26) until noon, and as not enough data after (R31) |
+| What each person was shown (3 Oct 2026) | The status, nudge and reason shown each morning are kept as shown, and the test's results use them, even if a later recalculation corrects that day |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.

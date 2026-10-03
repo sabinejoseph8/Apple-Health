@@ -43,6 +43,7 @@ iPhone Shortcut ──POST readings──▶ Ingest function ──▶ Raw readi
    - Runs from a queue every minute, so an upload never waits for it.
 5. **Schedulers** (inside the database)
    - Run the analysis queue every minute.
+   - Trim the job log daily (built in Phase 2: `trim-cron-log`, keeps 7 days).
    - Plan the 11:30 reminders and 8pm follow-ups every 5 minutes, using each user's local time.
    - Build weekly digests once a week.
 6. **Push sender function**
@@ -206,7 +207,8 @@ Each call carries the user's session.
 - **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values.
 
 ### Schedulers
-- **Every minute:** `run_analysis_queue()` processes queued work, then writes morning notifications to the outbox.
+- **Every minute:** `run_analysis_queue()` processes queued work (built in Phase 2: it merges each user's pending work, waits while an import is still arriving, and retries failed work up to 3 times), then writes morning notifications to the outbox (Phase 4).
+- **Daily, 3:17am UTC:** `trim-cron-log` deletes job log rows older than 7 days (Phase 2 code review).
 - **Every minute:** calls `send-push`, which sends pending outbox rows.
 - **Every 5 minutes:** `plan_notifications()` adds 11:30 reminders and 8pm follow-ups for users whose local time has reached them.
 - **Weekly (Monday, 5am local, Default):** `build_digests()`.
@@ -400,9 +402,9 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | The Deno push library doesn't work in Edge Functions | No notifications | Try it in the push spike; fall back to `npm:web-push`. Resolved in 1a: it works, no fallback needed | 1 |
 | Upload path bypasses row-level security | One tester's data could land in another's account | Work out the user from the token hash only; cross-user upload tests in CI | 1 |
 | A table ships without row-level security | Data exposed to other users | A CI check fails the build when any table lacks row-level security (proven in 1a); the live project also switches it on for new tables automatically | 1 |
-| SQL statistics subtly wrong | Confident wrong nudges | Stage-by-stage pandas check on the owner's year before testers start | 2 |
+| SQL statistics subtly wrong | Confident wrong nudges | Stage-by-stage pandas check on the owner's year before testers start. Phase 2c (3 October 2026): the reference (`scripts/reference/`) matches the database on every night, normal and status of the owner's year, and on a made-up history on every push; its first run found two watches and an app in her readings (D56, D57) | 2 |
 | HRV readings too sparse at night | The heaviest-weighted reading is often missing, or its baseline never finishes building | Count nights with HRV at the import; adjust the weights, the minimum (14 nights) or the window (42 nights) before freezing the settings. Phase 1c (3 October 2026): 239 of Sabine's 240 tracked nights (99.6%) have HRV during sleep, median 3 readings a night | 2 |
-| Score settings unproven | Too many or too few Ease off days | Set from the owner's year against disrupted days and the "1 day in 7" limit; then freeze | 2 |
+| Score settings unproven | Too many or too few Ease off days | Set from the owner's year against disrupted days and the "1 day in 7" limit; then freeze. Phase 2c (3 October 2026): version 2 frozen (D59), about 1 day in 7.5 on her year; the disrupted-day target was not met on thin evidence, so the testers' check-ins carry the Signal; a short night can still be Ready, watched in the self-test | 2 |
 | Heavy recompute times out | Imports stall | Queue work, process one month at a time, never inside the upload request. Phase 2a (3 October 2026): work is queued and merged, and a made-up year (275,000 heart rate readings) recomputes in about 0.2 seconds on the local copy | 2 |
 | Previews and changes touching real testers' data (one project) | A bad preview or database change could damage the test data | Build and test every database change on a local copy first; apply changes only at release and backward-compatibly; check previews as the owner or a test account; back up before every change during the test | 1 |
 | Free plan during the test: no automatic backups, and the project can pause | Lost testers' data would end the test; a paused project stops syncs | Daily syncs keep the project active; manual backups at least weekly and before every change; practise one restore in phase 6; check the project is active each morning on the owner page; move to Pro after the test | 6 |
@@ -431,6 +433,8 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Region (2 Oct 2026) | US East; the project was recreated there while still empty |
 | Vercel and Supabase (2 Oct 2026) | Connected through Vercel's official Supabase integration; the secret values it copies into Vercel are never read by the app |
 | Push library (3 Oct 2026) | `@negrel/webpush` 0.5.0, proven with Apple's push service in the Phase 1a spike |
+| Analysis in the database (3 Oct 2026) | Nights, normals, status and insights are rebuilt by `recompute()` from raw readings, queued by uploads and run every minute by pg_cron; checked against an independent pandas reference |
+| Watch readings (3 Oct 2026) | A Watch is any source that records heart rate (D56); sleep has no source, so overlapping sleep records count once with awake winning (D49) |
 
 ### Open questions (each with a recommended default)
 1. **Region.** Settled 2 October 2026: US East (see Decisions).
@@ -440,4 +444,4 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
    - **Default:** 5 MB and 50,000 readings per upload. **Agreed (3 October 2026):** 60 uploads an hour per token, plus 200 import uploads and 200 pings an hour, each counted separately (D47).
    - **Default:** value ranges as in section 6.
 5. **Weekly digest timing.** Default: Monday at 5am local time.
-6. **Open spike results.** Phase 1a's and 1b's results are in progress.md ("Spike results"). Settled in 1b so far: Watch sleep stages arrive by name; past readings lose their time zone (trips come from the calendar instead); Shortcuts can only search Health by whole days (D43); readings travel as columns (D42). Still open: the locked-phone rate, the "already synced" check on real mornings, and HRV coverage (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.
+6. **Open spike results.** Phase 1's results are in progress.md ("Spike results"). Settled: Watch sleep stages arrive by name; past readings lose their time zone (trips come from the calendar instead); Shortcuts can only search Health by whole days (D43); readings travel as columns (D42); a year imports through the Shortcut in monthly parts (1c); HRV is present on nearly every tracked night (1c). Still open: the locked-phone rate (until about 10 October 2026).
