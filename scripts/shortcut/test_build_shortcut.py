@@ -99,7 +99,7 @@ class ShortcutTests(unittest.TestCase):
         counts = [a['WFWorkflowActionParameters'] for a in self.actions
                   if a['WFWorkflowActionIdentifier'].endswith('repeat.count')
                   and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
-        self.assertEqual([c['WFRepeatCount'] for c in counts], [bs.IMPORT_MONTHS])
+        self.assertEqual([c['WFRepeatCount'] for c in counts], [bs.IMPORT_MONTHS, bs.MAX_DAYS_IN_MONTH])
 
     def test_the_token_is_asked_for_at_install_and_nothing_secret_is_built_in(self):
         [question] = self.wf['WFWorkflowImportQuestions']
@@ -127,25 +127,29 @@ class ShortcutTests(unittest.TestCase):
             if not text or not text.startswith('{'):
                 continue
             # A reading type's columns go inside the series list ("[" or "," before
-            # the variable); anywhere else a variable is plain text inside quotes.
-            filled = ''.join(
-                ('{}' if i and text[i - 1] in '[,' else 'x') if ch == OBJ else ch
-                for i, ch in enumerate(text)
-            )
+            # the variable); the import's heart rate days follow another variable
+            # and may be empty; anywhere else a variable is plain text in quotes.
+            def fill(i):
+                before = text[i - 1] if i else ''
+                return '{}' if before in '[,' else '' if before == OBJ else 'x'
+            filled = ''.join(fill(i) if ch == OBJ else ch for i, ch in enumerate(text))
             parsed = json.loads(filled)
             self.assertIsInstance(parsed, dict)
             checked += 1
-        self.assertEqual(checked, 3 + 2 * len(bs.HEALTH_TYPES),
-                         'ping, daily post, import post, and one series per reading type in each post')
+        n = len(bs.HEALTH_TYPES)
+        self.assertEqual(checked, 3 + n + (n - 1) + 2,
+                         'ping, daily and import posts; the sync\'s series; the import\'s monthly series; two heart rate day series')
 
     def test_each_reading_type_is_read_once_with_its_clarivi_name(self):
         finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
         labels = [f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][0]
                   ['Values']['Enumeration']['Value'] for f in finds]
-        self.assertEqual(labels, [label for label, _ in bs.HEALTH_TYPES] * 2, 'once for the import, once for the sync')
+        monthly = [(label, t) for label, t in bs.HEALTH_TYPES if t != 'heart_rate']
+        expected = monthly + [('Heart Rate', 'heart_rate')] * 2 + list(bs.HEALTH_TYPES)
+        self.assertEqual(labels, [label for label, _ in expected], 'import (monthly types, heart rate by day), then the sync')
         lines = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"type"')]
-        self.assertEqual(len(lines), 2 * len(bs.HEALTH_TYPES))
-        for (_, clarivi_type), line in zip(bs.HEALTH_TYPES * 2, lines):
+        self.assertEqual(len(lines), len(expected))
+        for (_, clarivi_type), line in zip(expected, lines):
             self.assertTrue(line.startswith('{"type":"' + clarivi_type + '"'), line)
             for key, _ in bs.COLUMNS:
                 self.assertIn(f'"{key}":["{OBJ}"]', line)
@@ -157,10 +161,11 @@ class ShortcutTests(unittest.TestCase):
         rows = [f['WFWorkflowActionParameters']['WFContentItemFilter']['Value']['WFActionParameterFilterTemplates'][1]
                 for f in finds]
         n = len(bs.HEALTH_TYPES)
-        for row in rows[:n]:
+        import_rows, sync_rows = rows[:n + 1], rows[n + 1:]
+        for row in import_rows:
             self.assertEqual((row['Property'], row['Operator'], set(row['Values'])), ('Start Date', 1003, {'Date', 'AnotherDate'}))
-            self.assertEqual(row['Values']['Date']['Value'], {'Type': 'Variable', 'VariableName': 'Month'})
-        for row in rows[n:]:
+        self.assertEqual([r['Values']['Date']['Value']['VariableName'] for r in import_rows], ['Month'] * (n - 1) + ['Day', 'Day'])
+        for row in sync_rows:
             self.assertEqual((row['Property'], row['Operator'], row['Values']), ('Start Date', 1001, {'Number': '1', 'Unit': 16}))
 
     def test_the_import_sends_each_month_as_a_backfill_and_remembers_it(self):
@@ -198,6 +203,15 @@ class ShortcutTests(unittest.TestCase):
                 self.assertEqual((later.year * 12 + later.month) - (year * 12 + month), 1)
                 self.assertEqual((year * 12 + month) - (earlier.year * 12 + earlier.month), 1)
 
+    def test_import_heart_rate_is_read_a_day_at_a_time_with_a_cap(self):
+        finds = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
+        day_finds = [f for f in finds if f['WFContentItemLimitEnabled']]
+        self.assertEqual([(f['WFContentItemSortOrder'], f['WFContentItemLimitNumber']) for f in day_finds],
+                         [('Oldest First', bs.DAY_LIMIT), ('Latest First', bs.DAY_LIMIT)])
+        heavy = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('conditional')
+                 and a['WFWorkflowActionParameters'].get('WFCondition') == 3]
+        self.assertEqual([h['WFNumberValue'] for h in heavy], [str(bs.DAY_LIMIT)], 'the second search only runs on a heavy day')
+
     def test_the_menu_words_come_from_the_wording_module(self):
         words = bs.shortcut_wording()
         self.assertEqual(set(words), {'menuPrompt', 'syncNow', 'importHistory', 'importFinished'})
@@ -211,7 +225,7 @@ class ShortcutTests(unittest.TestCase):
     def test_each_column_is_joined_as_a_json_list_of_text(self):
         combines = [a['WFWorkflowActionParameters'] for a in self.actions
                     if a['WFWorkflowActionIdentifier'].endswith('text.combine')]
-        self.assertEqual(len(combines), 2 * len(bs.HEALTH_TYPES) * len(bs.COLUMNS))
+        self.assertEqual(len(combines), (2 * len(bs.HEALTH_TYPES) + 1) * len(bs.COLUMNS))
         for c in combines:
             self.assertEqual((c['WFTextSeparator'], c['WFTextCustomSeparator']), ('Custom', '","'))
             details = [a['PropertyName'] for a in c['text']['Value'].get('Aggrandizements', []) if 'PropertyName' in a]

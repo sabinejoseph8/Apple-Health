@@ -13,6 +13,11 @@ offsets, for the time-zone check (does a past trip keep its time zone?).
 The --files form builds "Clarivi File Check": three ways of saving a small
 file to iCloud Drive/Shortcuts/Clarivi, each read back and shown, to find a
 save that works for the "synced today" file.
+      python3 scripts/shortcut/build_check_shortcut.py --size 2026-09
+The --size form builds "Clarivi Size Check": heart rate for one week, half
+a month and the whole month, each turned into the Sync Shortcut's columns,
+with a notification after each step (count and time), to find how much a
+Shortcut can handle before iOS stops it.
       python3 scripts/shortcut/build_check_shortcut.py --sources
 The --sources form builds "Clarivi Source Check": what the phone reports as
 the source of each sleep reading, to fix sleep readings arriving without one.
@@ -155,6 +160,37 @@ def build_sources():
     return wf
 
 
+def build_size(month):
+    """Round 2 (3 October 2026): round 1 found 4,418 heart rate readings for one
+    week and iOS stopped it while building that week's five columns; about
+    1,100 to 1,500 readings had worked. This round tries 2, 4 and 7 days, each
+    with all five columns and with the three the import would need (start,
+    value, source), smallest first, notifying after each step."""
+    b = CheckBuilder()
+    b.comment(f'Clarivi Size Check builds heart rate columns for growing parts of {month}, without sending anything.')
+    stamp = date_format('HH:mm:ss')
+    first = b.date_from(f'{month}-01')
+    lean = [c for c in bs.COLUMNS if c[0] in ('start', 'value', 'source')]
+    steps = [('2 days', 3, lean), ('2 days', 3, bs.COLUMNS), ('4 days', 5, lean), ('4 days', 5, bs.COLUMNS),
+             ('7 days', 8, lean), ('7 days', 8, bs.COLUMNS)]
+    for label, end_day, columns in steps:
+        end = b.date_from(f'{month}-{end_day:02d}')
+        found = b.find_health('Heart Rate', {'Operator': 1003, 'Values': {'Date': attachment(first.ref()),
+                                                                          'AnotherDate': attachment(end.ref())}})
+        n = b.count(found.ref())
+        for key, detail in columns:
+            aggr = [bs.prop(detail)] + ([date_format(bs.ISO_TIME)] if detail.endswith('Date') else [])
+            b.combine(found.ref(*aggr), bs.COLUMN_SEPARATOR)
+        b.notify(f'{label}, {len(columns)} columns: ', n.ref(), ' readings done at ', bs.current_date(stamp))
+
+    b.show('Clarivi Size Check finished at ', bs.current_date(stamp))
+    wf = bs.build()
+    wf['WFWorkflowActions'] = b.actions
+    wf['WFWorkflowImportQuestions'] = []
+    wf['WFWorkflowInputContentItemClasses'] = []
+    return wf
+
+
 def main():
     root = Path(__file__).resolve().parents[2]
     out_dir = root / 'private' / 'shortcut'
@@ -164,6 +200,8 @@ def main():
     if '--trip' in sys.argv:
         i = sys.argv.index('--trip')
         name, wf = 'Clarivi Trip Check', build_trip(sys.argv[i + 1], sys.argv[i + 2])
+    if '--size' in sys.argv:
+        name, wf = 'Clarivi Size Check', build_size(sys.argv[sys.argv.index('--size') + 1])
     if '--sources' in sys.argv:
         name, wf = 'Clarivi Source Check', build_sources()
     if '--files' in sys.argv:

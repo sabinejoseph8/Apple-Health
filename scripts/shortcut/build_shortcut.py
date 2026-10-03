@@ -33,6 +33,15 @@ per month ("backfill" with its month_id), using whole-month searches.
 Month steps use hours only: Adjust Date ignored a step of whole months on
 Sabine's iPhone (1c, 3 October 2026), so the Shortcut moves 40 days on or 15
 days back in hours and snaps to the 1st of that month.
+
+Within a month, heart rate is read one day at a time and the days are
+gathered into the month's single post: iOS stopped the Shortcut when one step
+handled about 3,900 heart rate readings, while about 2,000 worked (1c size
+checks). A day is normally 600 to 1,000 readings. On a heavy day (1,000 or
+more, usually a workout), the Shortcut takes the day's first 1,000 and last
+1,000 readings by time, which keeps the night on either side and drops only
+the middle of the day, which the server sets aside anyway (D43). The other
+readings are small and are read a month at a time.
 After each month it adds the month to Clarivi/import-done.txt and shows
 Clarivi's progress message; months already in that file are skipped, so an
 interrupted import carries on where it stopped. Progress is kept on the phone
@@ -256,7 +265,7 @@ class Builder:
     def end_repeat(self, group):
         self.add('repeat.count', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
 
-    def find_health(self, label, date_row=LAST_DAY):
+    def find_health(self, label, date_row=LAST_DAY, order='Oldest First', limit=None):
         action_id = new_id()
         self.add('filter.health.quantity', {
             'UUID': action_id,
@@ -273,10 +282,16 @@ class Builder:
                 'WFSerializationType': 'WFContentPredicateTableTemplate',
             },
             'WFContentItemSortProperty': 'Start Date',
-            'WFContentItemSortOrder': 'Oldest First',
-            'WFContentItemLimitEnabled': False,
+            'WFContentItemSortOrder': order,
+            'WFContentItemLimitEnabled': limit is not None,
+            **({'WFContentItemLimitNumber': limit} if limit is not None else {}),
         })
         return Out(action_id, 'Health Samples')
+
+    def count(self, ref):
+        action_id = new_id()
+        self.add('count', {'UUID': action_id, 'WFCountType': 'Items', 'Input': attachment(ref), 'WFInput': attachment(ref)})
+        return Out(action_id, 'Count')
 
     def combine(self, ref, separator):
         action_id = new_id()
@@ -357,6 +372,35 @@ def series_text(b, clarivi_type, samples):
 HOURS_TO_NEXT_MONTH = 40 * 24
 HOURS_TO_PREVIOUS_MONTH = 15 * 24
 
+# Heart rate in the import: one day per search, at most this many readings
+# per search (a second search, newest first, only on a heavy day).
+DAY_LIMIT = 1000
+MAX_DAYS_IN_MONTH = 31
+
+
+def heart_rate_by_day(b, month_id):
+    """Gathers the month's heart rate, one day per search, into HeartRateDays
+    as ',{series},{series}...' (empty if there's none)."""
+    label = next(label for label, clarivi_type in HEALTH_TYPES if clarivi_type == 'heart_rate')
+    b.set_variable('Day', b.date_from(variable('Month', date_format('yyyy-MM-dd'))))
+    b.set_variable('HeartRateDays', b.text(''))
+    days = b.repeat_count(MAX_DAYS_IN_MONTH)
+    # Noon on this day plus 24 hours is always the next day (DST moves it an hour at most).
+    later = b.adjust(variable('Day'), 'Add', 24, 'hr')
+    next_day = b.date_from(later.ref(date_format('yyyy-MM-dd')))
+    in_month = b.if_(variable('Day', date_format('yyyy-MM')), 4, string=tokens(month_id.ref()))
+    one_day = {'Operator': 1003, 'Values': {'Date': attachment(variable('Day')),
+                                            'AnotherDate': attachment(next_day.ref())}}
+    early = b.find_health(label, one_day, 'Oldest First', DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',', series_text(b, 'heart_rate', early).ref()))
+    heavy = b.if_(b.count(early.ref()).ref(), 3, number=DAY_LIMIT)
+    late = b.find_health(label, one_day, 'Latest First', DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',', series_text(b, 'heart_rate', late).ref()))
+    b.end_if(heavy)
+    b.end_if(in_month)
+    b.set_variable('Day', next_day)
+    b.end_repeat(days)
+
 
 def import_history(b, url, words):
     """The one-year import: this month and the 11 before it, one post each."""
@@ -373,12 +417,14 @@ def import_history(b, url, words):
     to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
     whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
                                                 'AnotherDate': attachment(next_month.ref())}}
-    series = [series_text(b, clarivi_type, b.find_health(label, whole_month)) for label, clarivi_type in HEALTH_TYPES]
+    small = [series_text(b, clarivi_type, b.find_health(label, whole_month))
+             for label, clarivi_type in HEALTH_TYPES if clarivi_type != 'heart_rate']
+    heart_rate_by_day(b, month_id)
     joined = []
-    for i, text in enumerate(series):
+    for i, text in enumerate(small):
         joined += ([','] if i else []) + [text.ref()]
     body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
-                  variable('Offset'), '","trigger":"manual","series":[', *joined, ']}')
+                  variable('Offset'), '","trigger":"manual","series":[', *joined, variable('HeartRateDays'), ']}')
     reply = b.post(body, url)
     b.stop_if_refused(reply)
     b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
