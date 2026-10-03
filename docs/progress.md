@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a under way on the `phase-1a` branch. Done and checked on the local copy: the app (Vite, React, TypeScript) with manifest, service worker and icon; sign-in and the forced "Set a new password" screen; the `profiles` and `push_subscriptions` tables with row-level security; the `send-push` test notification (the `@negrel/webpush` library works in Supabase's function runtime: a fake device decrypted the message). GitHub Actions run the app, secret and database checks on every push. The database change and functions are on the live Supabase project.
-- **Next action:** Sabine: Supabase dashboard settings (no new sign-ups, 12-character minimum), then Vercel with the Supabase integration, then the two accounts; then the iPhone checks.
+- **Next action:** Sabine: Vercel with the Supabase integration, then the two accounts; then the iPhone checks. (Supabase settings done 3 October 2026: new sign-ups off, confirmed by a refused sign-up; 12-character minimum.)
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
@@ -50,7 +50,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 ### 1a. App, sign-in and push
 - [x] Create the GitHub repository with GitHub Actions
 - [x] Set up the local copy of Supabase (needs Docker) for building and tests
-- [ ] Create the one Supabase project (free plan, US East); switch off new sign-ups; set the 12-character password minimum
+- [x] Create the one Supabase project (free plan, US East); switch off new sign-ups; set the 12-character password minimum
 - [x] Create a Vite + React + TypeScript app with a web app manifest and a service worker
 - [ ] Deploy to Vercel (Hobby) with a production address and preview addresses
 - [ ] Create the owner account and a test account in the dashboard, marked as confirmed (no email)
