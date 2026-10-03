@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** Deploy the updated `ingest` function, reinstall the Shortcut with a reissued token, run it by hand, then set up the two automations and collect about a week of mornings for the three checks.
+- **Next action:** Collect about a week of mornings on Sabine's iPhone for the checks (the first one confirms a complete night, the sleep stages on the server and the "synced today" file); get the dates of a past trip for the time-zone check; fix the missing sleep source and make an unrecognised trigger word harmless.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -67,7 +67,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] Build the `ingest` function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (`night_complete`, `already_complete_today`)
 - [x] Build token creation (shown once) and revocation
 - [ ] Build the Shortcut template: ping first, then read and post readings; save "synced today" to iCloud Drive when the night is complete
-- [ ] Set up both automations (charger unplugged; chosen app opened) on your phone and one tester's
+- [ ] Set up both automations (charger unplugged; chosen app opened) on your phone (the tester's phone moved to the Phase 6 dry run, D44)
 - [ ] **Check:** do Watch sleep stages arrive, or only "asleep"?
 - [ ] **Check:** how often does the unplug run fail because the phone is locked?
 - [ ] **Check:** do readings from a past trip keep their recorded time zone?
@@ -118,6 +118,10 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - **Sleep stages (check 1):** the Watch's stages come through by name (Core, Deep, REM, Awake), not only "asleep" (seen on Sabine's iPhone with Clarivi Check; to confirm on the server after the first full morning sync).
 - **Health searches only work in whole days.** "Start Date is after" a time finds nothing; "between" two times and "in the last N hours" widen to whole days; "in the last 1 day" means yesterday and today. A date-only text ("2026-10-03") is read as noon. Fallback taken: fetch whole days, apply the heart-rate window on the server (D43).
 - **One line per reading is far too slow.** 1,063 heart-rate readings took 14 minutes 28 seconds; joining each column as a list took 1.3 seconds. Fallback taken: send columns (D42). This also makes the 1c import practical.
+- iOS blocks a Shortcut from sending more than a small number of Health items until Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data" is turned on (1,138 items were refused). Sabine turned it on; it goes in the setup guide.
+- With it on, the first full post stored 305 readings: 237 heart rate (12 to 15 an hour across 6pm to noon; about 830 from noon to 6pm were set aside, as D43 intends), 13 HRV, 39 breathing rate, 1 resting heart rate and 15 sleep stages (awake, core, deep, REM).
+- Known issue: sleep readings arrived without their source name; the other types have it. To fix before Phase 2, which uses the source to keep Watch readings only (D10).
+- Both automations are set up on Sabine's iPhone (iOS 27's new editor: the trigger is the first block of the automation). The tester-phone part moved to the Phase 6 dry run (D44, 3 October 2026).
 - Still to measure: the locked-phone rate (check 2), past time zones (check 3), and the "already synced" file on real mornings.
 
 ---
@@ -299,10 +303,10 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Make the first `db dump` backup to an encrypted laptop folder; practise one restore on the local copy
 - [ ] Check the Cayman Data Protection Act's rules for health data and storage in the US
 - [ ] Write the consent form (including lock-screen visibility and US storage) and collect signatures
-- [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact)
+- [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact). From the 1b spike: turn on Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data"; build each automation from the Automation tab (iOS 27 shows it as "When ... is Opened"/"When power Disconnects"), with a Text action holding exactly `charger` or `app`, then Run Shortcut with that Text as input
 - [ ] Publish Shortcut template v1 (blank, asks for the token at install)
 - [ ] Check the one-screen fit on each tester's iPhone model
-- [ ] Run a one-week dry run with one tester; fix what breaks
+- [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone part of 1b (D44): both automations on their phone, the locked-phone rate and the sleep stages from their Watch
 - [ ] Freeze the score settings; tag the release; write the changelog
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 

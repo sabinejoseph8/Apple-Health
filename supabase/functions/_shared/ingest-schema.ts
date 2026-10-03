@@ -286,11 +286,13 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
       reject('month_id is only for a backfill')
     }
 
+    // Which automation ran the Shortcut. A word the automation's Text box
+    // doesn't spell exactly (for example the app's name instead of "app") is
+    // recorded as unknown rather than costing the morning's readings.
     let trigger: Trigger | null = null
-    if (body.trigger !== undefined && body.trigger !== null && body.trigger !== '') {
-      const t = typeof body.trigger === 'string' ? body.trigger.trim().toLowerCase() : ''
-      if (!(TRIGGERS as readonly string[]).includes(t)) reject('unknown trigger')
-      trigger = t as Trigger
+    if (typeof body.trigger === 'string') {
+      const t = body.trigger.trim().toLowerCase()
+      if ((TRIGGERS as readonly string[]).includes(t)) trigger = t as Trigger
     }
 
     const rawSamples = body.samples ?? []

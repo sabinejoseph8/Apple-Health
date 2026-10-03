@@ -113,9 +113,20 @@ Deno.test('the post itself must be well formed', () => {
   assertStringIncludes(error(daily([hr], { kind: 'weekly' })), 'kind')
   assertStringIncludes(error(daily([hr], { device_tz_offset_min: 2000 })), 'device_tz_offset_min')
   assertStringIncludes(error(daily([hr], { device_tz_offset_min: undefined })), 'device_tz_offset_min')
-  assertStringIncludes(error(daily([hr], { trigger: 'alarm' })), 'trigger')
   assertStringIncludes(error(daily([hr], { month_id: '2026-09' })), 'only for a backfill')
   assertStringIncludes(error(daily([], { samples: 'lots' })), 'list')
+})
+
+Deno.test('an unrecognised trigger word is recorded as unknown, and the readings are kept', () => {
+  for (const given of ['Tiktok', 'alarm', 42]) {
+    const r = parseUpload(daily([hr], { trigger: given }), NOW)
+    assert(r.ok, String(given))
+    assertEquals(r.upload.trigger, null)
+    assertEquals(r.upload.samples.length, 1)
+  }
+  const spaced = parseUpload(daily([hr], { trigger: ' Charger ' }), NOW)
+  assert(spaced.ok)
+  assertEquals(spaced.upload.trigger, 'charger')
 })
 
 Deno.test('a ping carries no readings', () => {
