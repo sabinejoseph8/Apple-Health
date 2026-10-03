@@ -1,0 +1,399 @@
+#!/usr/bin/env python3
+"""Builds the "Clarivi Sync" iPhone Shortcut (docs/tech-spec.md, section 4).
+
+Run:  python3 scripts/shortcut/build_shortcut.py
+Writes private/shortcut/Clarivi Sync (unsigned).shortcut, then signs it with
+Apple's own `shortcuts sign` tool into private/shortcut/Clarivi Sync.shortcut.
+
+The template is blank: it asks for the upload token when it's installed, so a
+configured Shortcut is never shared (tech-spec section 6). The signed file
+carries the signer's Apple account details, so it stays in private/ (never
+committed); only this script is in the repository.
+
+What the Shortcut does, each run:
+1. Works out which automation ran it from its input ("charger" or "app"), or
+   "manual" when run by hand. Automations only act between 4am and noon.
+2. Stops if iCloud Drive/Shortcuts/Clarivi/last-sync.txt already holds
+   today's date (the second "already synced" check).
+3. Sends a ping. Stops if the reply says today is already complete, or shows
+   the reply's message if Clarivi refused it.
+4. Reads last night's readings (heart rate, HRV, breathing rate and sleep
+   stages from 6pm yesterday, resting heart rate from yesterday) and posts
+   them as one daily post.
+5. Saves today's date to last-sync.txt once the night is complete, and shows
+   Clarivi's message when run by hand.
+
+The Shortcut tests the reply's JSON text for "already_complete_today":true,
+"night_complete":true and "error", which the ingest function's tests pin
+down (supabase/functions/ingest/handler.test.ts).
+"""
+
+import json
+import plistlib
+import subprocess
+import sys
+import uuid
+from pathlib import Path
+
+INGEST_URL = 'https://vuynnnrijdbvamwfauog.supabase.co/functions/v1/ingest'
+TOKEN_PLACEHOLDER = 'Paste your upload token here'
+MARKER_FOLDER = 'Clarivi/'
+MARKER_FILE = 'last-sync.txt'
+OBJ = '￼'  # where a variable sits inside a text field
+
+# Health types: Find Health Samples picker label, Clarivi type, window.
+HEALTH_TYPES = [
+    ('Heart Rate', 'heart_rate', 'evening'),
+    ('Heart Rate Variability', 'hrv_sdnn', 'evening'),
+    ('Respiratory Rate', 'respiratory_rate', 'evening'),
+    ('Resting Heart Rate', 'resting_hr', 'yesterday'),
+    ('Sleep', 'sleep_stage', 'evening'),
+]
+
+ISO_TIME = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
+
+
+def new_id():
+    return str(uuid.uuid4()).upper()
+
+
+# References to values: an action's output, a named variable, the current
+# date or the Shortcut's input. Each can carry aggrandizements (a property,
+# a date format or a type coercion).
+def output(action_id, name, *aggr):
+    ref = {'Type': 'ActionOutput', 'OutputUUID': action_id, 'OutputName': name}
+    if aggr:
+        ref['Aggrandizements'] = list(aggr)
+    return ref
+
+
+def variable(name, *aggr):
+    ref = {'Type': 'Variable', 'VariableName': name}
+    if aggr:
+        ref['Aggrandizements'] = list(aggr)
+    return ref
+
+
+def current_date(*aggr):
+    ref = {'Type': 'CurrentDate'}
+    if aggr:
+        ref['Aggrandizements'] = list(aggr)
+    return ref
+
+
+def shortcut_input():
+    return {'Type': 'ExtensionInput'}
+
+
+def date_format(pattern):
+    return {'Type': 'WFDateFormatVariableAggrandizement', 'WFDateFormatStyle': 'Custom',
+            'WFDateFormat': pattern, 'WFISO8601IncludeTime': False}
+
+
+def prop(name):
+    return {'Type': 'WFPropertyVariableAggrandizement', 'PropertyName': name}
+
+
+def as_text():
+    return {'Type': 'WFCoercionVariableAggrandizement', 'CoercionItemClass': 'WFStringContentItem'}
+
+
+def attachment(ref):
+    return {'Value': ref, 'WFSerializationType': 'WFTextTokenAttachment'}
+
+
+def tokens(*parts):
+    """Text with variables: plain strings and references, in order."""
+    text = ''
+    ranges = {}
+    for part in parts:
+        if isinstance(part, str):
+            text += part
+        else:
+            ranges[f'{{{len(text)}, 1}}'] = part
+            text += OBJ
+    return {'Value': {'string': text, 'attachmentsByRange': ranges}, 'WFSerializationType': 'WFTextTokenString'}
+
+
+class Out:
+    """An action's output, usable as a reference."""
+
+    def __init__(self, action_id, name):
+        self.id = action_id
+        self.name = name
+
+    def ref(self, *aggr):
+        return output(self.id, self.name, *aggr)
+
+
+class Builder:
+    def __init__(self):
+        self.actions = []
+        self.questions = []
+
+    def add(self, identifier, params):
+        self.actions.append({'WFWorkflowActionIdentifier': f'is.workflow.actions.{identifier}',
+                             'WFWorkflowActionParameters': params})
+        return len(self.actions) - 1
+
+    def comment(self, text):
+        self.add('comment', {'WFCommentActionText': text})
+
+    def text(self, *parts):
+        action_id = new_id()
+        value = parts[0] if len(parts) == 1 and isinstance(parts[0], str) else tokens(*parts)
+        self.add('gettext', {'UUID': action_id, 'WFTextActionText': value})
+        return Out(action_id, 'Text')
+
+    def set_variable(self, name, out):
+        self.add('setvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
+
+    def append_variable(self, name, out):
+        self.add('appendvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
+
+    def number(self, out):
+        action_id = new_id()
+        self.add('number', {'UUID': action_id, 'WFNumberActionNumber': attachment(out.ref())})
+        return Out(action_id, 'Number')
+
+    def if_(self, ref, condition, string=None, number=None):
+        group = new_id()
+        params = {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFCondition': condition,
+                  'WFInput': {'Type': 'Variable', 'Variable': attachment(ref)}}
+        if string is not None:
+            params['WFConditionalActionString'] = string
+        if number is not None:
+            params['WFNumberValue'] = str(number)
+        self.add('conditional', params)
+        return group
+
+    def otherwise(self, group):
+        self.add('conditional', {'GroupingIdentifier': group, 'WFControlFlowMode': 1})
+
+    def end_if(self, group):
+        self.add('conditional', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
+    def repeat_each(self, out):
+        group = new_id()
+        self.add('repeat.each', {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFInput': attachment(out.ref())})
+        return group
+
+    def end_repeat(self, group):
+        self.add('repeat.each', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
+    def stop(self):
+        self.add('exit', {})
+
+    def notify(self, *parts):
+        self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens('Clarivi'),
+                                  'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
+
+    def date_from(self, *parts):
+        action_id = new_id()
+        self.add('date', {'UUID': action_id, 'WFDateActionMode': 'Specified Date', 'WFDateActionDate': tokens(*parts)})
+        return Out(action_id, 'Date')
+
+    def subtract(self, date, magnitude, unit):
+        action_id = new_id()
+        self.add('adjustdate', {
+            'UUID': action_id,
+            'WFDate': tokens(date.ref()),
+            'WFAdjustOperation': 'Subtract',
+            'WFDuration': {'Value': {'Magnitude': str(magnitude), 'Unit': unit}, 'WFSerializationType': 'WFQuantityFieldValue'},
+        })
+        return Out(action_id, 'Adjusted Date')
+
+    def find_health(self, label, since):
+        action_id = new_id()
+        self.add('filter.health.quantity', {
+            'UUID': action_id,
+            'WFContentItemFilter': {
+                'Value': {
+                    'WFActionParameterFilterPrefix': 1,
+                    'WFContentPredicateBoundedDate': False,
+                    'WFActionParameterFilterTemplates': [
+                        {'Bounded': True, 'Operator': 4, 'Property': 'Type', 'Removable': False,
+                         'Values': {'Enumeration': {'Value': label, 'WFSerializationType': 'WFStringSubstitutableState'}}},
+                        {'Bounded': True, 'Operator': 2, 'Property': 'Start Date', 'Removable': True,
+                         'Values': {'Date': attachment(since.ref())}},
+                    ],
+                },
+                'WFSerializationType': 'WFContentPredicateTableTemplate',
+            },
+            'WFContentItemSortProperty': 'Start Date',
+            'WFContentItemSortOrder': 'Oldest First',
+            'WFContentItemLimitEnabled': False,
+        })
+        return Out(action_id, 'Health Samples')
+
+    def combine(self, ref, separator):
+        action_id = new_id()
+        self.add('text.combine', {'UUID': action_id, 'Show-text': True, 'WFTextSeparator': 'Custom',
+                                  'WFTextCustomSeparator': separator, 'text': attachment(ref)})
+        return Out(action_id, 'Combined Text')
+
+    def post(self, body, url):
+        action_id = new_id()
+
+        def header(key, *value):
+            return {'WFItemType': 0, 'WFKey': tokens(key), 'WFValue': tokens(*value)}
+
+        self.add('downloadurl', {
+            'UUID': action_id,
+            'WFURL': tokens(url),
+            'WFHTTPMethod': 'POST',
+            'WFHTTPBodyType': 'File',
+            'WFRequestVariable': attachment(body.ref()),
+            'WFFormValues': {'Value': {'WFDictionaryFieldValueItems': []}, 'WFSerializationType': 'WFDictionaryFieldValue'},
+            'WFHTTPHeaders': {'Value': {'WFDictionaryFieldValueItems': [
+                header('Authorization', 'Bearer ', variable('Token')),
+                header('Content-Type', 'application/json'),
+            ]}, 'WFSerializationType': 'WFDictionaryFieldValue'},
+            'Advanced': True,
+            'ShowHeaders': True,
+        })
+        return Out(action_id, 'Contents of URL')
+
+    def dictionary_value(self, out, key):
+        action_id = new_id()
+        self.add('getvalueforkey', {'UUID': action_id, 'WFGetDictionaryValueType': 'Value',
+                                    'WFDictionaryKey': key, 'WFInput': attachment(out.ref())})
+        return Out(action_id, 'Dictionary Value')
+
+    def get_marker(self):
+        action_id = new_id()
+        self.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': MARKER_FOLDER + MARKER_FILE,
+                                         'WFFileErrorIfNotFound': False, 'WFShowFilePicker': False})
+        return Out(action_id, 'File')
+
+    def save_marker(self):
+        today = self.text(variable('Today'))
+        named_id = new_id()
+        self.add('setitemname', {'UUID': named_id, 'WFInput': attachment(today.ref()), 'WFName': MARKER_FILE})
+        self.add('documentpicker.save', {'UUID': new_id(), 'WFInput': attachment(output(named_id, 'Renamed Item')),
+                                         'WFAskWhereToSave': False, 'WFFileDestinationPath': MARKER_FOLDER,
+                                         'WFSaveFileOverwrite': True})
+
+    def stop_if_refused(self, reply):
+        group = self.if_(reply.ref(as_text()), 99, string='"error"')
+        message = self.dictionary_value(reply, 'message')
+        self.notify(message.ref())
+        self.stop()
+        self.end_if(group)
+
+
+def sample_line(clarivi_type):
+    item = 'Repeat Item'
+    start = variable(item, prop('Start Date'), date_format(ISO_TIME))
+    end = variable(item, prop('End Date'), date_format(ISO_TIME))
+    value = variable(item, prop('Value'))
+    source = variable(item, prop('Source'))
+    if clarivi_type == 'sleep_stage':
+        return ('{"type":"sleep_stage","start":"', start, '","end":"', end,
+                '","stage":"', value, '","source":"', source, '"}')
+    unit = variable(item, prop('Unit'))
+    return ('{"type":"' + clarivi_type + '","start":"', start, '","end":"', end, '","value":"', value,
+            '","unit":"', unit, '","source":"', source, '"}')
+
+
+def build(url=INGEST_URL):
+    b = Builder()
+    b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from two automations '
+              '(charger unplugged, and an app you open each morning) and can be run by hand.')
+
+    token = b.text(TOKEN_PLACEHOLDER)
+    b.questions.append({'ActionIndex': len(b.actions) - 1, 'Category': 'Parameter', 'DefaultValue': '',
+                        'ParameterKey': 'WFTextActionText',
+                        'Text': 'Paste your upload token from Clarivi (Upload token, then Create token).'})
+    b.set_variable('Token', token)
+
+    b.comment('Which automation ran this: "charger" or "app", passed in as input. Run by hand, it is "manual".')
+    group = b.if_(shortcut_input(), 100)
+    b.set_variable('Trigger', b.text(shortcut_input()))
+    b.otherwise(group)
+    b.set_variable('Trigger', b.text('manual'))
+    b.end_if(group)
+
+    b.comment('Automations only act between 4am and noon.')
+    hour = b.number(b.text(current_date(date_format('H'))))
+    automatic = b.if_(variable('Trigger'), 5, string='manual')
+    early = b.if_(hour.ref(), 0, number=4)
+    b.stop()
+    b.end_if(early)
+    late = b.if_(hour.ref(), 2, number=11)
+    b.stop()
+    b.end_if(late)
+    b.end_if(automatic)
+
+    b.set_variable('Today', b.text(current_date(date_format('yyyy-MM-dd'))))
+    b.set_variable('Offset', b.text(current_date(date_format('XXXXX'))))
+
+    b.comment('Stop if this phone already finished today\'s sync.')
+    marker = b.get_marker()
+    done = b.if_(marker.ref(as_text()), 4, string=tokens(variable('Today')))
+    b.stop()
+    b.end_if(done)
+
+    b.comment('Ask Clarivi whether today\'s sync is already done.')
+    ping_body = b.text('{"schema_version":1,"kind":"ping","device_tz_offset_min":"', variable('Offset'),
+                       '","trigger":"', variable('Trigger'), '"}')
+    ping = b.post(ping_body, url)
+    b.stop_if_refused(ping)
+    already = b.if_(ping.ref(as_text()), 99, string='"already_complete_today":true')
+    b.save_marker()
+    b.stop()
+    b.end_if(already)
+
+    b.comment('Read last night\'s readings from 6pm yesterday, and resting heart rate from yesterday.')
+    start_of_today = b.date_from(current_date(date_format('yyyy-MM-dd')))
+    since = {'evening': b.subtract(start_of_today, 6, 'hr'), 'yesterday': b.subtract(start_of_today, 1, 'days')}
+    for label, clarivi_type, window in HEALTH_TYPES:
+        samples = b.find_health(label, since[window])
+        loop = b.repeat_each(samples)
+        b.append_variable('Samples', b.text(*sample_line(clarivi_type)))
+        b.end_repeat(loop)
+
+    b.comment('Send the readings.')
+    joined = b.combine(variable('Samples'), ',')
+    body = b.text('{"schema_version":1,"kind":"daily","device_tz_offset_min":"', variable('Offset'),
+                  '","trigger":"', variable('Trigger'), '","samples":[', joined.ref(), ']}')
+    reply = b.post(body, url)
+    b.stop_if_refused(reply)
+    complete = b.if_(reply.ref(as_text()), 99, string='"night_complete":true')
+    b.save_marker()
+    b.end_if(complete)
+    by_hand = b.if_(variable('Trigger'), 4, string='manual')
+    b.notify(b.dictionary_value(reply, 'message').ref())
+    b.end_if(by_hand)
+
+    return {
+        'WFWorkflowClientVersion': '2700.0.4',
+        'WFWorkflowMinimumClientVersion': 900,
+        'WFWorkflowMinimumClientVersionString': '900',
+        'WFWorkflowHasOutputFallback': False,
+        'WFWorkflowIcon': {'WFWorkflowIconStartColor': 431817727, 'WFWorkflowIconGlyphNumber': 59446},
+        'WFWorkflowImportQuestions': b.questions,
+        'WFWorkflowInputContentItemClasses': ['WFStringContentItem'],
+        'WFWorkflowOutputContentItemClasses': [],
+        'WFWorkflowTypes': [],
+        'WFWorkflowActions': b.actions,
+    }
+
+
+def main():
+    root = Path(__file__).resolve().parents[2]
+    out_dir = root / 'private' / 'shortcut'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    unsigned = out_dir / 'Clarivi Sync (unsigned).shortcut'
+    signed = out_dir / 'Clarivi Sync.shortcut'
+    with open(unsigned, 'wb') as f:
+        plistlib.dump(build(), f, fmt=plistlib.FMT_BINARY)
+    print(f'Built {unsigned.relative_to(root)}')
+    if '--no-sign' in sys.argv:
+        return
+    subprocess.run(['shortcuts', 'sign', '--mode', 'anyone', '--input', str(unsigned), '--output', str(signed)], check=True)
+    print(f'Signed {signed.relative_to(root)} (keep it private: it carries the signer\'s Apple account details)')
+
+
+if __name__ == '__main__':
+    main()

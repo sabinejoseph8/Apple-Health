@@ -145,3 +145,26 @@ Deno.test(`more than ${MAX_SAMPLES} readings in one post are rejected`, () => {
   const many = Array.from({ length: MAX_SAMPLES + 1 }, () => hr)
   assertStringIncludes(error(daily(many)), 'more than')
 })
+
+// The exact shape the Clarivi Sync Shortcut posts (scripts/shortcut/build_shortcut.py):
+// text values, the phone's offset as "-04:00" and the sleep stage in "stage".
+Deno.test('a post shaped like the Shortcut\'s is accepted', () => {
+  const r = parseUpload({
+    schema_version: 1,
+    kind: 'daily',
+    device_tz_offset_min: '-04:00',
+    trigger: 'charger',
+    samples: [
+      { type: 'heart_rate', start: '2026-10-03T03:10:00-04:00', end: '2026-10-03T03:10:00-04:00', value: '52', unit: 'count/min', source: 'Sabine’s Apple Watch' },
+      { type: 'hrv_sdnn', start: '2026-10-03T03:12:00-04:00', end: '2026-10-03T03:13:00-04:00', value: '41.7', unit: 'ms', source: 'Sabine’s Apple Watch' },
+      { type: 'resting_hr', start: '2026-10-02T00:01:00-04:00', end: '2026-10-02T23:59:00-04:00', value: '57', unit: 'count/min', source: 'Sabine’s Apple Watch' },
+      { type: 'sleep_stage', start: '2026-10-03T01:00:00-04:00', end: '2026-10-03T01:40:00-04:00', stage: 'Core', source: 'Sabine’s Apple Watch' },
+    ],
+  }, NOW)
+  assert(r.ok)
+  assertEquals(r.upload.device_tz_offset_min, -240)
+  assertEquals(r.upload.samples.map((s) => s.value), [52, 41.7, 57, null])
+  assertEquals(r.upload.samples[3].stage, 'core')
+  const empty = parseUpload({ schema_version: 1, kind: 'daily', device_tz_offset_min: '-04:00', trigger: 'app', samples: [] }, NOW)
+  assert(empty.ok, 'a daily post with no readings is still logged')
+})

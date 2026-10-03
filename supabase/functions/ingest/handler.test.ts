@@ -137,3 +137,16 @@ Deno.test('unknown tokens, replaced tokens and too many posts get their own repl
     assert(!('accepted' in reply))
   }
 })
+
+// The Shortcut reads replies as text and looks for these exact pieces
+// (scripts/shortcut/build_shortcut.py), so their spelling must not change.
+Deno.test('replies contain the exact text the Shortcut looks for', async () => {
+  const done = fakeStore({ accepted: 0, duplicates: 0, night_complete: true, already_complete_today: true })
+  const text = await (await handleIngest(post(body), done.deps)).text()
+  assert(text.includes('"night_complete":true'), text)
+  assert(text.includes('"already_complete_today":true'), text)
+  const refused = fakeStore({ error: 'token_revoked' })
+  assert((await (await handleIngest(post(body), refused.deps)).text()).includes('"error"'))
+  const fine = fakeStore(stored)
+  assert(!(await (await handleIngest(post(body), fine.deps)).text()).includes('"error"'))
+})

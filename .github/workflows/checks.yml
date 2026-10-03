@@ -18,6 +18,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:functions
+      - name: The iPhone Shortcut is well formed
+        run: python3 scripts/shortcut/test_build_shortcut.py
       # The build ends with scripts/check-build-secrets.mjs, which fails if
       # anything secret reached the files sent to browsers.
       - run: npm run build
