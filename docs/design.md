@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (what Phase 1a built from the Default form, icon and notification patterns)
+**Last updated:** 3 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
@@ -13,7 +13,7 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 
 - **Answer first.** The status and today's action come before any chart.
 - **Plain words, numbers on tap.** Sentences on the surface; exact numbers one tap away.
-- **Your normal, not anyone else's.** Every reading is compared with the user's own 28-night normal, never with population norms or other users.
+- **Your normal, not anyone else's.** Every reading is compared with the user's own normal (from their last 42 nights), never with population norms or other users.
 - **Show the working.** Any status can be traced to its readings and points on Why today.
 - **Quiet by default.** Normal readings look calm. Colour and emphasis go only to what is unusual.
 - **One screen in the morning.** The morning card fits on one iPhone screen without scrolling.
@@ -197,8 +197,8 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 **Status decision section**
 - A plain-words explanation, then "Show the numbers", which reveals:
   - a points table (reading and points, with a divider and "Today's total")
-  - three zone boxes (Ready under 1, Ease off 1 to 2, Rest 2 or more), with today's box ringed and labelled "Today"
-- Footnote: "Your normal comes from your last 28 nights."
+  - three zone boxes (Ready under 1.2, Ease off 1.2 to 2.4, Rest 2.4 or more), with today's box ringed and labelled "Today". The Clarivi Screens canvas shows the earlier placeholder numbers (1 and 2); the screens take the numbers from the active score settings (set 3 October 2026, D59).
+- Footnote: "Your normal comes from your last 42 nights." (The canvas says 28, the earlier window.)
 
 **Primary button**
 - Full width, Link blue fill, white 17 / 600 text, 50 points high ("See your trends").

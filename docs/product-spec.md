@@ -142,7 +142,7 @@
 - **R29 No sync by noon.** The card says there is no status today. No nudge and no 8pm question follow.
 - **R30 Partial.** If one reading is missing or still building its baseline, the status comes from the other two, and the card says "Based on 2 of 3 readings".
 - **R31 Not enough data.** If two or more readings are missing, or no sleep was recorded, the card says "Not enough data last night", with no status and no notification.
-- **R32 Learning your normal.** If two or more readings are still building a baseline (fewer than 21 valid nights out of 28), the card shows "Learning your normal" with progress (for example "14 of 21 nights"). It shows last night's values in plain words, with no verdicts, no status, no notification and no 8pm question.
+- **R32 Learning your normal.** If two or more readings are still building a baseline (fewer than 21 valid nights out of the last 42; 28 until 3 October 2026), the card shows "Learning your normal" with progress (for example "14 of 21 nights"). It shows last night's values in plain words, with no verdicts, no status, no notification and no 8pm question.
 - **R33 Illness check.** If several overnight readings move together, the card shows a short pattern note, never a diagnosis. The words "no early sign of illness or heavy strain" appear only when the illness check ran with its inputs.
 - **R34** If notifications are off or failing, the card says so and explains how to turn them back on.
 
@@ -157,7 +157,7 @@
   - a 4-week chart with the normal range shaded and last night marked
 - **R38** "Show the numbers" on a card reveals its normal range, how far last night was from normal, and how it compares with the last 4 weeks (for example "Your lowest night"). Tapping again hides them.
 - **R39** An "Also checked" card shows breathing rate and yesterday's resting heart rate, plus the result of the illness check.
-- **R40** "How today's status is decided" explains in plain words that each reading adds points when it is worse than normal, and more for the readings that matter most. On tap, it shows each reading's points, today's total and the three zones (Ready under 1, Ease off 1 to 2, Rest 2 or more), with today's zone highlighted. The weights themselves are never shown. The zone numbers are placeholders until the score numbers are set (open question 1).
+- **R40** "How today's status is decided" explains in plain words that each reading adds points when it is worse than normal, and more for the readings that matter most. On tap, it shows each reading's points, today's total and the three zones (Ready under 1.2, Ease off 1.2 to 2.4, Rest 2.4 or more, set 3 October 2026), with today's zone highlighted. The weights themselves are never shown.
 - **R41** If a reading is missing, its card says "No reading last night", its chart shows a gap, and its points show as not counted.
 - **R42** If a reading's baseline is still building, its card shows the value and chart without the shaded range or a verdict, plus the number of nights collected.
 - **R43** Each opening of Why today is logged.
@@ -195,7 +195,7 @@
 - **R63** The owner can create an account with a temporary password, and can reset any user's password to a new temporary one.
 - **R64** The owner can see, for each user: last successful sync, days with an 11:30 reminder (flagged after two in a row), notification delivery failures in the last two days, and import progress. Default: an owner-only page in the app.
 - **R65** The owner can record dated events (illness, major events) for her own year. No screen is required; a simple entry method is enough.
-- **R66** For the owner's account only, the one-time import also brings in workout summaries, used only for the Signal check.
+- **R66** For the owner's account only, workout summaries are loaded once from a Health app export (changed 3 October 2026: no longer through the import Shortcut), used only for the Signal check.
 - **R67** The owner can change the score settings (weights, zone limits, baseline window) without a new release. The settings are frozen for the four-week test.
 
 ---
@@ -284,7 +284,7 @@
 | Sync | Automatic each morning by iPhone Shortcut, when the phone is unplugged or the chosen app opens; a one-time import of the last 12 months in monthly parts |
 | Morning notification | Status and reason; tapping it opens the card |
 | Score readings | Heart rate variability, sleep and sleeping heart rate. Apple's resting heart rate feeds only the illness check |
-| Score method | Fixed weights against a personal 28-night normal, with at least 21 valid nights |
+| Score method | Fixed weights against a personal normal from the last 42 nights, with at least 21 valid nights |
 | Test | Four weeks, judged against the targets in section 9 |
 | Weekly digest | Written from a template, shown in the app only |
 | Card and Why today | The card shows status and drivers; Why today is one tap away |
@@ -306,11 +306,19 @@
 | Name (30 Sep 2026) | The product is called Clarivi (previously the working name Morning Readiness) |
 | Password minimum (3 Oct 2026) | 12 characters (R3) |
 | Shared phones (3 Oct 2026) | A phone's notifications go to whoever signed in on it last (R9) |
+| What counts as a night (3 Oct 2026) | All the time asleep from 6pm to noon, dated by that morning; afternoon sleep is a nap; overlapping sleep records count once, with awake winning |
+| Points (3 Oct 2026) | Each reading earns its weight times how far it was worse than normal, measured in spreads; nothing when normal or better (R40) |
+| Nudge choice (3 Oct 2026) | Ready: train as planned. Rest: rest. Ease off: prioritise sleep when sleep earns the most points, otherwise train easy (R22) |
+| Illness check (3 Oct 2026) | The pattern note shows when at least 3 of 4 overnight readings each move at least 1 spread the wrong way; it never changes the status or the nudge (R33) |
+| Owner's workouts (3 Oct 2026) | Loaded once from a Health app export on the owner's Mac, not through the Shortcut (R66) |
+| Disrupted days for the Signal check (3 Oct 2026) | Each day of illness; the morning after a travel day or a major event; the morning of a workout far below the owner's usual |
+| Watch readings (3 Oct 2026) | A Watch is recognised as any source that records heart rate; other apps' and the iPhone's readings are ignored (R15). When two watches give a resting heart rate for the same day, the middle value is used |
+| Score numbers (3 Oct 2026) | Weights 40/35/25; Ease off from 1.2, Rest from 2.4; normals from the last 42 nights with at least 21 valid; frozen for the test |
 
 ### Open questions (each with a recommended default)
-1. **Score numbers.** Default: heart rate variability 40%, sleeping heart rate 35%, sleep 25%. Ease off starts at 1 point and Rest at 2. Set from the owner's backfilled year, then frozen.
-2. **Cap when a reading is missing.** Default: no cap, unless the backfill shows single readings pushing days to Rest. If it does, cap at Ease off.
-3. **Heart rate variability baseline.** Default: 21 valid nights out of 28, like the others. If heart rate variability is often missing, use 14 nights or a 42-night window.
+1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.
+2. **Cap when a reading is missing.** Settled 3 October 2026: no cap (the owner's year has no days scored from 2 of 3 readings).
+3. **Heart rate variability baseline.** Settled 3 October 2026: 21 valid nights out of the last 42, like the others (HRV is present on nearly every tracked night; the longer window is for gaps in tracking), and one HRV reading is enough for a night to count.
 4. **Session length (R6).** Default: 30 days without use.
 5. **Minimum password length (R3).** Settled 3 October 2026: 12 characters, set on the live project and checked by the app.
 6. **Trend view range (R44).** Default: the last 8 weeks.

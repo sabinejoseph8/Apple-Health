@@ -1,16 +1,26 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1c done: Sabine's year imported; Phase 1b's locked-phone check collecting over a week; decisions D42 to D45)
+**Last updated:** 3 October 2026 (Phases 2a to 2c done and live; Phase 1b's locked-phone check collecting over a week; decisions D42 to D60)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
 
 ## Summary
 
-- **Current phase:** Phase 1, Spikes (In progress)
+- **Current phase:** Phase 2, Data and analysis (In progress), while Phase 1's last check collects itself
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge `phase-1b-daily-sync` to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
+- **Phase 2a (3 October 2026):** nights, normals and the analysis queue are built on branch `phase-2a-nights` (from `phase-1b-daily-sync`) and pass their tests on the local copy. The night rules are D48. Released the same day: the every-minute scheduler built Sabine's 239 nights and their normals within a minute. The first look at them found overlapping sleep records on 18 nights, which counted sleep twice; Sabine chose to count each moment once with awake winning (D49), released as a second migration. Checking one night against the Health app then showed the 90-minute rule cutting nights with a long awake spell (41 of 239 nights); Sabine chose to count all sleep from 6pm to noon as the night (D50), a third migration. With all three live, Sabine's year has 237 nights with all five normals built, and two nights checked against the Health app (one imported, one from a daily sync) each match within 2 minutes. 2a done on 3 October 2026.
+- **Phase 2b (3 October 2026):** score settings, the daily status (points, zones, missing and building readings, the nudge, the illness check) and insights are built on branch `phase-2b-status` (from `phase-2a-nights`) and pass their tests on the local copy, with Sabine's decisions D51 to D53. Phase 2's manual check 2 now uses an automated test for the design's made-up sample day. Released the same day: Sabine's year has 237 days with a status row (105 Ready, 19 Ease off, 4 Rest, 108 learning your normal, 1 not enough data); the illness check ran on 128 and showed its note on 12. Sabine checked 3 October's breakdown by hand (Ready, 0.47 points, all from a short sleep). 2b done on 3 October 2026.
+- **Notes for 2c:** 108 of 237 days are "learning your normal" because gaps in Watch tracking leave fewer than 21 valid nights in 28 (the window and minimum are settings now); Ease off or Rest fire on 23 of 128 scored days (about 1 in 6, above the "about 1 in 7" limit); a short night can still be Ready because Sabine's sleep varies widely (a wide normal range) and sleep weighs 25%; "prioritise sleep" never fires on her year; Sabine doesn't remember the flagged days, so the calendar check matters.
+- **Phase 2c (3 October 2026):** the events and workouts tables, the owner's loader scripts, the pandas reference with its check and the Signal measurement are built on branch `phase-2c-tuning` (from `phase-2b-status`) and pass their tests; the reference matches the database on a made-up history. Decisions D54 and D55.
+- **First reference check on Sabine's year (3 October 2026):** statuses matched on all 237 days; nights differed on 1 value (one night's resting heart rate) and normals on 62 (its knock-on), because two watches gave resting heart rates for the same day and an app (Athlytic) also wrote some. Fixed with D56 and D57 (migration `20261004020000_watch_sources.sql`). The terminal panel showed Sabine's password at the hidden prompt, so the scripts now remember the sign-in and she is changing her password.
+- **Reference check passed (3 October 2026):** after the Watch-only fix (released) and Sabine's password change, `check.py --live` matches the database on all 237 nights, 1,185 normals and 237 statuses (the D9 correctness gate, for settings version 1; rerun after any change to the rules or settings).
+- **Events (3 October 2026):** no calendar illness or major events (Sabine doesn't remember any; D58); the trip's two travel days are loaded from `private/events.csv`.
+- **Workouts and measurement (3 October 2026):** the Health export gave 280 workouts (242 from the Ultra, 18 from the second watch, 20 from apps, which don't count); loaded. Measured on her year: version 1 fired on about 1 day in 6 and caught 0 of 11 disrupted days with a status; judged by day (D60), 1 of 13. Sabine set the final numbers (D59): version 2, normals from 42 nights, Ease off from 1.2, Rest from 2.4, frozen. **Signal on her year: not met** (1 of 13; the evidence is thin, D58), recorded in mvp.md; the testers' check-ins carry the Signal.
+- **2c done (3 October 2026):** version 2 is live and frozen; Sabine's year has 181 Ready, 25 Ease off, 3 Rest and 27 learning days; the reference check matches on all 237 nights, 1,185 normals and 237 statuses under version 2. Phase 2 manual checks: 1 (reference) passed; 2 (sample day) is an automated test, and a recent real morning was checked by hand; 3 (Signal on her year) measured and not met, recorded in mvp.md; 4 (no-push imports) holds in the queue (imports never ask to notify, tested), and is checked again on the outbox in Phase 4.
+- **Phase 2 code review (3 October 2026):** 14 findings. Fixed: Sabine's readings, dates and trip had been written into the public docs, migration comments and two tests (removed, and the Phase 2 branches rewritten on GitHub so the old commits are gone); a morning sync with no night yet now says "night not finished" on the day, not "not enough data"; failed analysis work is retried (3 attempts); every settings version must give each reading a positive smallest spread; the job log is trimmed daily; tests now prove signed-in users can't run any analysis function; the owner's session file is private from the moment it's written; the workout extractor leaves out impossible and copied workouts; small clean-ups. Decided by Sabine: record what each person was shown each morning in Phase 4 (D61, a new Phase 4 task); keep the 6pm rule (a sleep starting just before 6pm with no wake-up counts as a nap, a known limit). Not changed: the Watch-sources lookup reads all heart rate (about 0.04 seconds a year; fine for v1).
+- **Next action:** Sabine starts the two-to-three-week self-test. Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -29,7 +39,7 @@
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Spikes: the riskiest unknowns first | In progress |
-| 2 | Data and analysis | Not started |
+| 2 | Data and analysis | In progress (2a to 2c done; code review and self-test next) |
 | 3 | Readiness card, check-in and Why today | Not started |
 | 4 | Notifications and follow-through | Not started |
 | 5 | Trends, digest, settings and owner page | Not started |
@@ -153,40 +163,54 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 
 **Goal:** turn raw readings into correct nights, baselines, a daily status and a nudge. Prove them against an independent check, and set the score numbers.
 
-**Status:** Not started
+**Status:** In progress (2a, 2b and 2c done and live on 3 October 2026; the end step, code review and self-test, next)
 
-### Tasks
-- [ ] Build `nights`: sleep window from Watch sleep stages, local wake date, finished flag, sleeping heart rate (median while asleep), HRV median and count, breathing rate, yesterday's resting heart rate, coverage and confidence
-- [ ] Build `baselines`: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range
-- [ ] Build `daily_status`:
+Split into four groups (agreed 3 October 2026): 2a nights and normals, 2b the daily status, 2c proving and tuning, then the end step.
+
+### 2a. Nights and normals
+- [x] Build `nights`: sleep window from Watch sleep stages, local wake date, finished flag, sleeping heart rate (median while asleep), HRV median and count, breathing rate, yesterday's resting heart rate, coverage and confidence (rules in D48, D49 and D50)
+- [x] Build `baselines`: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range
+- [x] Build `analysis_queue` and the every-minute scheduler; imports recompute once at the end and never notify
+
+### 2b. The daily status
+Decided 3 October 2026: points D51, nudge D52, illness check D53. "Waiting", "no sync by noon" and "late" depend on clock and sync times, so they come with the card and notifications (Phases 3 and 4).
+- [x] Build `daily_status`:
   - points per reading, total and zones
   - a missing reading's weight moved to the other two
   - no status with two or more missing
   - "Learning your normal"
   - never Ready without enough data
-- [ ] Build the illness check and nudge selection from the four actions; write results to `insights`
-- [ ] Build `analysis_queue` and the every-minute scheduler; imports recompute once at the end and never notify
-- [ ] Build `score_settings` (versioned) with the starting numbers: HRV 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1, Rest from 2
-- [ ] Load your events (illness, major events) from your calendar; detect travel days (or take them from the calendar if time zones were lost in Phase 1)
-- [ ] Import your workout summaries for the Signal check
-- [ ] Write the pandas reference notebook and compare it with the SQL stage by stage on your year
-- [ ] Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing
-- [ ] Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them
-- [ ] Start the two-to-three-week self-test: read your own status each morning before the screens exist
+- [x] Build the illness check and nudge selection from the four actions; write results to `insights`
+- [x] Build `score_settings` (versioned) with the starting numbers: HRV 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1, Rest from 2
+
+### 2c. Proving and tuning
+Decided 3 October 2026: workouts from a one-time Health app export (D54); disrupted mornings are each day of illness, the morning after travel or a major event, and the morning of a workout far below usual (D55). From the first reference check on Sabine's year: only Watch readings count, a Watch being any source that records heart rate (D56); two watches' resting heart rates for one day give their median (D57).
+- [x] Load your events (illness, major events) from your calendar; detect travel days (or take them from the calendar if time zones were lost in Phase 1)
+- [x] Import your workout summaries for the Signal check
+- [x] Write the pandas reference notebook and compare it with the SQL stage by stage on your year (a script, `scripts/reference/check.py`; 3 October 2026: all 237 nights, 1,185 normals and 237 statuses match)
+- [x] Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing
+- [x] Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them
+
+### End of Phase 2
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
+- [ ] Start the two-to-three-week self-test: read your own status each morning before the screens exist
 
 ### Automated tests
 - Night dating: a known night is assigned the right date, including across a time-zone change.
 - Baseline: a fixed 28-night example gives the expected median, range and 21-night rule.
-- Missing reading: with HRV missing, the weights move as expected (for example, the sample day totals 1.19, Ease off).
+- Missing reading: with HRV missing, the weights move as expected (for example, the sample day totals 1.19: Ease off under the starting numbers, Ready under the final ones, where Ease off starts at 1.2).
 - Learning your normal: with two readings building, the status is none, never Ready.
 - Recompute: running the analysis twice gives identical results.
+- Built in 2c, final numbers: `10_final_settings.test.sql` (9 checks: version 2 is active and frozen with the agreed numbers, its numbers can't change, the sample day under version 2); `09_watch_sources.test.sql` (5 checks: Watch readings only, two watches' median). `07` now pins version 1 for the agreed examples.
+- Built in 2c: `supabase/tests/database/08_events_workouts.test.sql` (11 checks: only the owner loads events and workouts, a load replaces the last, bad input is refused, nobody writes directly, testers see none of it); the pandas reference's unit tests (14, `scripts/reference/test_*.py`); and the reference check on a made-up history (`scripts/reference/check.py --local-synthetic`), all on every push.
+- Built in 2b (`supabase/tests/database/07_daily_status.test.sql`, 45 checks): the design's sample day from made-up nights and normals (points 0.9, 0.6 and 0.1, total 1.6, Ease off, train easy); with HRV missing (1.19, Ease off, based on 2 of 3, prioritise sleep); two missing (not enough data, no nudge); two building (learning, never Ready); one building and one missing; an unfinished night; a morning sync with no night; Ready, better than normal, Rest; sleep-led Ease off; the illness check firing, not firing, not running and never changing the status; insights; recompute twice gives identical results; a new settings version with the ease-off cap; frozen settings can't change; isolation, and users can't read the settings.
+- Built in 2a (`supabase/tests/database/04_nights_baselines.test.sql`, 39 checks, and `05_sleep_overlaps.test.sql`, 9 checks: overlapping records count once, awake wins, nights without overlaps are unchanged; and `06_night_window.test.sql`, 8 checks: sleep from 6pm counts towards the next morning, breaks of any length stay in the night, afternoon sleep is a nap, a stretch starting before noon counts in full): night dating at home and on a trip 8 hours ahead; asleep stages only (not "in bed" or awake); naps and sleeps under 2 hours aren't nights; gaps of 100 minutes keep sleeps apart and 80 minutes join them; the 10-reading minimum; the 28-night example (median, spread, range); the 21-night rule; recompute twice gives identical results; the queue (a daily post queues work that notifies, an import waits and never notifies, each user's work stays separate). The local import load check (`npm run check:local:import`) also rebuilds a made-up month's 30 nights in under 10 seconds.
 
 ### Manual verification
 1. **Reference check:** run the pandas notebook on your year.
    *Expected:* every stage matches the SQL exactly (or within rounding).
-2. **Sample day:** look at Tuesday 29 September in `daily_status`.
-   *Expected:* sleeping heart rate 51, normal 50; total about 1.6; Ease off.
+2. **Sample day:** the design's Tuesday 29 September (sleeping heart rate 51, normal 50) uses made-up numbers, so it is checked by an automated test instead (changed 3 October 2026: Sabine's real readings for that date are different). Manually: look at a real recent morning in `daily_status` with its readings and normals.
+   *Expected:* the points add up from the readings, normals and weights, and the status and nudge follow D51 and D52.
 3. **Signal on your year:** look at your disrupted days.
    *Expected:* at least 2 in 3 are Ease off or Rest, and Ease off and Rest together fire on no more than about 1 day in 7. If not, adjust the numbers before freezing.
 4. **No-push imports:** check the outbox after an import.
@@ -250,6 +274,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Build next-morning carry-over for unanswered questions
 - [ ] Show notification health on the card and in Settings
 - [ ] Add the late-sync marking (11:30 to noon) and the no-sync-by-noon state
+- [ ] Keep, for each user and day, the status, nudge and reason that were shown: when the morning notification is sent and when the card is first opened, saved permanently; the test's Signal and Action results use this record, since recalculation may later correct a past day (D61, from the Phase 2 code review)
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
 ### Automated tests

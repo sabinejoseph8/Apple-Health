@@ -81,6 +81,18 @@ console.log(`First post: ${first.status} in ${first.seconds} s`, JSON.stringify(
 const expected = keptHr + hrv.length + rr.length + rhr.length + sleep.length
 ok(first.status === 200 && first.reply.accepted === expected, `a month is stored (${expected} readings, heart rate kept from 6pm to noon)`)
 ok(first.reply?.months_imported === 1, 'the reply counts 1 month imported')
+// Phase 2a: build the month's nights and normals from what was stored.
+const t0 = performance.now()
+const lastDay = `${monthId}-${String(days).padStart(2, '0')}`
+const { data: rebuilt, error: rebuildError } = await admin.rpc('recompute', { p_user: created.user.id, p_from: `${monthId}-01`, p_to: lastDay })
+const rebuildSeconds = ((performance.now() - t0) / 1000).toFixed(1)
+console.log(`Recompute: ${JSON.stringify(rebuilt ?? rebuildError?.message)} in ${rebuildSeconds} s`)
+ok(!rebuildError && rebuilt.nights === days, `every night of the month is built (${days} nights)`)
+const { count: withHeartRate } = await admin.from('nights').select('night_date', { count: 'exact', head: true })
+  .eq('user_id', created.user.id).not('sleeping_hr', 'is', null)
+ok(withHeartRate === days, 'every night has a sleeping heart rate')
+ok(Number(rebuildSeconds) < 10, 'a month recomputes in under 10 seconds')
+
 const again = await send()
 console.log(`Same month again: ${again.status} in ${again.seconds} s`)
 ok(again.status === 200 && again.reply.accepted === 0 && again.reply.duplicates === expected, 'sending the month again stores nothing new')
