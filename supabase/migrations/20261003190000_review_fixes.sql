@@ -10,6 +10,11 @@
 --    imports before this change are Sabine's, all 12 months of which were
 --    checked complete on 3 October 2026, so existing import rows are marked
 --    complete.
+-- 3. Pings (the Shortcut's quick "already synced?" check, which carries no
+--    readings) no longer count toward the 60 posts an hour; they have their
+--    own allowance of 200 an hour, like import posts (decided by Sabine, 3
+--    October 2026). On a morning when the Watch's sleep record is slow,
+--    every app-automation run sends a ping and a daily post.
 -- Everything else in ingest_upload is unchanged from
 -- 20261003175000_set_aside_readings.sql.
 
@@ -62,15 +67,16 @@ begin
   end if;
 
   -- Rate limits per token (tech-spec section 6): 200 import (backfill) posts
-  -- an hour, and 60 an hour for everything else, rejected posts included.
-  if p_upload ->> 'kind' = 'backfill' then
+  -- an hour, 200 pings an hour, and 60 an hour for everything else (daily
+  -- posts and rejected posts), each counted separately.
+  if p_upload ->> 'kind' in ('backfill', 'ping') then
     if (select count(*) from public.uploads
-         where token_id = v_token.id and kind = 'backfill'
+         where token_id = v_token.id and kind = p_upload ->> 'kind'
            and received_at > now() - interval '1 hour') >= 200 then
       return jsonb_build_object('error', 'rate_limited');
     end if;
   elsif (select count(*) from public.uploads
-          where token_id = v_token.id and kind is distinct from 'backfill'
+          where token_id = v_token.id and kind is distinct from 'backfill' and kind is distinct from 'ping'
             and received_at > now() - interval '1 hour') >= 60 then
     return jsonb_build_object('error', 'rate_limited');
   end if;

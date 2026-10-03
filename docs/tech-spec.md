@@ -263,7 +263,7 @@ Each call carries the user's session.
 - Database functions check their own inputs (for example, a follow-through answer only on change days, from 8pm).
 
 **Rate limits**
-- Ingest: 60 requests an hour per token for daily syncs, pings and rejected posts, and a separate 200 an hour for import (backfill) posts (agreed by Sabine, 3 October 2026). A one-year import sends each month in parts, about 60 posts in about half an hour.
+- Ingest, per token, each counted separately: 60 an hour for daily posts and rejected posts, 200 an hour for import (backfill) posts, and 200 an hour for pings (agreed by Sabine, 3 October 2026; D47 for pings). A one-year import sends each month in parts, about 60 posts in about half an hour.
 - Sign-in: Supabase's built-in limits.
 - Notifications: at most three a day per user (morning, reminder, follow-up), enforced by the unique key.
 
@@ -365,7 +365,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Shortcut can't read Health data while the phone is locked | The unplug trigger would rarely work and syncs would arrive late | Measure how often the catch-up trigger does the work; keep both triggers; move to a HealthKit app only if both fail often | 1 |
 | Shortcut may not return Watch sleep stages | The sleep window and the "night finished" check depend on them | Check first in the sync spike; if only "asleep" arrives, keep the window rule; if stages are missing, change the night rule before building analysis | 1 |
 | A year's import through Shortcuts is too slow or fails | No baselines on day one | Import in monthly parts that resume; time it on two phones; narrow the heart rate window first if needed | 1 |
-| Past readings may lose the time zone they were recorded in | Travel days in the owner's year can't be detected from offsets, and nights could be misdated | Test with a known trip; if lost, take trips from the calendar or detect them from shifts in sleep timing. Phase 1b (3 October 2026): confirmed lost (Shortcuts stamps every reading with the phone's current zone), so Phase 2 takes trips from the calendar or the user | 1 |
+| Past readings may lose the time zone they were recorded in | Travel days in the owner's year can't be detected from offsets, and nights could be misdated | Test with a known trip; if lost, take trips from the calendar or detect them from shifts in sleep timing. Phase 1b (3 October 2026): confirmed lost (Shortcuts stamps every reading with the phone's current zone), so Phase 2 takes trips from the calendar or the user. Phase 1 code review: the 6pm-to-noon heart rate window then sees imported trip nights at the wrong clock time and drops part of them; accepted for v1 (D46) | 1 |
 | Web push on the iPhone fails silently, or a tap opens a signed-out app | No morning nudge means no Value evidence | Push spike on real phones; log delivery; re-register each time the app opens; show notification health on the card. 1a spike: a test push reached Sabine's iPhone and a tap opened the app signed in; the app re-registers on every open | 1 |
 | The Deno push library doesn't work in Edge Functions | No notifications | Try it in the push spike; fall back to `npm:web-push`. Resolved in 1a: it works, no fallback needed | 1 |
 | Upload path bypasses row-level security | One tester's data could land in another's account | Work out the user from the token hash only; cross-user upload tests in CI | 1 |
@@ -407,7 +407,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 2. **Retention after the test.** Default: delete testers' data 90 days after it ends unless they agree otherwise.
 3. **Push library.** Settled 3 October 2026: `@negrel/webpush` 0.5.0 works in Supabase's function runtime and with Apple's push service (Phase 1a spike), so the fallback isn't needed.
 4. **Limits.**
-   - **Default:** 5 MB and 50,000 readings per upload. **Agreed (3 October 2026):** 60 uploads an hour per token, plus 200 import uploads an hour counted separately.
+   - **Default:** 5 MB and 50,000 readings per upload. **Agreed (3 October 2026):** 60 uploads an hour per token, plus 200 import uploads and 200 pings an hour, each counted separately (D47).
    - **Default:** value ranges as in section 6.
 5. **Weekly digest timing.** Default: Monday at 5am local time.
 6. **Open spike results.** Phase 1a's and 1b's results are in progress.md ("Spike results"). Settled in 1b so far: Watch sleep stages arrive by name; past readings lose their time zone (trips come from the calendar instead); Shortcuts can only search Health by whole days (D43); readings travel as columns (D42). Still open: the locked-phone rate, the "already synced" check on real mornings, and HRV coverage (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.

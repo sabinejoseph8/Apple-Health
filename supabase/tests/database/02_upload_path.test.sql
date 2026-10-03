@@ -152,8 +152,8 @@ insert into public.uploads (user_id, token_id, status, error)
 select '22222222-2222-2222-2222-222222222222', id, 'rejected', 'test'
   from public.upload_tokens, generate_series(1, 60)
  where token_hash = repeat('b', 64);
-select is(public.ingest_upload(repeat('b', 64), pg_temp.body('ping', '[]')) ->> 'error', 'rate_limited',
-  'more than 60 posts an hour from one token are refused');
+select is(public.ingest_upload(repeat('b', 64), pg_temp.body('daily', '[]')) ->> 'error', 'rate_limited',
+  'more than 60 daily posts an hour from one token are refused');
 
 -- Act as user A in the app.
 set local role authenticated;

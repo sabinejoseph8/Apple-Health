@@ -1,11 +1,11 @@
 -- Import progress (R12): a backfill reply says how many months of the import
 -- window (this month and the 11 before it) have arrived in full (their last
 -- part, marked month_complete). Other replies don't.
--- Import posts have their own rate limit: 200 an hour per token, counted
--- apart from the 60 an hour for everything else.
+-- Import posts and pings each have their own rate limit of 200 an hour per
+-- token, counted apart from the 60 an hour for everything else.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(13);
 
 insert into auth.users (id, email) values ('33333333-3333-3333-3333-333333333333', 'user-c@example.test');
 select public.issue_upload_token('33333333-3333-3333-3333-333333333333', repeat('f', 64));
@@ -53,6 +53,19 @@ select is(public.ingest_upload(repeat('f', 64), jsonb_build_object(
     'schema_version', 1, 'kind', 'daily', 'device_tz_offset_min', 0, 'samples', '[]'::jsonb)) ->> 'error', 'rate_limited',
   'a 61st daily post in an hour is refused');
 select is(pg_temp.backfill(1) ->> 'error', null, 'an import post still goes through after 60 other posts');
+
+-- Pings have their own allowance: 60 daily posts' worth of pings don't block
+-- a daily post, and more than 200 pings an hour are refused.
+create function pg_temp.ping() returns jsonb language sql as $$
+  select public.ingest_upload(repeat('f', 64), jsonb_build_object(
+    'schema_version', 1, 'kind', 'ping', 'device_tz_offset_min', 0, 'samples', '[]'::jsonb))
+$$;
+select is(pg_temp.ping() ->> 'error', null, 'a ping still goes through after 60 other posts');
+insert into public.uploads (user_id, token_id, schema_version, kind, device_tz_offset_min, local_date, status)
+select '33333333-3333-3333-3333-333333333333', id, 1, 'ping', 0, current_date, 'accepted'
+  from public.upload_tokens, generate_series(1, 199)
+ where token_hash = repeat('f', 64);
+select is(pg_temp.ping() ->> 'error', 'rate_limited', 'more than 200 pings an hour are refused');
 
 -- 200 import posts this hour: the next import post is refused.
 insert into public.uploads (user_id, token_id, schema_version, kind, month_id, device_tz_offset_min, local_date, status)
