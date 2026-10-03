@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a done; code reviews, Playwright tests and interview notes added)
+**Last updated:** 3 October 2026 (Phase 1b in progress: upload path live, Shortcut on Sabine's iPhone, decisions D42 and D43)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -9,10 +9,11 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Phase 1a done (3 October 2026): the app is live at https://clarivi-zeta.vercel.app, sign-in with a forced new password works on Sabine's iPhone, a test notification arrives through Apple's push service and opens the app signed in, and the test account sees none of the owner's data. All 1a tasks are ticked; results are under "Spike results" below. Phase 1b (daily sync) is next.
-- **Next action:** Plan task group 1b (daily sync: ingest function, upload tokens, Shortcut template, both automations and the three checks) and wait for Sabine's approval.
+- **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
+- **Next action:** Deploy the updated `ingest` function, reinstall the Shortcut with a reissued token, run it by hand, then set up the two automations and collect about a week of mornings for the three checks.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
+- **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
 - **Recent changes since 1a:** Playwright end-to-end tests run in WebKit at iPhone size on every push (`npm run test:e2e`; the first tests cover the sign-in screen); `interview-notes.md` keeps Sabine's first-person PM story and is updated after significant features, bug fixes and design changes; a Playwright MCP server is set up in Claude Code for this folder (from the next session).
 - **Known issues:** the app icon is a placeholder and needs replacing before testers install the app; the home screen is a temporary stand-in until the readiness card (Phase 3).
 
@@ -63,8 +64,8 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it
 
 ### 1b. Daily sync
-- [ ] Build the `ingest` function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (`night_complete`, `already_complete_today`)
-- [ ] Build token creation (shown once) and revocation
+- [x] Build the `ingest` function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (`night_complete`, `already_complete_today`)
+- [x] Build token creation (shown once) and revocation
 - [ ] Build the Shortcut template: ping first, then read and post readings; save "synced today" to iCloud Drive when the night is complete
 - [ ] Set up both automations (charger unplugged; chosen app opened) on your phone and one tester's
 - [ ] **Check:** do Watch sleep stages arrive, or only "asleep"?
@@ -109,6 +110,15 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - Supabase trap: switching off email sign-ups under the Email provider also switches off email sign-in. New sign-ups are blocked by the general "Allow new users to sign up" switch instead.
 - Vercel's Supabase integration fills in Production only; the Preview values were added by hand.
 - Automated checks: database tests (row-level security on every table, cross-user reads and writes), app tests, the build secret check, and a local end-to-end run (`npm run check:local`) all pass on every push. The upload-path and ingest tests come with 1b.
+
+**1b. Daily sync (in progress, 3 October 2026)**
+- The upload path is live: tokens are created with a password check and shown once, reissuing stops the old token at once, and the live `ingest` function turns away unknown tokens and posts without one. Supabase's security advisor shows no new warnings.
+- Apple's `shortcuts sign` tool signs a generated Shortcut on the Mac, so the Shortcut installs with a tap (AirDrop). The signature carries the signer's Apple account email, so signed files stay in `private/` and sharing with testers needs a decision.
+- All five Health types import with the right names (Heart Rate, Heart Rate Variability, Respiratory Rate, Resting Heart Rate, Sleep).
+- **Sleep stages (check 1):** the Watch's stages come through by name (Core, Deep, REM, Awake), not only "asleep" (seen on Sabine's iPhone with Clarivi Check; to confirm on the server after the first full morning sync).
+- **Health searches only work in whole days.** "Start Date is after" a time finds nothing; "between" two times and "in the last N hours" widen to whole days; "in the last 1 day" means yesterday and today. A date-only text ("2026-10-03") is read as noon. Fallback taken: fetch whole days, apply the heart-rate window on the server (D43).
+- **One line per reading is far too slow.** 1,063 heart-rate readings took 14 minutes 28 seconds; joining each column as a list took 1.3 seconds. Fallback taken: send columns (D42). This also makes the 1c import practical.
+- Still to measure: the locked-phone rate (check 2), past time zones (check 3), and the "already synced" file on real mornings.
 
 ---
 

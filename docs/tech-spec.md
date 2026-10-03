@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a built and live, recorded in sections 3 to 10; Playwright tests and end-of-phase code reviews added to section 8)
+**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -97,9 +97,15 @@ Built in Phase 1a (3 October 2026):
 **Raw data (never changed after arrival)**
 | Table | Holds | Key fields |
 |---|---|---|
-| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `sample_count`, `duplicate_count`, `status`, `error` |
+| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `status` (accepted, rejected), `error` |
 | `samples` | Every reading | `id`, `user_id`, `upload_id`, `type` (heart_rate, hrv_sdnn, sleep_stage, resting_hr, respiratory_rate), `start_at`, `end_at`, `tz_offset_min`, `value`, `unit`, `stage`, `source_name`, `source_device`, `sample_hash` (unique per user) |
 | `workouts` | Owner only, for the Signal check | `id`, `user_id`, `activity`, `start_at`, `end_at`, `duration_min`, `avg_hr` |
+
+Built in Phase 1b (3 October 2026):
+- `upload_tokens`: at most one working token per user (a unique index on unrevoked tokens). The app can read when its token was made and last used, but never the hash (column-level grants).
+- `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?".
+- `samples.sample_hash` is a SHA-256 of the type, start, end, value, stage and source. The time zone isn't part of it, so the same moment posted from another time zone is the same reading. Heart rate is stored only from 6pm to noon, by each reading's own local time (D43).
+- All writes go through two database functions callable only with the secret key: `ingest_upload(token_hash, upload, error)` and `issue_upload_token(user, token_hash)`.
 
 **Results (always rebuildable from raw data)**
 | Table | Holds | Key fields |
@@ -137,13 +143,21 @@ Built in Phase 1a (3 October 2026):
   - `kind` (daily, backfill or ping)
   - `month_id` (backfill only)
   - `device_tz_offset_min`
-  - `samples`: a list, each with `type`, `start`, `end`, `value`, `unit`, optional `stage`, `source` and `device`
+  - `trigger` (charger, app or manual), which automation ran the Shortcut
+  - readings in either of two shapes, which become the same rows:
+    - `series` (what the Shortcut sends, D42): one object per reading type with lists `start`, `end`, `value`, `unit`, `source` (and optional `device`, `stage`). A type with no readings arrives as `[""]`. If an extra column (unit, source, device) has a different length, it's set aside rather than rejecting the post.
+    - `samples`: a list, each with `type`, `start`, `end`, `value`, `unit`, optional `stage`, `source` and `device`
+  - Times are ISO 8601 with their offset (`2026-10-03T01:17:06-05:00`); the offset is kept per reading. `device_tz_offset_min` may be minutes or an offset such as `-05:00`. Values may be numbers or text (a decimal comma is accepted). Sleep stages are accepted as Shortcuts and HealthKit name them (Core, Deep, REM, Awake, In Bed, Asleep, or 0 to 5), in `stage` or `value`.
 - **Reply:**
   - `accepted` and `duplicates`
-  - `night_complete`: true when this post completed last night
-  - `already_complete_today`
+  - `night_complete`: true when this post completed last night. Starting rule for Phase 1b: last night's sleep has arrived and its last asleep reading (core, deep, REM or unspecified) ended between midnight and noon local time, at least 10 minutes before the post (decided 3 October 2026; Phase 2 builds the full rule).
+  - `already_complete_today`: an earlier post today already completed the night
+  - `message`: a sentence from the wording module for the Shortcut to show (for example "Last night's readings are in.")
+  - on refusal: `error` (`invalid_token`, `token_revoked`, `rate_limited`, `invalid_body` with a `detail` that never repeats a value, or `too_large`) and a `message`; status 401, 429, 400 or 413
 - **No health data in the reply.** The token stays write-only.
-- **"Already synced today":** the Shortcut sends a small `ping` first. If `already_complete_today` is true, it stops. After a post with `night_complete` true, it also saves today's date to a file in iCloud Drive as a second check. A partial night never counts as synced.
+- **The Shortcut reads replies as text** and looks for `"already_complete_today":true`, `"night_complete":true` and `"error"`, so their spelling is fixed by tests.
+- **"Already synced today":** the Shortcut sends a small `ping` first. If `already_complete_today` is true, it stops. After a post with `night_complete` true, it also saves today's date to `iCloud Drive/Shortcuts/Clarivi/last-sync.txt` as a second check, and stops at the start of later runs that day. A partial night never counts as synced. Automations only act between 4am and noon; a run by hand always acts.
+- **What the Shortcut fetches** (Phase 1b spike, 3 October 2026): Health searches in Shortcuts only work in whole days, so it fetches heart rate, HRV, breathing rate, resting heart rate and sleep stages for yesterday and today ("in the last 1 day"), and the server applies the heart-rate window (D43). Building one line per reading took over 14 minutes for a day of heart rate; one list per column takes about a second (D42).
 
 ### Web app to database
 The app uses the Supabase client with the public (publishable) key and the user's session. Row-level security applies to every call.
@@ -226,7 +240,7 @@ Each call carries the user's session.
 - `owner-status` checks the flag and returns only operational information (sync times, counts, delivery status), never another user's readings.
 
 **Upload tokens**
-- Each token is 32 random bytes, shown once and stored only as a SHA-256 hash.
+- Each token is 32 random bytes, written as `clv_` plus 43 URL-safe characters, shown once and stored only as a SHA-256 hash.
 - Tokens can write but never read, and can be revoked.
 - `last_used_at` is tracked.
 - The Shortcut is shared as a blank template that asks for the token when it's installed. A configured Shortcut is never shared.
@@ -305,7 +319,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - score settings in `score_settings`
   - schedules defined in migrations
 - **Shortcut:**
-  - one versioned template per release
+  - one versioned template per release, generated by `scripts/shortcut/build_shortcut.py` and signed with Apple's `shortcuts sign` on Sabine's Mac. The signature carries the signer's Apple account email, so signed files live only in `private/shortcut/` (never committed); only the generator is in the repository. `scripts/shortcut/build_check_shortcut.py` builds "Clarivi Check", a diagnostic that shows what the phone finds in Health without sending anything.
   - the upload address and the token entered at install
 
 ---
@@ -316,7 +330,8 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - Cross-user tests on every table, for reading and writing.
   - The upload path: one user's token can't write another user's rows, and a token can never read.
   - The missing-reading and learning-your-normal rules, the one-notification-per-day key, and night dates across a time-zone change.
-- **Server function tests (Deno):** ingest validation, duplicates, the reply flags, rate limits, password re-checks and delete-my-data.
+- **Server function tests (Deno):** ingest validation, duplicates, the reply flags, rate limits, password re-checks and delete-my-data. Run with `npm run test:functions` (Deno comes from npm, so nothing extra to install). Built in 1b: the post schema (both shapes, the heart-rate window, time zones, ranges), the ingest handler (token hashing, size limit, replies and the exact text the Shortcut looks for) and token generation.
+- **Shortcut checks (Python):** `python3 scripts/shortcut/test_build_shortcut.py` checks the generated Shortcut is well formed (every variable wired to an earlier action, blocks closed, valid JSON, token asked for at install, no loops, whole-day searches). Runs on every push.
 - **Reference check (pandas):** the owner's year is recalculated outside the database, stage by stage (nights, sleeping heart rate, baselines, status). It must match the SQL before any tester sees a status, and is rerun after any change to the SQL.
 - **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules.
 - **End-to-end tests (Playwright, iPhone screen size):** set up on 3 October 2026 (`npm run test:e2e`, tests in `e2e/`). They run in WebKit, Safari's engine, on an iPhone 14-sized screen (390 points wide), locally and on GitHub with every push. The first tests cover the sign-in screen: its form and contact line, no sideways scrolling, 44-point tap targets, and the manifest, icon and service worker. Still to come:
@@ -329,6 +344,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - both Shortcut triggers, with the phone locked and unlocked
   - import timing, and an interrupted import resuming
 - **Local end-to-end check** (`npm run check:local`, Phase 1a): with the local copy and functions running, it signs in made-up accounts, runs the password change, sends a test push to a fake device that decrypts it, and checks a second account sees nothing of the first.
+- **Local sync check** (`npm run check:local:sync`, Phase 1b): with the local copy and functions running, it creates a token with a password check, posts the way the Shortcut does (ping, daily post in rows and in columns, a repeat), reissues the token, and checks a second account sees nothing.
 - **Build secret check:** see pattern 12.
 - **Code review at the end of each phase:** everything the phase changed is reviewed for bugs and security problems, findings are fixed, and the phase's automated tests are re-run before the phase is called done (added 3 October 2026).
 - **Every push runs all automated tests.** A failure blocks the release.
@@ -389,4 +405,4 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
    - **Default:** 5 MB and 50,000 readings per upload; 60 uploads an hour per token.
    - **Default:** value ranges as in section 6.
 5. **Weekly digest timing.** Default: Monday at 5am local time.
-6. **Open spike results.** Phase 1a's results are in progress.md ("Spike results"). Still open: sleep stages, time zones of past readings, HRV coverage and the "already synced" check (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.
+6. **Open spike results.** Phase 1a's and 1b's results are in progress.md ("Spike results"). Settled in 1b so far: Watch sleep stages arrive by name; Shortcuts can only search Health by whole days (D43); readings travel as columns (D42). Still open: the locked-phone rate, time zones of past readings, the "already synced" check on real mornings, and HRV coverage (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.
