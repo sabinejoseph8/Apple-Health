@@ -44,6 +44,6 @@ The hardest scoping call was cutting the causal layer (guided self-experiments).
 ## Significant improvements
 
 - **Proving the riskiest part first.** Before building any screens, I ran a spike on my own iPhone: install the app, sign in, receive a notification and tap it. A test notification arrived through Apple's push service about 15 seconds after I asked for it, and tapping it opened the app still signed in. The notification library worked first time, so I didn't need the fallback.
-- **Guardrails that run on every change.** Every push to GitHub runs the app tests, the database tests and the secret check. I deliberately added an unprotected table on a scratch branch to prove the safety check really fails the build.
+- **Guardrails that run on every change.** Every push to GitHub runs the app tests, the database tests, the secret check, and end-to-end tests that open the app in Safari's engine at iPhone size. I deliberately added an unprotected table on a scratch branch to prove the safety check really fails the build.
 - **A plan I can keep current.** I keep five living documents (product spec, design, tech spec, progress and the MVP scope) and update them after each phase, so decisions and the reasons behind them never get lost. I also converted my original MVP PDF into an editable document so it could keep up with reality.
 - **A code review at the end of every phase.** Each phase now closes with a review of everything it changed, with the findings fixed and the tests re-run before I call the phase done.

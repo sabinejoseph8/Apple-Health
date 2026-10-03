@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a done)
+**Last updated:** 3 October 2026 (Phase 1a done; code reviews, Playwright tests and interview notes added)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -12,7 +12,9 @@
 - **Overall status:** Phase 1a done (3 October 2026): the app is live at https://clarivi-zeta.vercel.app, sign-in with a forced new password works on Sabine's iPhone, a test notification arrives through Apple's push service and opens the app signed in, and the test account sees none of the owner's data. All 1a tasks are ticked; results are under "Spike results" below. Phase 1b (daily sync) is next.
 - **Next action:** Plan task group 1b (daily sync: ingest function, upload tokens, Shortcut template, both automations and the three checks) and wait for Sabine's approval.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
-- **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together.
+- **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
+- **Recent changes since 1a:** Playwright end-to-end tests run in WebKit at iPhone size on every push (`npm run test:e2e`; the first tests cover the sign-in screen); `interview-notes.md` keeps Sabine's first-person PM story and is updated after significant features, bug fixes and design changes; a Playwright MCP server is set up in Claude Code for this folder (from the next session).
+- **Known issues:** the app icon is a placeholder and needs replacing before testers install the app; the home screen is a temporary stand-in until the readiness card (Phase 3).
 
 **Set-up so far (checked 3 October 2026)**
 | Item | State |

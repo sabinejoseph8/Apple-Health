@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a built and live: what was learned is recorded in sections 3 to 10)
+**Last updated:** 3 October 2026 (Phase 1a built and live, recorded in sections 3 to 10; Playwright tests and end-of-phase code reviews added to section 8)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -281,7 +281,7 @@ Each call carries the user's session.
 - The live project was created with Supabase's automatic row-level security for new tables (an event trigger, `rls_auto_enable`). Outside calls to that function are revoked (migration of 3 October 2026).
 
 **Deployment**
-1. A change goes on a branch. GitHub Actions runs every test against a local copy of Supabase.
+1. A change goes on a branch. GitHub Actions runs three checks on every push: the app (type check, unit tests, build with the secret check), the database (row-level security and cross-user tests against a local copy of Supabase) and end to end (Playwright in WebKit at iPhone size).
 2. Vercel builds a preview, pointed at the live project. You check it on your iPhone, signed in as the owner or the test account.
 3. Database changes are applied to the live project only at release, and only in a backward-compatible way: add new columns or tables first, remove old ones in a later release, so the live app and a preview never break each other.
 4. Before any database change during the test, take a manual backup to your encrypted laptop folder (the free plan has no automatic backups).
