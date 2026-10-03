@@ -112,7 +112,7 @@ class ShortcutTests(unittest.TestCase):
     def test_posts_go_to_the_ingest_function_with_the_token(self):
         posts = [a['WFWorkflowActionParameters'] for a in self.actions
                  if a['WFWorkflowActionIdentifier'].endswith('downloadurl')]
-        self.assertEqual(len(posts), 3, 'ping, daily post and one month of the import')
+        self.assertEqual(len(posts), 4, 'ping, daily post, and the import\'s part and month posts')
         for p in posts:
             self.assertEqual(p['WFURL']['Value']['string'], bs.INGEST_URL)
             self.assertEqual(p['WFHTTPMethod'], 'POST')
@@ -127,18 +127,20 @@ class ShortcutTests(unittest.TestCase):
             if not text or not text.startswith('{'):
                 continue
             # A reading type's columns go inside the series list ("[" or "," before
-            # the variable); the import's heart rate days follow another variable
-            # and may be empty; anywhere else a variable is plain text in quotes.
+            # the variable); the import's gathered heart rate days follow another
+            # series and may be empty; anywhere else a variable is plain text in
+            # quotes.
             def fill(i):
                 before = text[i - 1] if i else ''
-                return '{}' if before in '[,' else '' if before == OBJ else 'x'
+                return '{}' if before in '[,' else '' if before in (OBJ, '}') else 'x'
             filled = ''.join(fill(i) if ch == OBJ else ch for i, ch in enumerate(text))
             parsed = json.loads(filled)
             self.assertIsInstance(parsed, dict)
             checked += 1
         n = len(bs.HEALTH_TYPES)
-        self.assertEqual(checked, 3 + n + (n - 1) + 2,
-                         'ping, daily and import posts; the sync\'s series; the import\'s monthly series; two heart rate day series')
+        self.assertEqual(checked, 4 + n + (n - 1) + 2,
+                         'ping, daily, import part and import month posts; the sync\'s series; '
+                         'the import\'s monthly series; two heart rate day series')
 
     def test_each_reading_type_is_read_once_with_its_clarivi_name(self):
         finds = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
@@ -149,10 +151,11 @@ class ShortcutTests(unittest.TestCase):
         self.assertEqual(labels, [label for label, _ in expected], 'import (monthly types, heart rate by day), then the sync')
         lines = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"type"')]
         self.assertEqual(len(lines), len(expected))
-        for (_, clarivi_type), line in zip(expected, lines):
+        import_heart_rate = {len(monthly), len(monthly) + 1}
+        for i, ((_, clarivi_type), line) in enumerate(zip(expected, lines)):
             self.assertTrue(line.startswith('{"type":"' + clarivi_type + '"'), line)
-            for key, _ in bs.COLUMNS:
-                self.assertIn(f'"{key}":["{OBJ}"]', line)
+            columns = bs.LEAN_COLUMNS if i in import_heart_rate else bs.COLUMNS
+            self.assertEqual(re.findall(r'"(\w+)":\["', line), [key for key, _ in columns])
 
     def test_health_searches_use_whole_days(self):
         # Finer date filters don't work on Health samples (Phase 1b spike):
@@ -171,8 +174,10 @@ class ShortcutTests(unittest.TestCase):
     def test_the_import_sends_each_month_as_a_backfill_and_remembers_it(self):
         bodies = [text_of(a) for a in self.actions if (text_of(a) or '').startswith('{"schema_version"')]
         backfill = [t for t in bodies if '"kind":"backfill"' in t]
-        self.assertEqual(len(backfill), 1)
-        self.assertIn('"month_id":"' + OBJ + '"', backfill[0])
+        self.assertEqual(len(backfill), 2, 'a part of a month, and the month\'s last post')
+        for body in backfill:
+            self.assertIn('"month_id":"' + OBJ + '"', body)
+        self.assertIn(bs.EMPTY_HEART_RATE, backfill[0])
         files = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('setitemname')]
         self.assertIn(bs.IMPORT_FILE, [f['WFName'] for f in files])
         opened = [a['WFWorkflowActionParameters']['WFGetFilePath'] for a in self.actions
@@ -208,9 +213,10 @@ class ShortcutTests(unittest.TestCase):
         day_finds = [f for f in finds if f['WFContentItemLimitEnabled']]
         self.assertEqual([(f['WFContentItemSortOrder'], f['WFContentItemLimitNumber']) for f in day_finds],
                          [('Oldest First', bs.DAY_LIMIT), ('Latest First', bs.DAY_LIMIT)])
-        heavy = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('conditional')
-                 and a['WFWorkflowActionParameters'].get('WFCondition') == 3]
-        self.assertEqual([h['WFNumberValue'] for h in heavy], [str(bs.DAY_LIMIT)], 'the second search only runs on a heavy day')
+        at_least = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('conditional')
+                    and a['WFWorkflowActionParameters'].get('WFCondition') == 3]
+        self.assertEqual([h['WFNumberValue'] for h in at_least], [str(bs.DAY_LIMIT), str(bs.PART_CHARACTERS)],
+                         'a second search only on a heavy day; a part sent once the days reach the part size')
 
     def test_the_menu_words_come_from_the_wording_module(self):
         words = bs.shortcut_wording()
@@ -225,7 +231,8 @@ class ShortcutTests(unittest.TestCase):
     def test_each_column_is_joined_as_a_json_list_of_text(self):
         combines = [a['WFWorkflowActionParameters'] for a in self.actions
                     if a['WFWorkflowActionIdentifier'].endswith('text.combine')]
-        self.assertEqual(len(combines), (2 * len(bs.HEALTH_TYPES) + 1) * len(bs.COLUMNS))
+        n = len(bs.HEALTH_TYPES)
+        self.assertEqual(len(combines), (2 * n - 1) * len(bs.COLUMNS) + 2 * len(bs.LEAN_COLUMNS))
         for c in combines:
             self.assertEqual((c['WFTextSeparator'], c['WFTextCustomSeparator']), ('Custom', '","'))
             details = [a['PropertyName'] for a in c['text']['Value'].get('Aggrandizements', []) if 'PropertyName' in a]

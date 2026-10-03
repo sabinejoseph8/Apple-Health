@@ -42,6 +42,14 @@ more, usually a workout), the Shortcut takes the day's first 1,000 and last
 1,000 readings by time, which keeps the night on either side and drops only
 the middle of the day, which the server sets aside anyway (D43). The other
 readings are small and are read a month at a time.
+
+A month is sent in parts: whenever the gathered heart rate days reach about
+300,000 characters, they go as one backfill post for that month. iOS timed
+out a 682 KB post before it left the phone, while 385 KB went through in 12
+seconds (1c send checks). The month's last post carries the small readings,
+and only then is the month written to import-done.txt. In the import, heart
+rate goes without its end time (always its start) and unit (always count/min),
+which the server fills in.
 After each month it adds the month to Clarivi/import-done.txt and shows
 Clarivi's progress message; months already in that file are skipped, so an
 interrupted import carries on where it stopped. Progress is kept on the phone
@@ -356,10 +364,10 @@ class Builder:
         self.end_if(group)
 
 
-def series_text(b, clarivi_type, samples):
+def series_text(b, clarivi_type, samples, columns=COLUMNS):
     """One reading type as columns: {"type":..,"start":[..],"end":[..],...}."""
     parts = ['{"type":"' + clarivi_type + '"']
-    for key, detail in COLUMNS:
+    for key, detail in columns:
         aggr = [prop(detail)] + ([date_format(ISO_TIME)] if detail.endswith('Date') else [])
         column = b.combine(samples.ref(*aggr), COLUMN_SEPARATOR)
         parts += [',"' + key + '":["', column.ref(), '"]']
@@ -377,10 +385,23 @@ HOURS_TO_PREVIOUS_MONTH = 15 * 24
 DAY_LIMIT = 1000
 MAX_DAYS_IN_MONTH = 31
 
+# A part of a month goes once the gathered heart rate days reach this size.
+PART_CHARACTERS = 300_000
 
-def heart_rate_by_day(b, month_id):
+# Heart rate columns in the import (the server fills in end and unit).
+LEAN_COLUMNS = [c for c in COLUMNS if c[0] in ('start', 'value', 'source')]
+
+# The first item of a part's series list: an empty heart rate series, so the
+# gathered days (each starting with a comma) can follow it.
+EMPTY_HEART_RATE = '{"type":"heart_rate","start":[""]}'
+
+
+def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
     """Gathers the month's heart rate, one day per search, into HeartRateDays
-    as ',{series},{series}...' (empty if there's none)."""
+    as ',{series},{series}...' (empty if there's none). With send_part, the
+    gathered days are sent as a part of the month whenever they reach
+    PART_CHARACTERS, and HeartRateDays starts again. notify_each_day is for
+    the Clarivi Import Check diagnostic only."""
     label = next(label for label, clarivi_type in HEALTH_TYPES if clarivi_type == 'heart_rate')
     b.set_variable('Day', b.date_from(variable('Month', date_format('yyyy-MM-dd'))))
     b.set_variable('HeartRateDays', b.text(''))
@@ -392,11 +413,28 @@ def heart_rate_by_day(b, month_id):
     one_day = {'Operator': 1003, 'Values': {'Date': attachment(variable('Day')),
                                             'AnotherDate': attachment(next_day.ref())}}
     early = b.find_health(label, one_day, 'Oldest First', DAY_LIMIT)
-    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',', series_text(b, 'heart_rate', early).ref()))
-    heavy = b.if_(b.count(early.ref()).ref(), 3, number=DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',',
+                                           series_text(b, 'heart_rate', early, LEAN_COLUMNS).ref()))
+    early_count = b.count(early.ref())
+    if notify_each_day:
+        b.notify(variable('Day', date_format('MMM d')), ': ', early_count.ref(), ' readings at ',
+                 current_date(date_format('HH:mm:ss')))
+    heavy = b.if_(early_count.ref(), 3, number=DAY_LIMIT)
     late = b.find_health(label, one_day, 'Latest First', DAY_LIMIT)
-    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',', series_text(b, 'heart_rate', late).ref()))
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',',
+                                           series_text(b, 'heart_rate', late, LEAN_COLUMNS).ref()))
+    if notify_each_day:
+        b.notify(variable('Day', date_format('MMM d')), ': heavy day, second search done at ',
+                 current_date(date_format('HH:mm:ss')))
     b.end_if(heavy)
+    if send_part:
+        size_id = new_id()
+        b.add('count', {'UUID': size_id, 'WFCountType': 'Characters', 'Input': attachment(variable('HeartRateDays')),
+                        'WFInput': attachment(variable('HeartRateDays'))})
+        full = b.if_(output(size_id, 'Count'), 3, number=PART_CHARACTERS)
+        send_part()
+        b.set_variable('HeartRateDays', b.text(''))
+        b.end_if(full)
     b.end_if(in_month)
     b.set_variable('Day', next_day)
     b.end_repeat(days)
@@ -419,7 +457,13 @@ def import_history(b, url, words):
                                                 'AnotherDate': attachment(next_month.ref())}}
     small = [series_text(b, clarivi_type, b.find_health(label, whole_month))
              for label, clarivi_type in HEALTH_TYPES if clarivi_type != 'heart_rate']
-    heart_rate_by_day(b, month_id)
+
+    def send_part():
+        part = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
+                      variable('Offset'), '","trigger":"manual","series":[' + EMPTY_HEART_RATE, variable('HeartRateDays'), ']}')
+        b.stop_if_refused(b.post(part, url))
+
+    heart_rate_by_day(b, month_id, send_part=send_part)
     joined = []
     for i, text in enumerate(small):
         joined += ([','] if i else []) + [text.ref()]

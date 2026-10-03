@@ -271,3 +271,24 @@ Deno.test('an extra column of the wrong length is set aside, not the whole post'
     end: ['2026-10-03T01:40:00-04:00'], value: ['Core', 'REM'],
   }])), 'end has a different number of entries')
 })
+
+// A part of a month from the import (scripts/shortcut/build_shortcut.py): an
+// empty heart rate series first, then days of heart rate with only start,
+// value and source. End becomes the start; unit is left empty.
+Deno.test('an import part with slim heart rate columns is accepted', () => {
+  const day = (d: string) => ({
+    type: 'heart_rate',
+    start: [`2026-09-${d}T02:00:00-05:00`, `2026-09-${d}T03:00:00-05:00`],
+    value: ['52', '50'],
+    source: ['Ultra Watch', 'Ultra Watch'],
+  })
+  const r = parseUpload({
+    schema_version: 1, kind: 'backfill', month_id: '2026-09', device_tz_offset_min: '-05:00', trigger: 'manual',
+    series: [{ type: 'heart_rate', start: [''] }, day('01'), day('02')],
+  }, NOW)
+  assert(r.ok)
+  assertEquals(r.upload.samples.length, 4)
+  assertEquals(r.upload.samples[0].end_at, r.upload.samples[0].start_at)
+  assertEquals(r.upload.samples[0].unit, null)
+  assertEquals(r.upload.samples[3].source_name, 'Ultra Watch')
+})

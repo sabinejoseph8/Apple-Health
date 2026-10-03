@@ -18,6 +18,18 @@ The --size form builds "Clarivi Size Check": heart rate for one week, half
 a month and the whole month, each turned into the Sync Shortcut's columns,
 with a notification after each step (count and time), to find how much a
 Shortcut can handle before iOS stops it.
+      python3 scripts/shortcut/build_check_shortcut.py --import 2026-09
+The --import form builds "Clarivi Import Check": the Sync Shortcut's import
+steps for one month, with a notification after the monthly readings and
+after each day of heart rate. With --send it then posts the month to the
+ingest function with a deliberately fake token (refused at once, nothing
+stored), to see whether iOS lets a post that size leave the phone.
+      python3 scripts/shortcut/build_check_shortcut.py --send-sizes 2026-09
+The --send-sizes form builds "Clarivi Send Check": it gathers the month's
+heart rate day by day and, after 1, 3, 7 and 14 days, posts what it has so
+far with a deliberately fake token (refused at once, nothing stored), to find
+how much Health data iOS lets one post carry. (1c: a whole month, about
+20,000 readings in 2.2 MB, was stopped before it left the phone.)
       python3 scripts/shortcut/build_check_shortcut.py --sources
 The --sources form builds "Clarivi Source Check": what the phone reports as
 the source of each sleep reading, to fix sleep readings arriving without one.
@@ -39,7 +51,7 @@ import sys
 from pathlib import Path
 
 import build_shortcut as bs
-from build_shortcut import Builder, Out, attachment, date_format, new_id
+from build_shortcut import Builder, Out, attachment, date_format, new_id, variable
 
 SHOWN = 'yyyy-MM-dd HH:mm'
 
@@ -191,6 +203,85 @@ def build_size(month):
     return wf
 
 
+def build_import(month, send=False):
+    b = CheckBuilder()
+    b.comment(f'Clarivi Import Check runs the import steps for {month} without sending anything.')
+    stamp = date_format('HH:mm:ss')
+    b.set_variable('Month', b.date_from(f'{month}-01'))
+    month_id = b.text(variable('Month', date_format('yyyy-MM')))
+    later = b.adjust(variable('Month'), 'Add', bs.HOURS_TO_NEXT_MONTH, 'hr')
+    next_month = b.date_from(later.ref(date_format('yyyy-MM-01')))
+    whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
+                                                'AnotherDate': attachment(next_month.ref())}}
+    b.notify('Starting ', month_id.ref(), ' at ', bs.current_date(stamp))
+    small = []
+    for label, clarivi_type in bs.HEALTH_TYPES:
+        if clarivi_type == 'heart_rate':
+            continue
+        found = b.find_health(label, whole_month)
+        small.append(bs.series_text(b, clarivi_type, found))
+        b.notify(f'{label}: ', b.count(found.ref()).ref(), ' readings at ', bs.current_date(stamp))
+    bs.heart_rate_by_day(b, month_id, notify_each_day=True)
+    joined = []
+    for i, text in enumerate(small):
+        joined += ([','] if i else []) + [text.ref()]
+    body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","series":[', *joined,
+                  variable('HeartRateDays'), ']}')
+    chars_id = new_id()
+    b.add('count', {'UUID': chars_id, 'WFCountType': 'Characters', 'Input': attachment(body.ref()),
+                    'WFInput': attachment(body.ref())})
+    if send:
+        b.set_variable('Token', b.text('clv_not-a-real-token'))
+        b.notify('Sending ', bs.output(chars_id, 'Count'), ' characters at ', bs.current_date(stamp))
+        reply = b.post(body, bs.INGEST_URL)
+        b.notify('Sent at ', bs.current_date(stamp), '. The server said: ', reply.ref(bs.as_text()))
+    b.show('Import check for ', month_id.ref(), ' finished at ', bs.current_date(stamp), '. The post was ',
+           bs.output(chars_id, 'Count'), ' characters.')
+
+    wf = bs.build()
+    wf['WFWorkflowActions'] = b.actions
+    wf['WFWorkflowImportQuestions'] = []
+    wf['WFWorkflowInputContentItemClasses'] = []
+    return wf
+
+
+def build_send_sizes(month):
+    b = CheckBuilder()
+    b.comment(f'Clarivi Send Check posts growing parts of {month} with a fake token, to find the largest post iOS allows.')
+    stamp = date_format('HH:mm:ss')
+    b.set_variable('Token', b.text('clv_not-a-real-token'))
+    b.set_variable('Day', b.date_from(f'{month}-01'))
+    b.set_variable('HeartRateDays', b.text(''))
+    label = 'Heart Rate'
+    days = b.repeat_count(14)
+    later = b.adjust(variable('Day'), 'Add', 24, 'hr')
+    next_day = b.date_from(later.ref(date_format('yyyy-MM-dd')))
+    one_day = {'Operator': 1003, 'Values': {'Date': attachment(variable('Day')),
+                                            'AnotherDate': attachment(next_day.ref())}}
+    found = b.find_health(label, one_day, 'Oldest First', bs.DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',', bs.series_text(b, 'heart_rate', found).ref()))
+    b.set_variable('Readings', b.text(variable('Readings'), ' ', b.count(found.ref()).ref()))
+    for checkpoint in ('1', '3', '7', '14'):
+        at = b.if_(variable('Day', date_format('d')), 4, string=checkpoint)
+        body = b.text('{"series":[{}', variable('HeartRateDays'), ']}')
+        chars_id = new_id()
+        b.add('count', {'UUID': chars_id, 'WFCountType': 'Characters', 'Input': attachment(body.ref()),
+                        'WFInput': attachment(body.ref())})
+        b.notify(f'{checkpoint} days: sending ', bs.output(chars_id, 'Count'), ' characters at ', bs.current_date(stamp))
+        reply = b.post(body, bs.INGEST_URL)
+        b.notify(f'{checkpoint} days: sent at ', bs.current_date(stamp), '. Server: ', reply.ref(bs.as_text()))
+        b.end_if(at)
+    b.set_variable('Day', next_day)
+    b.end_repeat(days)
+    b.show('Clarivi Send Check finished at ', bs.current_date(stamp), '. Readings per day:', variable('Readings'))
+
+    wf = bs.build()
+    wf['WFWorkflowActions'] = b.actions
+    wf['WFWorkflowImportQuestions'] = []
+    wf['WFWorkflowInputContentItemClasses'] = []
+    return wf
+
+
 def main():
     root = Path(__file__).resolve().parents[2]
     out_dir = root / 'private' / 'shortcut'
@@ -200,6 +291,10 @@ def main():
     if '--trip' in sys.argv:
         i = sys.argv.index('--trip')
         name, wf = 'Clarivi Trip Check', build_trip(sys.argv[i + 1], sys.argv[i + 2])
+    if '--send-sizes' in sys.argv:
+        name, wf = 'Clarivi Send Check', build_send_sizes(sys.argv[sys.argv.index('--send-sizes') + 1])
+    if '--import' in sys.argv:
+        name, wf = 'Clarivi Import Check', build_import(sys.argv[sys.argv.index('--import') + 1], '--send' in sys.argv)
     if '--size' in sys.argv:
         name, wf = 'Clarivi Size Check', build_size(sys.argv[sys.argv.index('--size') + 1])
     if '--sources' in sys.argv:
