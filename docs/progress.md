@@ -20,7 +20,8 @@
 - **Workouts and measurement (3 October 2026):** the Health export gave 280 workouts (242 from the Ultra, 18 from the second watch, 20 from apps, which don't count); loaded. Measured on her year: version 1 fired on about 1 day in 6 and caught 0 of 11 disrupted days with a status; judged by day (D60), 1 of 13. Sabine set the final numbers (D59): version 2, normals from 42 nights, Ease off from 1.2, Rest from 2.4, frozen. **Signal on her year: not met** (1 of 13; the evidence is thin, D58), recorded in mvp.md; the testers' check-ins carry the Signal.
 - **2c done (3 October 2026):** version 2 is live and frozen; Sabine's year has 181 Ready, 25 Ease off, 3 Rest and 27 learning days; the reference check matches on all 237 nights, 1,185 normals and 237 statuses under version 2. Phase 2 manual checks: 1 (reference) passed; 2 (sample day) is an automated test, and a recent real morning was checked by hand; 3 (Signal on her year) measured and not met, recorded in mvp.md; 4 (no-push imports) holds in the queue (imports never ask to notify, tested), and is checked again on the outbox in Phase 4.
 - **Phase 2 code review (3 October 2026):** 14 findings. Fixed: Sabine's readings, dates and trip had been written into the public docs, migration comments and two tests (removed, and the Phase 2 branches rewritten on GitHub so the old commits are gone); a morning sync with no night yet now says "night not finished" on the day, not "not enough data"; failed analysis work is retried (3 attempts); every settings version must give each reading a positive smallest spread; the job log is trimmed daily; tests now prove signed-in users can't run any analysis function; the owner's session file is private from the moment it's written; the workout extractor leaves out impossible and copied workouts; small clean-ups. Decided by Sabine: record what each person was shown each morning in Phase 4 (D61, a new Phase 4 task); keep the 6pm rule (a sleep starting just before 6pm with no wake-up counts as a nap, a known limit). Not changed: the Watch-sources lookup reads all heart rate (about 0.04 seconds a year; fine for v1).
-- **Next action:** Sabine starts the two-to-three-week self-test. Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
+- **Self-test helper:** `.venv/bin/python scripts/reference/today.py` prints this morning's status in plain words (or a given date's), using the remembered sign-in.
+- **Next action:** Sabine starts the two-to-three-week self-test (each morning after her sync, run the helper and note whether the status matches how she feels); Phase 1's last check (the locked-phone rate) is read around 10 October 2026, then Phase 1 closes and the branches merge to `main`. Separately, 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -39,7 +40,7 @@
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Spikes: the riskiest unknowns first | In progress |
-| 2 | Data and analysis | In progress (2a to 2c done; code review and self-test next) |
+| 2 | Data and analysis | In progress (built and reviewed; self-test next) |
 | 3 | Readiness card, check-in and Why today | Not started |
 | 4 | Notifications and follow-through | Not started |
 | 5 | Trends, digest, settings and owner page | Not started |
@@ -163,7 +164,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 
 **Goal:** turn raw readings into correct nights, baselines, a daily status and a nudge. Prove them against an independent check, and set the score numbers.
 
-**Status:** In progress (2a, 2b and 2c done and live on 3 October 2026; the end step, code review and self-test, next)
+**Status:** In progress (2a, 2b, 2c and the code review done on 3 October 2026; the self-test is next)
 
 Split into four groups (agreed 3 October 2026): 2a nights and normals, 2b the daily status, 2c proving and tuning, then the end step.
 
@@ -192,7 +193,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [x] Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them
 
 ### End of Phase 2
-- [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
+- [x] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (3 October 2026: 14 findings, 11 fixed, 3 decided by Sabine; fixes live, reference check still matches)
 - [ ] Start the two-to-three-week self-test: read your own status each morning before the screens exist
 
 ### Automated tests
