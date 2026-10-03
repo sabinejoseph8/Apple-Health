@@ -50,6 +50,44 @@ export const wording = {
     failed: "That didn't work. Check your connection and try again.",
   },
 
+  // Settings: the token the iPhone Shortcut uses to send readings (R10, R11).
+  uploadToken: {
+    title: 'Upload token',
+    intro: 'The Clarivi Shortcut on your iPhone uses this token to send your Watch readings each morning.',
+    none: "You don't have a token yet.",
+    created: (when: string) => `Created ${when}.`,
+    lastUsed: (when: string) => `Last used ${when}.`,
+    notUsed: 'Not used yet.',
+    create: 'Create token',
+    reissue: 'Reissue token',
+    reissueNote: 'Reissuing stops the old token working straight away, so you will need to paste the new one into the Shortcut.',
+    passwordPrompt: 'Enter your password to continue.',
+    password: 'Password',
+    working: 'Creating…',
+    cancel: 'Cancel',
+    wrongPassword: "That password isn't right. Try again.",
+    showOnce: "Copy this token now and paste it into the Clarivi Shortcut. It's shown only once.",
+    copy: 'Copy token',
+    copied: 'Copied',
+    done: 'Done',
+  },
+
+  // Replies to the iPhone Shortcut, which can show them as a notification.
+  // They carry no health detail.
+  sync: {
+    nightIn: "Last night's readings are in.",
+    nightNotFinished: "Readings sent. Last night isn't finished yet, so the next sync will complete it.",
+    alreadyIn: "Last night's readings are already in.",
+    notYet: 'Not synced yet today.',
+    monthIn: "This month's readings are in.",
+    unknownToken: "Clarivi doesn't recognise this Shortcut's upload token. Create a token in Clarivi and paste it into the Shortcut.",
+    tokenReplaced: 'This upload token has been replaced. Paste your new token from Clarivi into the Shortcut.',
+    tooMany: 'Too many syncs in the last hour. Try again later.',
+    notReadable: "Clarivi couldn't read this sync. Contact Sabine.",
+    tooLarge: 'This sync is too large for Clarivi. Contact Sabine.',
+    failed: "Clarivi couldn't save this sync. Try again later.",
+  },
+
   // Push notification text. Test and reminder texts carry no health detail.
   push: {
     testTitle: 'Clarivi',

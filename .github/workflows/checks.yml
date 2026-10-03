@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:functions
       # The build ends with scripts/check-build-secrets.mjs, which fails if
       # anything secret reached the files sent to browsers.
       - run: npm run build
