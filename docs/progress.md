@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a: app, sign-in and push built and checked locally)
+**Last updated:** 3 October 2026 (Phase 1a done)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -9,8 +9,8 @@
 ## Summary
 
 - **Current phase:** Phase 1, Spikes (In progress)
-- **Overall status:** Phase 1a under way on the `phase-1a` branch. Done and checked on the local copy: the app (Vite, React, TypeScript) with manifest, service worker and icon; sign-in and the forced "Set a new password" screen; the `profiles` and `push_subscriptions` tables with row-level security; the `send-push` test notification (the `@negrel/webpush` library works in Supabase's function runtime: a fake device decrypted the message). GitHub Actions run the app, secret and database checks on every push. The database change and functions are on the live Supabase project.
-- **Next action:** iPhone checks on the production address (install, sign in and set a new password, notifications, test notification, then sign in as the test account), then record the spike notes and finish 1a.
+- **Overall status:** Phase 1a done (3 October 2026): the app is live at https://clarivi-zeta.vercel.app, sign-in with a forced new password works on Sabine's iPhone, a test notification arrives through Apple's push service and opens the app signed in, and the test account sees none of the owner's data. All 1a tasks are ticked; results are under "Spike results" below. Phase 1b (daily sync) is next.
+- **Next action:** Plan task group 1b (daily sync: ingest function, upload tokens, Shortcut template, both automations and the three checks) and wait for Sabine's approval.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
 **Set-up so far (checked 2 October 2026)**
@@ -57,7 +57,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] Build sign-in and the forced "Set a new password" screen on first login
 - [x] Create two sample tables with row-level security, and a CI check that fails if any table lacks it
 - [x] Generate push signing keys; build `register_push` and a `send-push` function using `@negrel/webpush` (fall back to `npm:web-push` if it fails)
-- [ ] Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it
+- [x] Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it
 
 ### 1b. Daily sync
 - [ ] Build the `ingest` function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (`night_complete`, `already_complete_today`)
@@ -93,6 +93,16 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
    *Expected:* 12 months arrive, and an interrupted run resumes without duplicates.
 6. **Spike notes:** record every check's result (sleep stages, locked-phone rate, time zones, import time, post size, HRV coverage).
    *Expected:* any result that breaks a rule triggers its fallback from the tech spec before Phase 2 starts.
+
+### Spike results
+**1a. App, sign-in and push (3 October 2026)**
+- Manual checks 1 to 3 passed on Sabine's iPhone: the app installs and opens full screen; the temporary password forces "Set a new password" once, then lands on home with the Owner tag; the test account sees only itself.
+- Push works end to end. `@negrel/webpush` 0.5.0 runs in Supabase's function runtime and Apple's push service (`web.push.apple.com`) accepts it, so the `npm:web-push` fallback isn't needed. The test notification arrived about 15 seconds after tapping (the built-in delay), and tapping it opened the app still signed in.
+- Saving a new password ends every existing session, so the app signs straight back in with the new password.
+- A phone belongs to whoever signed in on it last: signing in as another account moves that phone's notifications to it.
+- Supabase trap: switching off email sign-ups under the Email provider also switches off email sign-in. New sign-ups are blocked by the general "Allow new users to sign up" switch instead.
+- Vercel's Supabase integration fills in Production only; the Preview values were added by hand.
+- Automated checks: database tests (row-level security on every table, cross-user reads and writes), app tests, the build secret check, and a local end-to-end run (`npm run check:local`) all pass on every push. The upload-path and ingest tests come with 1b.
 
 ---
 

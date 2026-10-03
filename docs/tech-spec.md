@@ -367,7 +367,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 ### Open questions (each with a recommended default)
 1. **Region.** Settled 2 October 2026: US East (see Decisions).
 2. **Retention after the test.** Default: delete testers' data 90 days after it ends unless they agree otherwise.
-3. **Push library.** Default: `@negrel/webpush`, with `npm:web-push` as the fallback.
+3. **Push library.** Settled 3 October 2026: `@negrel/webpush` 0.5.0 works in Supabase's function runtime and with Apple's push service (Phase 1a spike), so the fallback isn't needed.
 4. **Limits.**
    - **Default:** 5 MB and 50,000 readings per upload; 60 uploads an hour per token.
    - **Default:** value ranges as in section 6.
