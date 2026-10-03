@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { pickPublicValues } from './env-config'
+import { pickPublicValues } from './env-config.ts'
 
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }

@@ -319,7 +319,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
 - **Server function tests (Deno):** ingest validation, duplicates, the reply flags, rate limits, password re-checks and delete-my-data.
 - **Reference check (pandas):** the owner's year is recalculated outside the database, stage by stage (nights, sleeping heart rate, baselines, status). It must match the SQL before any tester sees a status, and is rerun after any change to the SQL.
 - **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules.
-- **End-to-end tests (Playwright, iPhone screen size):**
+- **End-to-end tests (Playwright, iPhone screen size):** set up on 3 October 2026 (`npm run test:e2e`, tests in `e2e/`). They run in WebKit, Safari's engine, on an iPhone 14-sized screen (390 points wide), locally and on GitHub with every push. The first tests cover the sign-in screen: its form and contact line, no sideways scrolling, 44-point tap targets, and the manifest, icon and service worker. Still to come:
   - every card state, Why today and the numbers toggles
   - follow-through timing, with the clock set to before and after 8pm
   - the check that the morning card fits in 390 by 763 points
