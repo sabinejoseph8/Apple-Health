@@ -4,11 +4,17 @@ Phase 2: reading her own status each morning before the screens exist).
 
   .venv/bin/python scripts/reference/today.py
   .venv/bin/python scripts/reference/today.py 2026-10-02
+  .venv/bin/python scripts/reference/today.py --felt off "tired, couldn't train"
+
+--felt good, okay or off (and an optional note) saves how you felt next to
+that day's status in private/selftest.csv, for the end-of-self-test review.
+It stays in private/, which is never committed.
 
 Signs in with the remembered sign-in (scripts/reference/api.py) and prints
 the status, the nudge, each reading against your normal and the illness
 check, for today (your local date) or the date given. Prints to this
-terminal only; nothing is saved. Never names a condition (R61).
+terminal only; nothing is saved unless you use --felt. Never names a
+condition (R61).
 """
 
 from __future__ import annotations
@@ -76,7 +82,30 @@ def show(row: dict) -> None:
         print('Also checked: not enough readings for the pattern check.')
 
 
+def record(row: dict, day: date, felt: str, note: str) -> None:
+    import csv
+    path = api.ROOT / 'private' / 'selftest.csv'
+    new = not path.exists()
+    with open(path, 'a', newline='') as f:
+        w = csv.writer(f)
+        if new:
+            w.writerow(['date', 'status', 'nudge', 'points', 'felt', 'note'])
+        w.writerow([day.isoformat(), row.get('status', 'none') if row else 'none', (row or {}).get('nudge') or '',
+                    '' if not row or row.get('total') is None else f"{float(row['total']):.2f}", felt, note])
+    print(f'\nSaved: you felt {felt} on {day}.')
+
+
 if __name__ == '__main__':
+    args = sys.argv[1:]
+    felt = note = None
+    if '--felt' in args:
+        i = args.index('--felt')
+        felt = args[i + 1] if i + 1 < len(args) else ''
+        if felt not in ('good', 'okay', 'off'):
+            raise SystemExit('Use --felt good, --felt okay or --felt off.')
+        note = ' '.join(args[i + 2:])
+        args = args[:i]
+    sys.argv = [sys.argv[0]] + args
     env = api.live_env()
     url, key = env['SUPABASE_URL'], env['SUPABASE_PUBLISHABLE_KEY']
     headers = api.owner_session(url, key)
@@ -92,3 +121,5 @@ if __name__ == '__main__':
         show(rows[0])
     else:
         print(f"\n{day}: no status yet. Nothing has synced for this morning, or last night's sleep hasn't arrived.")
+    if felt:
+        record(rows[0] if rows else None, day, felt, note)
