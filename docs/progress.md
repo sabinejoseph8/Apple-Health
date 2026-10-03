@@ -13,11 +13,11 @@
 - **Next action:** Plan task group 1b (daily sync: ingest function, upload tokens, Shortcut template, both automations and the three checks) and wait for Sabine's approval.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 
-**Set-up so far (checked 2 October 2026)**
+**Set-up so far (checked 3 October 2026)**
 | Item | State |
 |---|---|
-| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live since 3 October 2026: `profiles` and `push_subscriptions` (row-level security on), `register_push`, the `account-first-login` and `send-push` functions, and the live notification keys in the secret store. The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
-| GitHub repository | `sabinejoseph8/Apple-Health`, public; app code and GitHub Actions on the `phase-1a` branch |
+| Supabase project | "Clarivi" (ref `vuynnnrijdbvamwfauog`), free plan, created 2 October 2026 in US East (`us-east-1`). Live since 3 October 2026: `profiles` and `push_subscriptions` (row-level security on), `register_push`, the `account-first-login` and `send-push` functions, the live notification keys in the secret store, and two accounts (Sabine as owner, and the test account), both past their first password change. The project also has Supabase's automatic row-level security for new tables (`rls_auto_enable`), chosen at creation |
+| GitHub repository | `sabinejoseph8/Apple-Health`, public; Phase 1a merged into `main` on 3 October 2026; GitHub Actions run the app, secret and database checks on every push |
 | Vercel | Project `clarivi` (Hobby) under `sabine5`, deploying from GitHub: production from `main` at https://clarivi-zeta.vercel.app, a preview for every other branch. Connected to Supabase through the official integration (Production values); preview values and the push public key added by hand (3 October 2026) |
 
 **Settled: Supabase region (2 October 2026).** The first project was created in US West by mistake. It was replaced while still empty by a new project in US East (ref `vuynnnrijdbvamwfauog`), as the plan said. The old US West project (ref `pupxkjhhhgeeoqyvtsst`) is no longer used.
@@ -45,7 +45,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - a year can be imported
 - users' data stays separate
 
-**Status:** In progress (set-up started)
+**Status:** In progress (1a done on 3 October 2026; 1b next)
 
 ### 1a. App, sign-in and push
 - [x] Create the GitHub repository with GitHub Actions

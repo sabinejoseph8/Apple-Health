@@ -1,6 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
+**Last updated:** 3 October 2026 (password minimum settled; how shared phones behave noted under Access rules)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -43,6 +44,7 @@
 - There is no public sign-up. Nobody can create an account except the owner.
 - The app sends no email at all.
 - Testers never see each other's data or each other at all.
+- How it works now (built in Phase 1a, not yet a decision): a phone's notifications go to whoever signed in on it last, so a shared phone never shows another person's notifications (R9).
 
 ---
 
@@ -302,12 +304,13 @@
 | This spec (30 Sep 2026) | Stands alone, without MVP decision or risk numbers |
 | Laptop layout (30 Sep 2026) | The same single column as the iPhone, centred, at most 480 points wide; no separate desktop design |
 | Name (30 Sep 2026) | The product is called Clarivi (previously the working name Morning Readiness) |
+| Password minimum (3 Oct 2026) | 12 characters (R3) |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Default: heart rate variability 40%, sleeping heart rate 35%, sleep 25%. Ease off starts at 1 point and Rest at 2. Set from the owner's backfilled year, then frozen.
 2. **Cap when a reading is missing.** Default: no cap, unless the backfill shows single readings pushing days to Rest. If it does, cap at Ease off.
 3. **Heart rate variability baseline.** Default: 21 valid nights out of 28, like the others. If heart rate variability is often missing, use 14 nights or a 42-night window.
 4. **Session length (R6).** Default: 30 days without use.
-5. **Minimum password length (R3).** Default: 12 characters.
+5. **Minimum password length (R3).** Settled 3 October 2026: 12 characters, set on the live project and checked by the app.
 6. **Trend view range (R44).** Default: the last 8 weeks.
 7. **Wording and layout of the less common states** (R25 to R34, R41, R42). Default: written during the build, within R21 and R61.

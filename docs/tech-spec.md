@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 2 October 2026 (US East project recorded; Vercel's Supabase integration and its secret values)
+**Last updated:** 3 October 2026 (Phase 1a built and live: what was learned is recorded in sections 3 to 10)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -89,6 +89,11 @@ All times are stored in UTC, with the phone's timezone offset kept beside them. 
 
 The first-login password change is tracked by a flag in the login system's admin-only metadata (`must_change_password`), so users can't clear it themselves.
 
+Built in Phase 1a (3 October 2026):
+- A trigger creates each `profiles` row when an account is created, and copies the owner flag from admin-only metadata (`is_owner`) whenever it changes.
+- `push_subscriptions.endpoint` is unique. A phone belongs to whoever signed in on it last: signing in as another account moves the phone's notifications to that account, so a shared phone never shows the wrong person's notifications.
+- Signed-in users can only read their own rows. Direct inserts, updates and deletes are revoked; rows change only through the trigger and named functions such as `register_push`.
+
 **Raw data (never changed after arrival)**
 | Table | Holds | Key fields |
 |---|---|---|
@@ -153,7 +158,8 @@ The app uses the Supabase client with the public (publishable) key and the user'
 Each call carries the user's session.
 - **`account-token`:** checks the password, then creates or reissues the upload token. The token is returned once.
 - **`account-delete-data`:** checks the password, then deletes the user's readings, results, answers, tokens and subscriptions. The account itself stays.
-- **`account-first-login`:** clears the change-password flag after the user has set a new password.
+- **`account-first-login`:** takes the new password, refuses one under 12 characters or the temporary password itself, then saves it and clears the change-password flag in one step. Saving a password ends every session, so the app signs straight back in with the new one.
+- **`send-push`:** in Phase 1a, sends a test notification to the signed-in user's own devices after an optional delay (up to 30 seconds), replying at once and sending in the background. Phase 4 extends it to send outbox rows on a schedule.
 - **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values.
 
 ### Schedulers
@@ -168,15 +174,15 @@ Each call carries the user's session.
 - Events for the owner's year are loaded from a small file with a script.
 
 ### Wording
-- One shared wording module holds every sentence the app and notifications use: briefings, verdicts, nudges, notification text and state messages.
+- One shared wording module, `supabase/functions/_shared/wording.ts`, holds every sentence the app and notifications use: briefings, verdicts, nudges, notification text and state messages. It is plain TypeScript, so the web app and the server functions import the same file.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
 ---
 
 ## 5. System patterns (secure and extensible)
 
-1. **Isolation in one place.** Every table has row-level security tied to the signed-in user. A test in the automated checks fails the build if any table has row-level security switched off. Views run with the reading user's permissions.
-2. **Elevated access only in named functions.** The secret key exists only inside server functions. Each one works out the user from a verified token or session, and never from the request body. This covers the upload path, which bypasses row-level security.
+1. **Isolation in one place.** Every table has row-level security tied to the signed-in user. A test in the automated checks fails the build if any table has row-level security switched off (shown to work on 2 October 2026 with a deliberately unlocked table). Views run with the reading user's permissions. Direct writes are revoked: rows change only through triggers and named database functions.
+2. **Elevated access only in named functions.** The secret key exists only inside server functions. Each one works out the user from a verified token or session, and never from the request body. This covers the upload path, which bypasses row-level security. The gateway's own token check is switched off for these functions; each checks the session with Supabase Auth itself, which works with the project's publishable and secret keys.
 3. **Raw first, results rebuildable.** Raw readings are never edited. Every result can be rebuilt for any user and date range with one function, so a rule change is a recompute, never a re-sync.
 4. **Queue, don't block.** Uploads only store and queue. Analysis runs separately, so a heavy import never times out the Shortcut.
 5. **Outbox for notifications.** Analysis and schedules write notification rows, and a single sender delivers them. A unique key on (user, date, kind) guarantees at most one notification of each kind per day.
@@ -196,6 +202,8 @@ Each call carries the user's session.
     - no numbers in briefings
     - at most three sentences
     - no health detail in reminder and follow-up text
+    - no em dashes
+12. **Nothing secret in the build.** Every build ends with `scripts/check-build-secrets.mjs`, on GitHub and on Vercel. It fails if a Supabase secret key, a token with an elevated role, or the exact value of any secret setting in the build environment appears in the files sent to browsers. CI also plants a fake secret to prove the check catches it.
 
 ---
 
@@ -203,12 +211,13 @@ Each call carries the user's session.
 
 **Authentication**
 - Supabase Auth with email and password. New sign-ups are switched off.
-- Minimum password length is 12 (Default). Supabase's leaked-password check is switched on if the plan includes it.
+- Minimum password length is 12, set on the live project on 3 October 2026; the app and `account-first-login` refuse shorter passwords too. Supabase's leaked-password check is switched on if the plan includes it.
+- New sign-ups are blocked by the general "Allow new users to sign up" switch. The Email provider must stay on: switching off its own sign-up setting also switches off email sign-in (found in Phase 1a).
 - Sessions:
   - Long-lived, with refresh token rotation.
   - A 30-day inactivity timeout needs Supabase Pro, so it isn't enforced during the test. Until the move to Pro, a session lasts until the user signs out or uses "Sign out everywhere". The product spec's 30-day default (R6) applies from then on.
   - "Sign out everywhere" ends every session for the user.
-- First sign-in: the change-password flag sends the user straight to "Set a new password". The flag is cleared only by the server function, after the new password is saved.
+- First sign-in: the change-password flag sends the user straight to "Set a new password". The flag is cleared only by `account-first-login`, in the same step that saves the new password.
 - Password re-checks before sensitive actions are done by the server function signing in with the password. Supabase's built-in re-authentication sends an email code, and there is no email in this app.
 
 **Authorization**
@@ -225,7 +234,8 @@ Each call carries the user's session.
 **Secrets**
 - The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026).
 - The web app holds only the public key and the push public key. The build reads exactly three values by name (the project address, the publishable key and the push public key), so nothing else can reach the browser.
-- The repository holds no secrets. CI uses GitHub's encrypted secrets.
+- The live push signing keys were created on 3 October 2026 and sent straight to Supabase's secret store; the private key isn't stored anywhere else. Local development uses separate local-only test keys in `supabase/functions/.env`, which is never committed.
+- The repository holds no secrets. CI needs none so far; if it ever does, it uses GitHub's encrypted secrets.
 
 **Input validation**
 - Every ingest body is checked against the shared schema.
@@ -258,7 +268,7 @@ Each call carries the user's session.
 **Environments (decided 30 September 2026: one Supabase project)**
 | Environment | Supabase | Web app | Used for |
 |---|---|---|---|
-| Local | A local copy on your laptop and in CI, with made-up test data | Runs on your laptop | Building and testing every database change before it goes live |
+| Local | A local copy on your laptop and in CI, with made-up test data. Unlike the live project, it doesn't switch row-level security on automatically for new tables, so the CI check still catches a table without it | Runs on your laptop | Building and testing every database change before it goes live |
 | Live | The one Supabase project; free while building and through the test, Pro after the test | Vercel production address and preview addresses | Spikes, real data for the four users, and checking changes on your phone |
 
 - Region: US East (`us-east-1`), the closest to the Cayman Islands.
@@ -267,7 +277,8 @@ Each call carries the user's session.
 - **Vercel and Supabase:** connected through Vercel's official Supabase integration (D21), which fills in the project address and keys for the web app.
 - **Production address:** https://clarivi-zeta.vercel.app (Vercel project `clarivi`). It is also the push contact address (`VAPID_SUBJECT`).
 - Vercel previews talk to the same live project, so preview checks are done signed in as the owner or a test account, never as a tester.
-- A dedicated test account (for example "preview test") holds made-up data for checking previews.
+- A dedicated test account (created 3 October 2026; its email is kept out of this public repository) holds made-up data for checking previews.
+- The live project was created with Supabase's automatic row-level security for new tables (an event trigger, `rls_auto_enable`). Outside calls to that function are revoked (migration of 3 October 2026).
 
 **Deployment**
 1. A change goes on a branch. GitHub Actions runs every test against a local copy of Supabase.
@@ -278,12 +289,14 @@ Each call carries the user's session.
 6. Merging to `main` publishes the web app to production.
 7. Releases are tagged and listed in a changelog. During the test, score logic and settings are frozen.
 
+How a release reaches the live project: sign the Supabase command-line tool in once on the laptop (`npx supabase login`, approved in the browser with a verification code), link the folder to the project, then `supabase db push` for migrations (no database password needed), `supabase functions deploy` for functions and `supabase secrets set` for function settings.
+
 **Configuration**
 - **Web app:**
   - the project address and the publishable key, filled in by Vercel's Supabase integration under its own names (for example `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`); the build maps them to `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
   - `VITE_VAPID_PUBLIC_KEY`, added by hand (Production and Preview)
   - the integration fills in Production only, so `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` were also added by hand for Preview (3 October 2026). If the project's keys are ever rotated, update these two as well.
-  - on your laptop and in CI, the same values come from a local file that never goes to GitHub
+  - on your laptop, `.env.local` (never committed) points the app at the local copy of Supabase; CI builds without these values
 - **Server functions:**
   - the secret key (provided by Supabase)
   - `VAPID_PRIVATE_KEY`
@@ -315,6 +328,8 @@ Each call carries the user's session.
   - notification taps
   - both Shortcut triggers, with the phone locked and unlocked
   - import timing, and an interrupted import resuming
+- **Local end-to-end check** (`npm run check:local`, Phase 1a): with the local copy and functions running, it signs in made-up accounts, runs the password change, sends a test push to a fake device that decrypts it, and checks a second account sees nothing of the first.
+- **Build secret check:** see pattern 12.
 - **Every push runs all automated tests.** A failure blocks the release.
 
 ---
@@ -329,10 +344,10 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Shortcut may not return Watch sleep stages | The sleep window and the "night finished" check depend on them | Check first in the sync spike; if only "asleep" arrives, keep the window rule; if stages are missing, change the night rule before building analysis | 1 |
 | A year's import through Shortcuts is too slow or fails | No baselines on day one | Import in monthly parts that resume; time it on two phones; narrow the heart rate window first if needed | 1 |
 | Past readings may lose the time zone they were recorded in | Travel days in the owner's year can't be detected from offsets, and nights could be misdated | Test with a known trip; if lost, take trips from the calendar or detect them from shifts in sleep timing | 1 |
-| Web push on the iPhone fails silently, or a tap opens a signed-out app | No morning nudge means no Value evidence | Push spike on real phones; log delivery; re-register each time the app opens; show notification health on the card | 1 |
-| The Deno push library doesn't work in Edge Functions | No notifications | Try it in the push spike; fall back to `npm:web-push` | 1 |
+| Web push on the iPhone fails silently, or a tap opens a signed-out app | No morning nudge means no Value evidence | Push spike on real phones; log delivery; re-register each time the app opens; show notification health on the card. 1a spike: a test push reached Sabine's iPhone and a tap opened the app signed in; the app re-registers on every open | 1 |
+| The Deno push library doesn't work in Edge Functions | No notifications | Try it in the push spike; fall back to `npm:web-push`. Resolved in 1a: it works, no fallback needed | 1 |
 | Upload path bypasses row-level security | One tester's data could land in another's account | Work out the user from the token hash only; cross-user upload tests in CI | 1 |
-| A table ships without row-level security | Data exposed to other users | A CI check fails the build when any table lacks row-level security | 1 |
+| A table ships without row-level security | Data exposed to other users | A CI check fails the build when any table lacks row-level security (proven in 1a); the live project also switches it on for new tables automatically | 1 |
 | SQL statistics subtly wrong | Confident wrong nudges | Stage-by-stage pandas check on the owner's year before testers start | 2 |
 | HRV readings too sparse at night | The heaviest-weighted reading is often missing, or its baseline never finishes building | Count nights with HRV at the import; adjust the weights, the minimum (14 nights) or the window (42 nights) before freezing the settings | 2 |
 | Score settings unproven | Too many or too few Ease off days | Set from the owner's year against disrupted days and the "1 day in 7" limit; then freeze | 2 |
@@ -363,6 +378,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Supabase plan (30 Sep 2026) | Free while building and through the test; Pro after the test |
 | Region (2 Oct 2026) | US East; the project was recreated there while still empty |
 | Vercel and Supabase (2 Oct 2026) | Connected through Vercel's official Supabase integration; the secret values it copies into Vercel are never read by the app |
+| Push library (3 Oct 2026) | `@negrel/webpush` 0.5.0, proven with Apple's push service in the Phase 1a spike |
 
 ### Open questions (each with a recommended default)
 1. **Region.** Settled 2 October 2026: US East (see Decisions).
@@ -372,4 +388,4 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
    - **Default:** 5 MB and 50,000 readings per upload; 60 uploads an hour per token.
    - **Default:** value ranges as in section 6.
 5. **Weekly digest timing.** Default: Monday at 5am local time.
-6. **Open spike results.** Sleep stages, time zones of past readings, HRV coverage and the "already synced" check. The plan above assumes they work, with the fallbacks listed in section 9.
+6. **Open spike results.** Phase 1a's results are in progress.md ("Spike results"). Still open: sleep stages, time zones of past readings, HRV coverage and the "already synced" check (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.

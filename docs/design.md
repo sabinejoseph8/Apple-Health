@@ -1,6 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
+**Last updated:** 3 October 2026 (what Phase 1a built from the Default form, icon and notification patterns)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
@@ -214,6 +215,8 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - Large inputs (at least 44 points) with visible labels, and one primary button.
 - Errors appear in one line under the form.
 - Password fields allow iCloud Keychain autofill and strong-password suggestions.
+- As built in Phase 1a: the form sits in a white card titled with the Card headline style; input text is 16 points, because iOS zooms the page in on smaller text; inputs use the Background fill with a Separator border and a Link blue focus ring; the error line uses Rest text (`#A1261D`); "Forgot your password? Contact Sabine." sits centred and muted below the sign-in card.
+- "Set a new password" carries one plain line ("Choose your own password to replace the temporary one. Use at least 12 characters."), a new password field and a "Type it again" field.
 
 **Settings list (Default)**
 - Grouped rows: Notifications (on or off, last delivered), Upload token (create or reissue), Setup guide, Change password, Sign out everywhere, Delete my data.
@@ -222,6 +225,11 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 **Notification text** (system surface, not a screen)
 - **Morning:** status and reason ("Ease off today: HRV well below your usual, sleep short").
 - **11:30 reminder and 8pm question:** contain no health detail.
+- **Test notification (Phase 1a):** title "Clarivi", body "Test notification. Tap to open Clarivi." No health detail.
+
+**App icon (Default)**
+- A placeholder: a white open ring, like a "C", on Link blue (`#0A60D8`). iOS rounds the corners itself.
+- Drawn by `scripts/make-icons.py` at 180, 192 and 512 pixels. Replace it with a designed icon before testers install the app.
 
 ---
 
@@ -240,7 +248,8 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - Daily check-in screen
 - Trend view
 - Weekly digest
-- Sign in, set new password and change password
+- Change password (sign in and "Set a new password" were built in Phase 1a from the Forms pattern)
+- A temporary home screen (account, notifications and Sign out) stands in for the readiness card until Phase 3
 - Settings
 - Owner status page (R64)
 - Less common card states (waiting, night not finished, missed, late, no sync by noon, partial, not enough data, learning your normal, notifications off, sync rejected). These are left to the build, following the status pill and briefing card patterns.
