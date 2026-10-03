@@ -280,7 +280,8 @@ Each call carries the user's session.
 **Configuration**
 - **Web app:**
   - the project address and the publishable key, filled in by Vercel's Supabase integration under its own names (for example `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`); the build maps them to `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
-  - `VITE_VAPID_PUBLIC_KEY`, added by hand
+  - `VITE_VAPID_PUBLIC_KEY`, added by hand (Production and Preview)
+  - the integration fills in Production only, so `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` were also added by hand for Preview (3 October 2026). If the project's keys are ever rotated, update these two as well.
   - on your laptop and in CI, the same values come from a local file that never goes to GitHub
 - **Server functions:**
   - the secret key (provided by Supabase)
