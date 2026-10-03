@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings; then tick it, run Phase 1's code review (1a to 1c) and merge to `main`. 1c is done: Sabine's year is imported.
+- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings (until about 10 October 2026); then tick it, close Phase 1 and merge `phase-1b-daily-sync` to `main` (Sabine runs the merge, as it deploys production). 1c and Phase 1's code review are done.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -79,7 +79,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] Count the nights in your year with at least one HRV reading inside the sleep window
 
 ### End of Phase 1
-- [ ] Code review of everything changed in Phase 1 (1a to 1c); fix what it finds, then re-run the Phase 1 automated tests
+- [x] Code review of everything changed in Phase 1 (1a to 1c); fix what it finds, then re-run the Phase 1 automated tests
 
 ### Automated tests
 - Row-level security: a test user can't read or write another user's rows in any table.
@@ -127,6 +127,12 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - **The Watch's sleep record reached the iPhone after waking**, later than the 8:40am charger run and the 8:45am app run, so neither could complete the night. Until it arrived, Clarivi correctly said the night wasn't finished (no false "complete"). The next app run, at 9:14am, sent it (16 sleep stages, 5:05am to 8:35am, plus 26 breathing-rate readings) and the night was marked complete. This is what the catch-up trigger is for; how often it leaves the night incomplete until late morning is part of check 2.
 - **"Synced today" file:** the first automation runs couldn't save it: iOS needs a one-time permission for a shortcut to use iCloud Drive and can't ask while an automation runs in the background, so the save was quietly refused (the folder was created, the file wasn't). After one run by hand (permission allowed), the app automation found the file and stopped without contacting the server. The setup guide must include: run Clarivi Sync by hand once and allow Health and file access.
 - Still to measure: the locked-phone rate (check 2), over about a week of mornings.
+
+**Phase 1 code review (3 October 2026)**
+- Reviewed everything Phase 1 changed (1a to 1c). Ten findings: eight fixed, one accepted for v1 (D46), one fixed by a decision (D47). All four GitHub checks pass afterwards, including a new "Local end to end" job that runs the token, sync and import checks against a local Supabase on every push.
+- Fixed: a post counts only if the reply says what it accepted (a gateway error could otherwise mark an import month done); import progress counts a month only when its last part arrives (`month_complete`); quotes and backslashes in device names can't break a post; signed-in users have only SELECT on every table (TRUNCATE ignores row-level security); signing out unsubscribes the phone from notifications; the Shortcut's notification title comes from the wording module; spike-only check code removed.
+- Decided by Sabine: D46 (accept that part of past trip nights' heart rate is lost in the import, for v1) and D47 (pings get their own 200 an hour, outside the 60).
+- Released 3 October 2026: migration `review_fixes`, `ingest` version 6, and the Shortcut reinstalled with a reissued token.
 
 **1c. One-year import (done, 3 October 2026)**
 - **Imported:** all 12 months (mid-November 2025 to today), about 126,600 readings: 104,941 heart rate (6pm to noon), 12,576 breathing rate, 5,597 sleep stages, 3,174 HRV and 346 resting heart rate. None set aside. Watch data on Sabine's phone starts around 12 to 13 November 2025.
