@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
 import UploadToken from './UploadToken'
-import { currentPushSupport, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
+import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
 const w = wording.notifications
 const TEST_DELAY_SECONDS = 15
@@ -45,6 +45,15 @@ export default function Home({ session }: { session: Session }) {
     }
     await loadAccount()
     setBusy(false)
+  }
+
+  async function signOut() {
+    try {
+      await forgetThisDevice()
+    } catch {
+      // Sign out anyway; the phone may already have no subscription.
+    }
+    await supabase.auth.signOut({ scope: 'local' })
   }
 
   async function onTest() {
@@ -93,7 +102,7 @@ export default function Home({ session }: { session: Session }) {
 
       <UploadToken />
 
-      <button className="text-button" type="button" onClick={() => supabase.auth.signOut({ scope: 'local' })}>
+      <button className="text-button" type="button" onClick={signOut}>
         {wording.home.signOut}
       </button>
     </main>

@@ -55,6 +55,8 @@ for (let d = 1; d <= days; d++) {
 const stages = ['Core', 'Deep', 'Core', 'REM', 'Awake']
 const body = {
   schema_version: 1, kind: 'backfill', month_id: monthId, device_tz_offset_min: '-05:00', trigger: 'manual',
+  // The whole month in one post, so it is also the month's last part.
+  month_complete: true,
   series: [
     series('heart_rate', hr, (i) => 50 + (i % 30), 'count/min'),
     series('hrv_sdnn', hrv, (i) => 40 + (i % 20), 'ms', 60_000),

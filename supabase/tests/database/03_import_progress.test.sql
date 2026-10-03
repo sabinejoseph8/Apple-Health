@@ -1,10 +1,11 @@
 -- Import progress (R12): a backfill reply says how many months of the import
--- window (this month and the 11 before it) have arrived. Other replies don't.
+-- window (this month and the 11 before it) have arrived in full (their last
+-- part, marked month_complete). Other replies don't.
 -- Import posts have their own rate limit: 200 an hour per token, counted
 -- apart from the 60 an hour for everything else.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(11);
 
 insert into auth.users (id, email) values ('33333333-3333-3333-3333-333333333333', 'user-c@example.test');
 select public.issue_upload_token('33333333-3333-3333-3333-333333333333', repeat('f', 64));
@@ -14,11 +15,21 @@ create function pg_temp.month(p_back integer) returns text language sql as $$
   select to_char((now() at time zone 'utc') - make_interval(months => p_back), 'YYYY-MM')
 $$;
 
+-- A month's last part, marked month_complete as the Shortcut does.
 create function pg_temp.backfill(p_back integer) returns jsonb language sql as $$
+  select public.ingest_upload(repeat('f', 64), jsonb_build_object(
+    'schema_version', 1, 'kind', 'backfill', 'month_id', pg_temp.month(p_back), 'device_tz_offset_min', 0,
+    'month_complete', true, 'samples', '[]'::jsonb))
+$$;
+
+-- An earlier part of a month (not its last).
+create function pg_temp.part(p_back integer) returns jsonb language sql as $$
   select public.ingest_upload(repeat('f', 64), jsonb_build_object(
     'schema_version', 1, 'kind', 'backfill', 'month_id', pg_temp.month(p_back), 'device_tz_offset_min', 0,
     'samples', '[]'::jsonb))
 $$;
+
+select is((pg_temp.part(11) ->> 'months_imported')::int, 0, 'a month does not count until its last part arrives');
 
 select is((pg_temp.backfill(11) ->> 'months_imported')::int, 1, 'the oldest month of the window counts as 1 of 12');
 select is((pg_temp.backfill(10) ->> 'months_imported')::int, 2, 'a second month counts as 2');

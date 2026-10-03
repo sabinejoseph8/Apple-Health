@@ -157,7 +157,18 @@ Deno.test('replies contain the exact text the Shortcut looks for', async () => {
   const refused = fakeStore({ error: 'token_revoked' })
   assert((await (await handleIngest(post(body), refused.deps)).text()).includes('"error"'))
   const fine = fakeStore(stored)
-  assert(!(await (await handleIngest(post(body), fine.deps)).text()).includes('"error"'))
+  const fineText = await (await handleIngest(post(body), fine.deps)).text()
+  assert(!fineText.includes('"error"'))
+  // The Shortcut counts a post as stored only if the reply says what it
+  // accepted (review fix), so every success has it and no refusal does.
+  assert(fineText.includes('"accepted":'), fineText)
+  for (const answer of [{ error: 'invalid_token' }, { error: 'token_revoked' }, { error: 'rate_limited' }, { error: 'invalid_body' }] as StoreReply[]) {
+    const { deps } = fakeStore(answer)
+    assert(!(await (await handleIngest(post(body), deps)).text()).includes('"accepted":'))
+  }
+  const ping = fakeStore({ accepted: 0, duplicates: 0, night_complete: false, already_complete_today: false })
+  const pingText = await (await handleIngest(post({ schema_version: 1, kind: 'ping', device_tz_offset_min: -240 }), ping.deps)).text()
+  assert(pingText.includes('"accepted":0'), pingText)
 })
 
 Deno.test('a month of history replies with the import progress', async () => {

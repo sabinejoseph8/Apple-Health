@@ -327,3 +327,17 @@ Deno.test('an import part with slim heart rate columns is accepted', () => {
   assertEquals(r.upload.samples[0].unit, null)
   assertEquals(r.upload.samples[3].source_name, 'Ultra Watch')
 })
+
+Deno.test('a backfill post can say it is the month\'s last part', () => {
+  const base = { schema_version: 1, kind: 'backfill', month_id: '2026-09', device_tz_offset_min: -240, samples: [] }
+  const last = parseUpload({ ...base, month_complete: true }, NOW)
+  assert(last.ok)
+  assertEquals(last.upload.month_complete, true)
+  const part = parseUpload(base, NOW)
+  assert(part.ok)
+  assertEquals(part.upload.month_complete, false)
+  const daily = parseUpload({ schema_version: 1, kind: 'daily', device_tz_offset_min: -240, month_complete: true, samples: [] }, NOW)
+  assert(daily.ok)
+  assertEquals(daily.upload.month_complete, false, 'only a backfill can complete a month')
+  assertStringIncludes(error({ ...base, month_complete: 'yes' }), 'month_complete')
+})

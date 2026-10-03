@@ -102,6 +102,8 @@ export interface CleanUpload {
   device_tz_offset_min: number
   trigger: Trigger | null
   samples: CleanSample[]
+  // Backfill only: this post is the month's last part (import progress, R12).
+  month_complete: boolean
   // Readings that failed a check and were left out, and the first few reasons.
   set_aside: number
   set_aside_note: string | null
@@ -300,6 +302,10 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
     } else if (body.month_id !== undefined && body.month_id !== null && body.month_id !== '') {
       reject('month_id is only for a backfill')
     }
+    if (body.month_complete !== undefined && typeof body.month_complete !== 'boolean') {
+      reject('month_complete must be true or false')
+    }
+    const monthComplete = kind === 'backfill' && body.month_complete === true
 
     // Which automation ran the Shortcut. A word the automation's Text box
     // doesn't spell exactly (for example the app's name instead of "app") is
@@ -346,6 +352,7 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
         device_tz_offset_min: deviceOffset,
         trigger,
         samples,
+        month_complete: monthComplete,
         set_aside: reasons.length,
         set_aside_note: reasons.length ? reasons.slice(0, SET_ASIDE_REASONS_KEPT).join('; ').slice(0, 300) : null,
       },

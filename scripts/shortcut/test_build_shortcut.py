@@ -132,7 +132,11 @@ class ShortcutTests(unittest.TestCase):
             # quotes.
             def fill(i):
                 before = text[i - 1] if i else ''
-                return '{}' if before in '[,' else '' if before in (OBJ, '}') else 'x'
+                if before in '[,':
+                    return '{}'
+                if before in (OBJ, '}'):
+                    return ''
+                return 'true' if before == ':' else 'x'
             filled = ''.join(fill(i) if ch == OBJ else ch for i, ch in enumerate(text))
             parsed = json.loads(filled)
             self.assertIsInstance(parsed, dict)
@@ -179,6 +183,16 @@ class ShortcutTests(unittest.TestCase):
             self.assertIn('"month_id":"' + OBJ + '"', body)
         self.assertNotIn(bs.EMPTY_HEART_RATE, backfill[0], 'the small readings go on their own')
         self.assertIn(bs.EMPTY_HEART_RATE, backfill[1])
+        files = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('setitemname')]
+        self.assertIn(bs.IMPORT_FILE, [f['WFName'] for f in files])
+        opened = [a['WFWorkflowActionParameters']['WFGetFilePath'] for a in self.actions
+                  if a['WFWorkflowActionIdentifier'].endswith('documentpicker.open')]
+        self.assertEqual(sorted(opened), sorted(['Clarivi/' + bs.IMPORT_FILE, 'Clarivi/' + bs.MARKER_FILE]))
+        skips = [a['WFWorkflowActionParameters'] for a in self.actions
+                 if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 999
+                 and isinstance(a['WFWorkflowActionParameters'].get('WFConditionalActionString'), dict)]
+        self.assertEqual(len(skips), 1, 'months already in import-done.txt are skipped')
+        self.assertIn(',"month_complete":' + OBJ + ',', backfill[1], 'the heart rate part says whether it ends the month')
 
     def test_nothing_is_sent_just_after_the_day_loop(self):
         # A post made just after the day-by-day loop failed every time on
@@ -194,14 +208,31 @@ class ShortcutTests(unittest.TestCase):
                       if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 5
                       and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
         self.assertTrue(any('yyyy-MM' in json.dumps(c) for c in conditions), 'a part is sent on the month\'s last day')
-        files = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('setitemname')]
-        self.assertIn(bs.IMPORT_FILE, [f['WFName'] for f in files])
-        opened = [a['WFWorkflowActionParameters']['WFGetFilePath'] for a in self.actions
-                  if a['WFWorkflowActionIdentifier'].endswith('documentpicker.open')]
-        self.assertEqual(sorted(opened), sorted(['Clarivi/' + bs.IMPORT_FILE, 'Clarivi/' + bs.MARKER_FILE]))
-        skips = [a['WFWorkflowActionParameters'] for a in self.actions
-                 if a['WFWorkflowActionIdentifier'].endswith('conditional') and a['WFWorkflowActionParameters'].get('WFCondition') == 999]
-        self.assertEqual(len(skips), 1, 'months already in import-done.txt are skipped')
+    def test_every_post_counts_only_if_clarivi_says_what_it_accepted(self):
+        # Review fix: a gateway error page has no "error" key, so success is
+        # checked, not failure.
+        acts = self.actions
+        for i, a in enumerate(acts):
+            if not a['WFWorkflowActionIdentifier'].endswith('downloadurl'):
+                continue
+            check = acts[i + 1]['WFWorkflowActionParameters']
+            self.assertEqual((check.get('WFCondition'), check.get('WFConditionalActionString')), (999, '"accepted":'))
+            self.assertEqual(check['WFInput']['Variable']['Value']['OutputUUID'], a['WFWorkflowActionParameters']['UUID'])
+
+    def test_device_names_cannot_break_the_json(self):
+        replaces = [a['WFWorkflowActionParameters'] for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('text.replace')]
+        combines_of_source = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('text.combine')
+                              and any(g.get('PropertyName') == 'Source' for g in a['WFWorkflowActionParameters']['text']['Value'].get('Aggrandizements', []))]
+        self.assertEqual(len(replaces), len(combines_of_source))
+        for r in replaces:
+            self.assertEqual((r['WFReplaceTextFind'], r['WFReplaceTextReplace'], r['WFReplaceTextRegularExpression']),
+                             (bs.SOURCE_UNSAFE, "'", True))
+        self.assertEqual(re.sub(bs.SOURCE_UNSAFE, "'", 'Sam"s \\Ultra'), "Sam's 'Ultra")
+
+    def test_notification_titles_come_from_the_wording_module(self):
+        titles = {a['WFWorkflowActionParameters']['WFNotificationActionTitle']['Value']['string'] for a in self.actions
+                  if a['WFWorkflowActionIdentifier'].endswith('notification')}
+        self.assertEqual(titles, {bs.shortcut_wording()['appName']})
 
     def test_dates_only_move_in_hours(self):
         # Adjust Date ignored a step in months on Sabine's iPhone (1c), while
@@ -236,7 +267,7 @@ class ShortcutTests(unittest.TestCase):
 
     def test_the_menu_words_come_from_the_wording_module(self):
         words = bs.shortcut_wording()
-        self.assertEqual(set(words), {'menuPrompt', 'syncNow', 'importHistory', 'importFinished'})
+        self.assertEqual(set(words), {'menuPrompt', 'syncNow', 'importHistory', 'importFinished', 'appName', 'failed'})
         [menu] = [a['WFWorkflowActionParameters'] for a in self.actions
                   if a['WFWorkflowActionIdentifier'].endswith('choosefrommenu') and a['WFWorkflowActionParameters']['WFControlFlowMode'] == 0]
         self.assertEqual(menu['WFMenuPrompt'], words['menuPrompt'])

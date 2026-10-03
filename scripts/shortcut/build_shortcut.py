@@ -62,9 +62,14 @@ so the upload token stays write-only (decided 3 October 2026).
 Every word the Shortcut shows itself (the menu, the "finished" line) comes
 from the shortcut section of supabase/functions/_shared/wording.ts.
 
-The Shortcut tests the reply's JSON text for "already_complete_today":true,
-"night_complete":true and "error", which the ingest function's tests pin
-down (supabase/functions/ingest/handler.test.ts).
+The Shortcut tests the reply's JSON text for "accepted": (a post counts as
+stored only if Clarivi says what it accepted, so a gateway error page is a
+failure, not a success), "already_complete_today":true and
+"night_complete":true, which the ingest function's tests pin down
+(supabase/functions/ingest/handler.test.ts). The month's last import post
+says "month_complete":true, so the server's progress count only includes
+finished months. Quotes and backslashes in source (device) names become
+apostrophes, since the post is built as text.
 """
 
 import json
@@ -99,19 +104,35 @@ COLUMNS = [('start', 'Start Date'), ('end', 'End Date'), ('value', 'Value'), ('u
 # Joins a column's entries into the inside of a JSON list of text: a","b","c.
 COLUMN_SEPARATOR = '","'
 
+# Characters a device name could contain that would break the JSON text.
+SOURCE_UNSAFE = '["\\\\]'
+
 # "Start Date is in the last 1 day": yesterday and today. Finer date filters
 # (after a time, between two times, in the last N hours) don't work on Health
 # samples in Shortcuts (Phase 1b spike, 3 October 2026).
 LAST_DAY = {'Operator': 1001, 'Values': {'Number': '1', 'Unit': 16}}
 
 
-def shortcut_wording():
-    """The plain strings in wording.ts's shortcut section."""
+STRING = r"""(?:'([^'\\]*)'|"([^"\\]*)")"""
+
+
+def wording_section(name):
+    """The plain strings (no functions) in one section of wording.ts."""
     source = WORDING.read_text()
-    block = re.search(r'\n  shortcut: \{\n(.*?)\n  \},', source, re.S)
+    block = re.search(r'\n  ' + name + r': \{\n(.*?)\n  \},', source, re.S)
     if not block:
-        raise SystemExit('wording.ts has no shortcut section')
-    return dict(re.findall(r"^\s+(\w+): '([^'\\]*)',$", block.group(1), re.M))
+        raise SystemExit(f'wording.ts has no {name} section')
+    return {key: a or b for key, a, b in re.findall(r'^\s+(\w+): ' + STRING + r',$', block.group(1), re.M)}
+
+
+def shortcut_wording():
+    """The words the Shortcut shows itself: its own section of wording.ts,
+    plus the app's name (notification titles) and the sync failure line."""
+    source = WORDING.read_text()
+    words = wording_section('shortcut')
+    words['appName'] = re.search(r"^  appName: '([^']*)',$", source, re.M).group(1)
+    words['failed'] = wording_section('sync')['failed']
+    return words
 
 ISO_TIME = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
 
@@ -190,9 +211,10 @@ class Out:
 
 
 class Builder:
-    def __init__(self):
+    def __init__(self, words=None):
         self.actions = []
         self.questions = []
+        self.words = words or shortcut_wording()
 
     def add(self, identifier, params):
         self.actions.append({'WFWorkflowActionIdentifier': f'is.workflow.actions.{identifier}',
@@ -237,7 +259,7 @@ class Builder:
         self.add('exit', {})
 
     def notify(self, *parts):
-        self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens('Clarivi'),
+        self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens(self.words['appName']),
                                   'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
 
     def date_from(self, *parts):
@@ -305,6 +327,14 @@ class Builder:
         self.add('count', {'UUID': action_id, 'WFCountType': 'Items', 'Input': attachment(ref), 'WFInput': attachment(ref)})
         return Out(action_id, 'Count')
 
+    def replace(self, out, pattern, replacement):
+        """Replace Text with a regular expression."""
+        action_id = new_id()
+        self.add('text.replace', {'UUID': action_id, 'WFInput': tokens(out.ref()), 'WFReplaceTextFind': pattern,
+                                  'WFReplaceTextReplace': replacement, 'WFReplaceTextRegularExpression': True,
+                                  'WFReplaceTextCaseSensitive': True})
+        return Out(action_id, 'Updated Text')
+
     def combine(self, ref, separator):
         action_id = new_id()
         self.add('text.combine', {'UUID': action_id, 'Show-text': True, 'WFTextSeparator': 'Custom',
@@ -363,9 +393,16 @@ class Builder:
         self.save_file(MARKER_FILE, variable('Today'))
 
     def stop_if_refused(self, reply):
-        group = self.if_(reply.ref(as_text()), 99, string='"error"')
+        """Stops unless Clarivi's reply says what it accepted. A refusal shows
+        Clarivi's message; anything else (a gateway error page, a timeout
+        reply) shows the general failure line."""
+        group = self.if_(reply.ref(as_text()), 999, string='"accepted":')
         message = self.dictionary_value(reply, 'message')
+        has_message = self.if_(message.ref(), 100)
         self.notify(message.ref())
+        self.otherwise(has_message)
+        self.notify(self.words['failed'])
+        self.end_if(has_message)
         self.stop()
         self.end_if(group)
 
@@ -376,6 +413,8 @@ def series_text(b, clarivi_type, samples, columns=COLUMNS):
     for key, detail in columns:
         aggr = [prop(detail)] + ([date_format(ISO_TIME)] if detail.endswith('Date') else [])
         column = b.combine(samples.ref(*aggr), COLUMN_SEPARATOR)
+        if key == 'source':
+            column = b.replace(column, SOURCE_UNSAFE, "'")
         parts += [',"' + key + '":["', column.ref(), '"]']
     parts.append('}')
     return b.text(*parts)
@@ -436,8 +475,9 @@ def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
     b.end_if(heavy)
     if send_part:
         # Send when the part is full, or on the month's last day (the next day
-        # is in another month). Two separate checks set one flag.
+        # is in another month), which also marks the post as the month's last.
         b.set_variable('SendNow', b.text('no'))
+        b.set_variable('MonthComplete', b.text('false'))
         size_id = new_id()
         b.add('count', {'UUID': size_id, 'WFCountType': 'Characters', 'Input': attachment(variable('HeartRateDays')),
                         'WFInput': attachment(variable('HeartRateDays'))})
@@ -446,6 +486,7 @@ def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
         b.end_if(full)
         last_day = b.if_(next_day.ref(date_format('yyyy-MM')), 5, string=tokens(month_id.ref()))
         b.set_variable('SendNow', b.text('yes'))
+        b.set_variable('MonthComplete', b.text('true'))
         b.end_if(last_day)
         sending = b.if_(variable('SendNow'), 4, string='yes')
         b.set_variable('LastReply', send_part())
@@ -471,10 +512,11 @@ def import_history(b, url, words):
     to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
     whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
                                                 'AnotherDate': attachment(next_month.ref())}}
-    def send(*series):
+    def send(*series, complete=None):
         """Posts one backfill part of this month and stops if Clarivi refuses it."""
+        marker = [] if complete is None else [',"month_complete":', complete]
         body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
-                      variable('Offset'), '","trigger":"manual","series":[', *series, ']}')
+                      variable('Offset'), '","trigger":"manual"', *marker, ',"series":[', *series, ']}')
         reply = b.post(body, url)
         b.stop_if_refused(reply)
         return reply
@@ -486,7 +528,8 @@ def import_history(b, url, words):
         joined += ([','] if i else []) + [text.ref()]
     send(*joined)
 
-    heart_rate_by_day(b, month_id, send_part=lambda: send(EMPTY_HEART_RATE, variable('HeartRateDays')))
+    heart_rate_by_day(b, month_id, send_part=lambda: send(EMPTY_HEART_RATE, variable('HeartRateDays'),
+                                                          complete=variable('MonthComplete')))
     # The month's last part was sent inside the loop; its reply is in LastReply.
     b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
     b.save_file(IMPORT_FILE, variable('Done'))
@@ -501,7 +544,7 @@ def import_history(b, url, words):
 
 def build(url=INGEST_URL):
     words = shortcut_wording()
-    b = Builder()
+    b = Builder(words)
     b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from two automations '
               '(charger unplugged, and an app you open each morning) and can be run by hand.')
 
