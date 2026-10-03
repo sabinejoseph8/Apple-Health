@@ -1,7 +1,7 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1b in progress: upload path live, Shortcut on Sabine's iPhone, decisions D42 and D43)
+**Last updated:** 3 October 2026 (Phase 1c done: Sabine's year imported; Phase 1b's locked-phone check collecting over a week; decisions D42 to D45)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
@@ -10,7 +10,7 @@
 
 - **Current phase:** Phase 1, Spikes (In progress)
 - **Overall status:** Phase 1a done (3 October 2026). Phase 1b in progress (3 October 2026): the upload path is live (tokens, the `ingest` function, readings tables), the Upload token section is on the home screen, and the Clarivi Sync Shortcut is installed on Sabine's iPhone and reaches the live server. The first spike runs on her phone changed the post format to columns (D42) and moved the 6pm-to-noon heart-rate window to the server (D43). Work is on branch `phase-1b-daily-sync`, merged to `main` for each release.
-- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings. Meanwhile 1c (the one-year import) is built and tested locally: release the `import_progress` migration and the `ingest` function, reinstall the Shortcut with a reissued token, then run the import on Sabine's iPhone, interrupt it once, and count the nights with HRV during sleep.
+- **Next action:** 1b's last check (the locked-phone rate) collects itself over about a week of mornings; then tick it, run Phase 1's code review (1a to 1c) and merge to `main`. 1c is done: Sabine's year is imported.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (added 3 October 2026 at Sabine's request). Phase 1's review covers 1a, 1b and 1c together. The Clarivi Memory site shows these review tasks too.
 - **Recent changes in 1b:** new tables `upload_tokens`, `uploads` and `samples`; database functions `ingest_upload` and `issue_upload_token`; server functions `ingest` and `account-token`; the Upload token section; the Shortcut generator `scripts/shortcut/build_shortcut.py` and the "Clarivi Check" diagnostic; Deno tests (`npm run test:functions`), Shortcut checks (Python) and a local sync check (`npm run check:local:sync`), all on every push except the local check.
@@ -73,10 +73,10 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [x] **Check:** do readings from a past trip keep their recorded time zone?
 
 ### 1c. One-year import
-- [ ] Add monthly import to the Shortcut (12 parts, resumable)
-- [ ] Time a full import on your phone and measure the size of one month's post (the tester's import moved to the Phase 6 dry run, D45)
-- [ ] Interrupt an import on purpose and confirm it continues from the last finished month
-- [ ] Count the nights in your year with at least one HRV reading inside the sleep window
+- [x] Add monthly import to the Shortcut (12 parts, resumable)
+- [x] Time a full import on your phone and measure the size of one month's post (the tester's import moved to the Phase 6 dry run, D45)
+- [x] Interrupt an import on purpose and confirm it continues from the last finished month
+- [x] Count the nights in your year with at least one HRV reading inside the sleep window
 
 ### End of Phase 1
 - [ ] Code review of everything changed in Phase 1 (1a to 1c); fix what it finds, then re-run the Phase 1 automated tests
@@ -127,6 +127,19 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - **The Watch's sleep record reached the iPhone after waking**, later than the 8:40am charger run and the 8:45am app run, so neither could complete the night. Until it arrived, Clarivi correctly said the night wasn't finished (no false "complete"). The next app run, at 9:14am, sent it (16 sleep stages, 5:05am to 8:35am, plus 26 breathing-rate readings) and the night was marked complete. This is what the catch-up trigger is for; how often it leaves the night incomplete until late morning is part of check 2.
 - **"Synced today" file:** the first automation runs couldn't save it: iOS needs a one-time permission for a shortcut to use iCloud Drive and can't ask while an automation runs in the background, so the save was quietly refused (the folder was created, the file wasn't). After one run by hand (permission allowed), the app automation found the file and stopped without contacting the server. The setup guide must include: run Clarivi Sync by hand once and allow Health and file access.
 - Still to measure: the locked-phone rate (check 2), over about a week of mornings.
+
+**1c. One-year import (done, 3 October 2026)**
+- **Imported:** all 12 months (mid-November 2025 to today), about 126,600 readings: 104,941 heart rate (6pm to noon), 12,576 breathing rate, 5,597 sleep stages, 3,174 HRV and 346 resting heart rate. None set aside. Watch data on Sabine's phone starts around 12 to 13 November 2025.
+- **HRV coverage (task 4):** 240 nights have at least 3 hours of tracked sleep; 239 of them (99.6%) have at least one HRV reading inside the sleep window, 232 have two or more, 189 three or more (median 3 a night). The "HRV too sparse at night" risk doesn't apply to Sabine. About 85 of the roughly 325 nights since mid-November have no tracked sleep, which Phase 2's missing-reading rules must handle.
+- **Resuming (task 3):** stopped by hand after "3 of 12", the next run skipped the finished months and carried on with July.
+- **Time and size (task 2):** a clean run did seven months in about eight minutes (about 70 seconds a month), so a full year takes about 15 minutes in one go. A month goes in 3 to 14 posts: its small readings (90 to 180 KB) and heart rate parts of about 250 to 380 KB, each stored in about a second. Runs stopped part-way three times (with iOS's generic "There was a problem" message: after April's first post, during June, and at November's start); each re-run carried on, so the full import took about an hour of attempts today.
+- **What it took to get there** (each found with a check Shortcut on Sabine's phone; details in tech-spec.md section 4):
+  - Adjust Date ignores steps of whole months; month steps are made in hours.
+  - iOS stops a Shortcut when one step handles about 3,900 heart rate readings (about 2,000 work), so heart rate is read one day at a time, with a cap of the first and last 1,000 readings on heavy days (agreed by Sabine).
+  - iOS times out a post of about 680 KB before it leaves the phone (385 KB works), so each month goes in parts of about 250 KB, with the small readings on their own.
+  - A post made just after the day-by-day loop failed every time, whatever its size, so the last part is sent inside the loop.
+  - One resting heart rate reading longer than a day refused a whole month's post: resting heart rate may now span up to a week, and any reading that fails a check is set aside while the rest is stored (agreed by Sabine).
+  - Import posts have their own limit of 200 an hour per token (agreed by Sabine); everything else keeps 60.
 
 ---
 
@@ -310,7 +323,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - [ ] Write the one-page setup guide (home screen, sign-in, notifications, Shortcut, token, import, automations, "When Unlocked", who to contact). From the 1b spike: turn on Settings, Apps, Shortcuts, Advanced, "Allow Sharing Large Amounts of Data"; run Clarivi Sync by hand once and allow Health and file access (automations can't ask for permission); ask whether they use a third-party sleep app (sleep has no source in Shortcuts, so Watch sleep is recognised by its stages); build each automation from the Automation tab (iOS 27 shows it as "When ... is Opened"/"When power Disconnects"), with a Text action holding exactly `charger` or `app`, then Run Shortcut with that Text as input
 - [ ] Publish Shortcut template v1 (blank, asks for the token at install)
 - [ ] Check the one-screen fit on each tester's iPhone model
-- [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone parts of 1b and 1c (D44, D45): both automations on their phone, the locked-phone rate, the sleep stages from their Watch, and timing their one-year import
+- [ ] Run a one-week dry run with one tester; fix what breaks. Includes the tester-phone parts of 1b and 1c (D44, D45): both automations on their phone, the locked-phone rate, the sleep stages from their Watch, and timing their one-year import (the setup guide says: if the import stops part-way, run it again; it carries on from the last finished month)
 - [ ] Freeze the score settings; tag the release; write the changelog
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
