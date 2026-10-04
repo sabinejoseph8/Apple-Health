@@ -108,7 +108,7 @@ describe('other days', () => {
       composite_fired: false,
       points: { hrv: reading('hrv', 52, 52, 6), sleep: reading('sleep', 430, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
     }
-    expect(headline(day)).toBe('You look well recovered')
+    expect(headline(day)).toBe('Your readings are all normal')
     expect(briefing(day)).toEqual([
       'Your sleep, heart rate variability and heart rate while you slept were all normal for you.',
       'Your body looks ready for whatever you have planned.',
@@ -151,6 +151,7 @@ describe('other days', () => {
       composite_fired: null,
       points: { hrv: reading('hrv', 66, 52, 6), sleep: reading('sleep', 430, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
     }
+    expect(headline(day)).toBe('Your readings are normal or better')
     expect(briefing(day)[0]).toBe(
       'Your heart rate variability was higher than normal for you, and your sleep and heart rate while you slept were both normal.',
     )

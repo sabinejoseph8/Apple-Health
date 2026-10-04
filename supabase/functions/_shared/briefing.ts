@@ -88,7 +88,8 @@ export function headline(day: DayWords): string {
   const h = b.headline
   if (day.status === 'rest') return h.rest
   if (day.status === 'ready') {
-    if (worse.length === 0) return slight.length === 0 ? h.ready.allNormal : h.ready.small
+    if (worse.length === 0 && slight.length === 0) return readingsOfKind(day, 'better').length > 0 ? h.ready.better : h.ready.allNormal
+    if (worse.length === 0) return h.ready.small
     return h.ready[lead(day, worse)]
   }
   if (worse.includes('sleep') && worse.includes('hrv')) return h.ease_off.sleepAndHrv

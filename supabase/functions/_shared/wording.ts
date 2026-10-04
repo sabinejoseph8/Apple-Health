@@ -234,7 +234,8 @@ export const wording = {
   briefing: {
     headline: {
       ready: {
-        allNormal: 'You look well recovered',
+        allNormal: 'Your readings are all normal',
+        better: 'Your readings are normal or better',
         small: 'Close to your normal',
         sleep: 'A short night, but the rest looks normal',
         hrv: 'Heart rate variability was low, but the rest looks normal',
