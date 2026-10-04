@@ -137,7 +137,12 @@ function SignOutEverywhere({ onCancel }: { onCancel: () => void }) {
     } catch {
       // Sign out anyway; the phone may already have no subscription.
     }
-    // Ends every session for this account, on every device (R7).
+    // Stops notifications to every one of this person's devices, so a lost
+    // phone never shows their status again; then ends every session (R7).
+    await supabase.rpc('forget_all_devices').then(
+      () => undefined,
+      () => undefined,
+    )
     const { error } = await supabase.auth.signOut({ scope: 'global' })
     if (error) await supabase.auth.signOut({ scope: 'local' })
   }

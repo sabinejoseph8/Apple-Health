@@ -93,6 +93,25 @@ test.describe('Settings on an iPhone', () => {
     await expect(page.getByText(w.signOutEverywhereNote)).toBeVisible()
     await page.getByRole('button', { name: w.signOutEverywhere }).click()
     await expect(page.getByRole('heading', { name: wording.signIn.title })).toBeVisible()
-    expect(app.calls.some((c) => c.name === 'auth:sign-out:global')).toBe(true)
+    // Notifications stop on every device first, then every session ends.
+    const names = app.calls.map((c) => c.name)
+    expect(names.indexOf('forget_all_devices')).toBeGreaterThanOrEqual(0)
+    expect(names.indexOf('forget_all_devices')).toBeLessThan(names.indexOf('auth:sign-out:global'))
+  })
+
+  test('a device signed out elsewhere goes straight to the sign-in screen (R7)', async ({ page }) => {
+    await openApp(page, {
+      at: MORNING,
+      tables: { 'auth/user': [{ status: 403, body: { code: 'session_not_found', message: 'Session from session_id claim in JWT does not exist' } }] },
+    })
+    await expect(page.getByRole('heading', { name: wording.signIn.title })).toBeVisible()
+  })
+
+  test('being offline is not a sign-out', async ({ page }) => {
+    const app = await openApp(page, { at: MORNING, tables: { 'auth/user': [{ status: 0, body: null }] }, path: '/#/settings' })
+    await expect(page.getByRole('heading', { name: w.account })).toBeVisible()
+    await page.waitForTimeout(500)
+    await expect(page.getByRole('heading', { name: w.account })).toBeVisible()
+    expect(app.calls.some((c) => c.name.startsWith('auth:sign-out'))).toBe(false)
   })
 })
