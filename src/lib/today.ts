@@ -129,7 +129,10 @@ export async function submitCheckin(today: string, answer: CheckinAnswer, status
 }
 
 // Logging never gets in the way: a failed log is simply dropped.
-export function logUsage(event: 'card_view' | 'why_today_open' | 'checkin_skipped', meta: Record<string, string | boolean>): void {
+export function logUsage(
+  event: 'card_view' | 'why_today_open' | 'checkin_skipped' | 'trends_open' | 'digest_open',
+  meta: Record<string, string | boolean>,
+): void {
   supabase
     .rpc('log_usage', { p_event: event, p_meta: meta })
     .then(

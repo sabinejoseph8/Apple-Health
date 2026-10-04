@@ -25,6 +25,8 @@ export default function Settings({ session }: { session: Session }) {
   const [subscribed, setSubscribed] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  // Bumped when the account section changes data shown above (after Delete my data).
+  const [refreshes, setRefreshes] = useState(0)
 
   async function loadAccount() {
     // Row-level security means these only ever return this user's rows.
@@ -128,9 +130,15 @@ export default function Settings({ session }: { session: Session }) {
         {message && <p className="body" role="status">{message}</p>}
       </section>
 
-      <UploadToken />
+      <UploadToken key={refreshes} />
 
-      <AccountSettings email={session.user.email ?? ''} />
+      <AccountSettings
+        email={session.user.email ?? ''}
+        onChanged={() => {
+          setRefreshes((n) => n + 1)
+          loadAccount()
+        }}
+      />
 
       <button className="text-button" type="button" onClick={signOut}>
         {wording.settings.signOut}

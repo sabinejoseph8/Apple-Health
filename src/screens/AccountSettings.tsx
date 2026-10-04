@@ -12,7 +12,7 @@ type Panel = 'password' | 'everywhere' | 'delete' | null
 
 // The account part of Settings: change password (R4), sign out everywhere
 // (R7) and delete my data (R8, R59). Each opens in place of the list.
-export default function AccountSettings({ email }: { email: string }) {
+export default function AccountSettings({ email, onChanged }: { email: string; onChanged: () => void }) {
   const [panel, setPanel] = useState<Panel>(null)
   const [done, setDone] = useState<string | null>(null)
 
@@ -23,7 +23,17 @@ export default function AccountSettings({ email }: { email: string }) {
 
   if (panel === 'password') return <ChangePassword email={email} onDone={() => close(w.passwordChanged)} onCancel={() => close()} />
   if (panel === 'everywhere') return <SignOutEverywhere onCancel={() => close()} />
-  if (panel === 'delete') return <DeleteData onDone={() => close(w.deleted)} onCancel={() => close()} />
+  if (panel === 'delete')
+    return (
+      <DeleteData
+        onDone={() => {
+          close(w.deleted)
+          // The token and phones above were just deleted: show that.
+          onChanged()
+        }}
+        onCancel={() => close()}
+      />
+    )
 
   return (
     <section className="card account" aria-labelledby="account-h">

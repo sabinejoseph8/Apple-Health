@@ -2,7 +2,7 @@
 -- for Why today (R40, D62). Made-up accounts only.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(28);
 
 insert into auth.users (id, email) values
   ('31313131-3131-3131-3131-313131313131', 'tester-p@example.test'),
@@ -42,6 +42,8 @@ select throws_ok($$insert into public.checkins (user_id, date, answer, status_se
 
 -- The usage log takes only its fixed shape, never health values.
 select throws_ok($$select public.log_usage('chart_zoom')$$, '22023', 'unknown event', 'an unknown event is refused');
+select lives_ok($$select public.log_usage('trends_open', '{"date": "2026-10-04"}')$$, 'a trend view open is logged');
+select lives_ok($$select public.log_usage('digest_open', '{"date": "2026-10-04"}')$$, 'and a digest open');
 select throws_ok($$select public.log_usage('card_view', '{"hrv": 38}')$$, '22023', 'unexpected details',
   'a reading cannot be logged');
 select throws_ok($$select public.log_usage('card_view', '{"state": "ease_off"}')$$, '22023', 'unexpected details',

@@ -28,13 +28,16 @@ begin
                    'is_owner', p.is_owner,
                    'last_sync', (select max(x.received_at) from public.uploads x
                                   where x.user_id = p.user_id and x.status = 'accepted' and x.kind = 'daily'),
+                   -- Reminder dates are local, so the windows use the person's local date.
                    'reminder_days', (select coalesce(jsonb_agg(n.date order by n.date desc), '[]'::jsonb)
                                        from public.notifications n
-                                      where n.user_id = p.user_id and n.kind = 'reminder' and n.date > current_date - 14),
+                                      where n.user_id = p.user_id and n.kind = 'reminder'
+                                        and n.date > coalesce(public.local_now(p.user_id)::date, current_date) - 14),
                    'reminders_in_a_row', exists (
                        select 1 from public.notifications a
                          join public.notifications b on b.user_id = a.user_id and b.kind = 'reminder' and b.date = a.date + 1
-                        where a.user_id = p.user_id and a.kind = 'reminder' and a.date > current_date - 7),
+                        where a.user_id = p.user_id and a.kind = 'reminder'
+                          and a.date > coalesce(public.local_now(p.user_id)::date, current_date) - 7),
                    'failures', (select count(*) from public.notifications n
                                  where n.user_id = p.user_id and n.status = 'failed' and n.created_at > now() - interval '2 days'),
                    'import_months', (

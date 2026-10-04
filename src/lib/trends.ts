@@ -15,6 +15,8 @@ export interface TrendPoint {
   high: number | null
   building: boolean
   validNights: number
+  // Whether that night has a normal on record at all (a night with data).
+  known: boolean
 }
 
 export interface TrendData {
@@ -69,6 +71,7 @@ export async function loadTrends(today: string): Promise<TrendData> {
         high: b && !b.building ? b.range_high : null,
         building: b?.building ?? true,
         validNights: b?.valid_nights ?? 0,
+        known: b !== undefined,
       }
     })
   const z = must(zones) as { readings?: Record<Reading, { min_valid_nights: number }> } | null

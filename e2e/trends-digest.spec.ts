@@ -56,8 +56,24 @@ test.describe('the trend view (R44 to R46)', () => {
     await expect(page.getByRole('heading', { name: t.title, level: 1 })).toBeVisible()
     await expect(page.getByText(t.period)).toBeVisible()
     for (const name of ['heart rate variability', 'sleep', 'sleeping heart rate']) {
-      await expect(page.getByRole('img', { name: t.chartLabel(name) })).toBeVisible()
+      await expect(page.getByRole('slider', { name: t.chartLabel(name) })).toBeVisible()
     }
+  })
+
+  test('logs each opening, with the day only', async ({ page }) => {
+    const app = await openApp(page, { at: MORNING, tables, path: '/#/trends' })
+    await expect.poll(() => app.calls.find((c) => c.name === 'log_usage')?.body).toEqual({ p_event: 'trends_open', p_meta: { date: TODAY } })
+  })
+
+  test("before last night's readings arrive, a known normal doesn't read as still learning", async ({ page }) => {
+    const notYet = {
+      ...tables,
+      nights: nights.filter((n) => n.night_date !== TODAY),
+      baselines: baselines.filter((b) => b.night_date !== TODAY),
+    }
+    await openApp(page, { at: MORNING, tables: notYet, path: '/#/trends' })
+    await expect(page.locator('.reading-sleep .trend-plot')).toBeVisible()
+    await expect(page.getByText('Still learning your normal', { exact: false })).toHaveCount(0)
   })
 
   test('marks nights outside that night\'s range, and shows a tapped night', async ({ page }) => {
@@ -100,6 +116,11 @@ test.describe('the weekly digest (R57, R58)', () => {
     await expect(row).toContainText('From 5 Oct')
     await row.click()
     await expect(page.getByText(d.firstOn('Monday 5 October'))).toBeVisible()
+  })
+
+  test('logs each opening (tech-spec, usage log)', async ({ page }) => {
+    const app = await openApp(page, { at: MORNING, tables, path: '/#/digest' })
+    await expect.poll(() => app.calls.find((c) => c.name === 'log_usage')?.body).toEqual({ p_event: 'digest_open', p_meta: { date: TODAY } })
   })
 
   test('summarises last week from its facts', async ({ page }) => {
