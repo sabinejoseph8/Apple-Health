@@ -118,11 +118,3 @@ export async function sendDue(deps: OutboxDeps): Promise<SendSummary> {
   }
   return summary
 }
-
-// Compares the cron key without leaking how much of it matched (D66).
-export function sameKey(given: string | null, expected: string | undefined): boolean {
-  if (!given || !expected || given.length !== expected.length) return false
-  let diff = 0
-  for (let i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i)
-  return diff === 0
-}

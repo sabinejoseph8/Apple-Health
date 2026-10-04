@@ -1,14 +1,13 @@
 // Local end-to-end check for Phase 4's sender. Run with: npm run check:local:notify
 // Needs the local copy of Supabase (npm run db:start) and the functions
-// running with the local settings, which hold local test keys and a local
-// cron key: npx supabase functions serve --env-file supabase/functions/.env
+// running with the local settings, which hold local test push keys:
+// npx supabase functions serve --env-file supabase/functions/.env
 // A made-up account with a fake phone gets a morning status; the database's
 // every-minute call (send_due_notifications, through pg_net) must reach the
 // sender, which must deliver one encrypted message the phone can read.
 // Uses only made-up data, and deletes it at the end.
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
-import fs from 'node:fs'
 import http from 'node:http'
 import { execSync } from 'node:child_process'
 
@@ -18,13 +17,13 @@ if (!/^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(st.API_URL)) throw new Error(
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1 }
 const sql = (q) => execSync(`docker exec -i supabase_db_clarivi psql -U postgres -At -v ON_ERROR_STOP=1`, { input: q }).toString().trim()
 const admin = createClient(st.API_URL, st.SECRET_KEY, { auth: { persistSession: false } })
+// Clear anything an interrupted earlier run left behind.
+sql(`delete from auth.users where email like 'notify-%@example.test';`)
 
-// The local cron key, as the functions see it, goes into the local Vault
-// with the address the database uses to reach the functions (D66).
-const cronKey = (fs.readFileSync('supabase/functions/.env', 'utf8').match(/^CRON_KEY=(.+)$/m) ?? [])[1]
-if (!cronKey) throw new Error('add CRON_KEY to supabase/functions/.env (local only)')
-sql(`delete from vault.secrets where name in ('clarivi_cron_key', 'clarivi_functions_url');
-     select vault.create_secret('${cronKey}', 'clarivi_cron_key');
+// The migration made the cron key in the local Vault (D66); the database
+// reaches the local functions through the gateway's address inside Docker.
+ok(sql(`select count(*) from vault.secrets where name = 'clarivi_cron_key'`) === '1', 'the database made its own cron key')
+sql(`delete from vault.secrets where name = 'clarivi_functions_url';
      select vault.create_secret('http://supabase_kong_clarivi:8000/functions/v1', 'clarivi_functions_url');`)
 
 // A made-up person whose local time is 7:00am now, so the morning rules apply.

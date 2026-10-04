@@ -3,7 +3,7 @@
 -- D67). Made-up accounts in UTC-5; times are given as moments for the tests.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(48);
 
 insert into auth.users (id, email) values
   ('41414141-4141-4141-4141-414141414141', 'tester-r@example.test'),
@@ -103,6 +103,11 @@ values ('41414141-4141-4141-4141-414141414141', current_date + 1, 'morning', now
 select is((select count(*)::int from public.claim_due_notifications()), 1, 'a due notification is claimed');
 select is((select count(*)::int from public.claim_due_notifications()), 0, 'and never claimed twice');
 select is(public.send_due_notifications(), null, 'with nothing pending, the sender is not called');
+select is((select count(*)::int from vault.secrets where name = 'clarivi_cron_key'), 1, 'the database made its own cron key (D66)');
+select is(public.cron_key_ok((select decrypted_secret from vault.decrypted_secrets where name = 'clarivi_cron_key')), true,
+  'the sender''s check accepts it');
+select is(public.cron_key_ok('not-the-key'), false, 'and refuses anything else');
+select is(public.cron_key_ok(null), false, 'or nothing');
 update public.notifications set claimed_at = now() - interval '6 minutes' where status = 'sending';
 select is((select count(*)::int from public.claim_due_notifications()), 0, 'a send left unfinished is not sent again');
 select is((select status || ' ' || error from public.notifications where date = current_date + 1), 'failed sender_stopped',
@@ -128,6 +133,8 @@ select throws_ok($$insert into public.followthrough (user_id, date, answer, chan
 select lives_ok($$select public.log_notification_tap((select id from public.notifications where kind = 'morning' and date = '2026-09-29'))$$,
   'a tap is recorded');
 select isnt((select tapped_at from public.notifications where kind = 'morning' and date = '2026-09-29'), null, 'with its time');
+
+select throws_ok($$select public.cron_key_ok('x')$$, '42501', null, 'a signed-in user cannot test the cron key');
 
 -- Another tester sees none of it.
 set local request.jwt.claims = '{"sub": "42424242-4242-4242-4242-424242424242", "role": "authenticated"}';

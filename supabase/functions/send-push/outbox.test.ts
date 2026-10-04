@@ -1,5 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert@1'
-import { type DayStatus, type Device, type Finish, messageFor, type OutboxDeps, type OutboxRow, sameKey, sendDue } from './outbox.ts'
+import { type DayStatus, type Device, type Finish, messageFor, type OutboxDeps, type OutboxRow, sendDue } from './outbox.ts'
 
 // The design's sample day, made up: Ease off, HRV and sleep outside their range.
 const sampleDay: DayStatus = {
@@ -97,13 +97,4 @@ Deno.test('one notification failing does not stop the rest', async () => {
   })
   assertEquals(await sendDue(deps), { sent: 1, skipped: 0, failed: 1 })
   assertEquals(log.finished.get(6)?.status, 'sent')
-})
-
-Deno.test('the cron key must match exactly (D66)', () => {
-  assertEquals(sameKey('abc123', 'abc123'), true)
-  assertEquals(sameKey('abc124', 'abc123'), false)
-  assertEquals(sameKey('abc12', 'abc123'), false)
-  assertEquals(sameKey(null, 'abc123'), false)
-  assertEquals(sameKey('abc123', undefined), false)
-  assertEquals(sameKey('', ''), false)
 })

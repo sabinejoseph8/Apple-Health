@@ -240,9 +240,33 @@ begin
 end;
 $$;
 
+-- The cron key (D66): made here, inside the database, the first time this
+-- runs, and kept only in Vault, so nobody ever sees it. The every-minute
+-- call sends it to the sender, which asks the database to check it.
+do $$
+begin
+  if not exists (select 1 from vault.secrets where name = 'clarivi_cron_key') then
+    perform vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'clarivi_cron_key',
+                                'Key the database sends to the notification sender (D66)');
+  end if;
+end;
+$$;
+
+create function public.cron_key_ok(p_key text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(p_key, '') <> ''
+     and exists (select 1 from vault.decrypted_secrets where name = 'clarivi_cron_key' and decrypted_secret = p_key)
+$$;
+
 -- Every minute: start the sender, only when something is due. It calls the
--- send-push function with the cron key (D66); the key and the functions'
--- address live in Vault, set at release, never in this file.
+-- send-push function with the cron key (D66); the functions' address is in
+-- Vault too, set once per project (it differs between the local copy and
+-- the live project), never in this file.
 create function public.send_due_notifications()
 returns bigint
 language plpgsql
@@ -407,6 +431,8 @@ revoke all on function public.queue_morning_notification(uuid, timestamptz) from
 revoke all on function public.plan_notifications(timestamptz) from public, anon, authenticated;
 revoke all on function public.claim_due_notifications(integer) from public, anon, authenticated;
 revoke all on function public.send_due_notifications() from public, anon, authenticated;
+revoke all on function public.cron_key_ok(text) from public, anon, authenticated;
+grant execute on function public.cron_key_ok(text) to service_role;
 revoke all on function public.record_shown(date) from public, anon;
 revoke all on function public.submit_followthrough(date, text, text) from public, anon;
 revoke all on function public.log_notification_tap(bigint) from public, anon;

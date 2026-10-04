@@ -2,11 +2,12 @@
 // - {"kind": "test"}: a test notification to the signed-in user's own
 //   devices, after an optional short delay (Phase 1a push spike).
 // - {"kind": "due"}: the outbox's due notifications (Phase 4), called every
-//   minute by the database with the cron key in "x-clarivi-cron" (D66).
+//   minute by the database with the cron key in "x-clarivi-cron", which the
+//   database checks; the key lives only in Vault (D66).
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
 import { adminClient, corsHeaders, json, mustChangePassword, userFromRequest } from '../_shared/http.ts'
 import { wording } from '../_shared/wording.ts'
-import { type DayStatus, type Device, type Message, type OutboxRow, sameKey, type SendResult, sendDue } from './outbox.ts'
+import { type DayStatus, type Device, type Message, type OutboxRow, type SendResult, sendDue } from './outbox.ts'
 
 const MAX_DELAY_SECONDS = 30
 
@@ -144,7 +145,8 @@ Deno.serve(async (req) => {
 
   // The every-minute call from the database (D66).
   if (body.kind === 'due') {
-    if (!sameKey(req.headers.get('x-clarivi-cron'), Deno.env.get('CRON_KEY'))) return json({ error: 'not_allowed' }, 401)
+    const { data: allowed } = await adminClient().rpc('cron_key_ok', { p_key: req.headers.get('x-clarivi-cron') ?? '' })
+    if (allowed !== true) return json({ error: 'not_allowed' }, 401)
     const summary = await sendDueNotifications()
     console.log(`send-push: due sent ${summary.sent}, skipped ${summary.skipped}, failed ${summary.failed}`)
     return json(summary)
