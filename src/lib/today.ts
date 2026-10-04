@@ -1,8 +1,9 @@
 // Reads what the readiness card needs for today. Row-level security means
 // every query only ever returns the signed-in user's own rows.
 
-import type { Reading } from '../../supabase/functions/_shared/briefing.ts'
+import type { Nudge, Reading } from '../../supabase/functions/_shared/briefing.ts'
 import { type BaselineRow, type CardInputs, importMonthsFrom, type NightRow, type StatusRow, type UploadRow } from './card-state'
+import { type FollowAnswer, type FollowDay, followDays } from './follow'
 import { must, supabase } from './supabase'
 import { localDate } from './when'
 
@@ -13,6 +14,11 @@ export interface TodayData {
   // Today's latest check-in answer, and whether today's check-in was skipped.
   checkin: CheckinAnswer | null
   skipped: boolean
+  // Today's and yesterday's change days as shown, with their answers (R52 to
+  // R55), and whether anything has been shown today at all (D61).
+  follow: { today: FollowDay | null; yesterday: FollowDay | null; shownToday: boolean }
+  // How the latest notification of the last two days went (R34).
+  lastNotification: { kind: string; status: string } | null
 }
 
 const UPLOAD_COLUMNS = 'received_at, kind, status, error, local_date, night_complete'
@@ -50,14 +56,21 @@ export async function loadStatusInputs(now: Date): Promise<CardInputs> {
 
 export async function loadToday(now: Date = new Date()): Promise<TodayData> {
   const today = localDate(now)
-  const [inputs, backfill, baselines, night, checkin, skipped] = await Promise.all([
+  const yesterday = localDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString()
+  const [inputs, backfill, baselines, night, checkin, skipped, shown, answers, notifications] = await Promise.all([
     loadStatusInputs(now),
     supabase.from('uploads').select('month_id, local_date').eq('kind', 'backfill').eq('status', 'accepted').eq('month_complete', true),
     supabase.from('baselines').select('metric, valid_nights, building').eq('night_date', today),
     supabase.from('nights').select('asleep_min, hrv_median, sleeping_hr').eq('night_date', today).maybeSingle(),
     supabase.from('checkins').select('answer').eq('date', today).order('answered_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('usage_events').select('id').eq('event', 'checkin_skipped').eq('meta->>date', today).limit(1),
+    supabase.from('shown_status').select('date, nudge, shown_at').in('date', [yesterday, today]),
+    supabase.from('followthrough').select('date, answer, answered_at').in('date', [yesterday, today]),
+    supabase.from('notifications').select('kind, status').gte('created_at', twoDaysAgo).order('created_at', { ascending: false }).limit(1),
   ])
+  const shownRows = must(shown) as { date: string; nudge: Nudge; shown_at: string }[]
+  const follow = followDays(shownRows, must(answers) as { date: string; answer: FollowAnswer; answered_at: string }[])
 
   // The normals' minimum nights only matter while learning.
   const minValidNights: Partial<Record<Reading, number>> = {}
@@ -78,7 +91,31 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     },
     checkin: (must(checkin) as { answer: CheckinAnswer } | null)?.answer ?? null,
     skipped: (must(skipped) ?? []).length > 0,
+    follow: { today: follow.get(today) ?? null, yesterday: follow.get(yesterday) ?? null, shownToday: shownRows.some((r) => r.date === today) },
+    lastNotification: ((must(notifications) ?? []) as { kind: string; status: string }[])[0] ?? null,
   }
+}
+
+export async function submitFollowThrough(date: string, answer: FollowAnswer, channel: 'push' | 'card' | 'next_morning'): Promise<void> {
+  const { error } = await supabase.rpc('submit_followthrough', { p_date: date, p_answer: answer, p_channel: channel })
+  if (error) throw error
+}
+
+// The card showing a status records what it showed (D61). The card doesn't
+// wait for it; an answer does, as the server checks what was shown.
+export async function recordShown(date: string): Promise<void> {
+  const { error } = await supabase.rpc('record_shown', { p_date: date })
+  if (error) throw error
+}
+
+// A notification's tap opens the app with "?n=<id>": record the tap (R51).
+export function noteNotificationTap(id: number): void {
+  supabase
+    .rpc('log_notification_tap', { p_id: id })
+    .then(
+      () => undefined,
+      () => undefined,
+    )
 }
 
 export async function submitCheckin(today: string, answer: CheckinAnswer, statusSeen: boolean): Promise<void> {

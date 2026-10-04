@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
+import { formatWhen } from '../lib/when'
 import NavBar from '../components/NavBar'
 import UploadToken from './UploadToken'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
@@ -14,6 +15,8 @@ const TEST_DELAY_SECONDS = 15
 export default function Settings({ session }: { session: Session }) {
   const [isOwner, setIsOwner] = useState(false)
   const [devices, setDevices] = useState<number | null>(null)
+  // When the last notification was delivered, or null for none yet (R47).
+  const [lastDelivered, setLastDelivered] = useState<string | null | undefined>(undefined)
   const [support, setSupport] = useState(currentPushSupport)
   const [subscribed, setSubscribed] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -21,12 +24,14 @@ export default function Settings({ session }: { session: Session }) {
 
   async function loadAccount() {
     // Row-level security means these only ever return this user's rows.
-    const [{ data: profile }, { count }] = await Promise.all([
+    const [{ data: profile }, { count }, { data: last }] = await Promise.all([
       supabase.from('profiles').select('is_owner').maybeSingle(),
       supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }).is('revoked_at', null),
+      supabase.from('notifications').select('sent_at').eq('status', 'sent').order('sent_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     setIsOwner(profile?.is_owner === true)
     setDevices(count ?? 0)
+    setLastDelivered((last as { sent_at: string } | null)?.sent_at ?? null)
   }
 
   useEffect(() => {
@@ -100,6 +105,9 @@ export default function Settings({ session }: { session: Session }) {
           </>
         )}
         {devices !== null && <p className="caption">{w.devices(devices)}</p>}
+        {lastDelivered !== undefined && (
+          <p className="caption">{lastDelivered ? w.lastDelivered(formatWhen(lastDelivered)) : w.noneDelivered}</p>
+        )}
         {message && <p className="body" role="status">{message}</p>}
       </section>
 
