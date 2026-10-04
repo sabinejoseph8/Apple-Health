@@ -38,7 +38,9 @@ select is((select (person ->> 'reminders_in_a_row')::boolean from z), true, 'fla
 select is((select (person ->> 'failures')::int from z), 1, 'failed notifications in the last two days');
 select is((select (person ->> 'import_months')::int from z), 5, 'import progress: 5 of 12 months');
 select ok((select (status ->> 'database_mb')::numeric > 0 from s), 'and how full the database is');
-select ok((select status::text !~ '(38|52|ease_off|train_easy|hrv|points)' from s), 'and no health value at all');
+-- No status, nudge, reading name or reading field anywhere (numbers alone
+-- can't be checked: a sync time or the database size may contain them).
+select ok((select status::text !~ '(ease_off|train_easy|hrv|points|verdict|"value"|normal)' from s), 'and no health value at all');
 
 set local request.jwt.claims = '{"sub": "72727272-7272-7272-7272-727272727272", "role": "authenticated"}';
 select throws_ok($$select public.owner_status()$$, '42501', 'only the owner can see this', 'a tester is refused');
