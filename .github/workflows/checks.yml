@@ -99,6 +99,11 @@ jobs:
         run: |
           python3 -m pip install --quiet -r scripts/reference/requirements.txt
           python3 scripts/reference/check.py --local-synthetic
+      - name: The privacy rules hold from the outside, as real people (made-up accounts)
+        run: |
+          python3 scripts/reference/privacy_check.py --local
+          if python3 scripts/reference/privacy_check.py --local --prove > prove.log; then cat prove.log; echo "The privacy check missed an unprotected table."; exit 1; fi
+          grep -q "privacy_check_leak: no one else's rows" prove.log
       - name: Function log
         if: failure()
         run: cat functions.log
