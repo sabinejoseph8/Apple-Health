@@ -3,7 +3,7 @@
 -- D67). Made-up accounts in UTC-5; times are given as moments for the tests.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(40);
+select plan(43);
 
 insert into auth.users (id, email) values
   ('41414141-4141-4141-4141-414141414141', 'tester-r@example.test'),
@@ -74,6 +74,11 @@ select is(public.plan_notifications('2026-09-29 20:00-05'), 1, 'at 8pm, one ques
 select is((select user_id from public.notifications where kind = 'followup'), '41414141-4141-4141-4141-414141414141'::uuid,
   'to the person whose nudge asked for a change, not a train-as-planned day');
 select is(public.plan_notifications('2026-09-29 21:00-05'), 0, 'and only once');
+insert into public.shown_status (user_id, date, via, status, nudge, readings_used, settings_version)
+values ('41414141-4141-4141-4141-414141414141', '2026-09-28', 'card', 'rest', 'rest', 3, 2);
+insert into public.followthrough (user_id, date, answer, channel)
+values ('41414141-4141-4141-4141-414141414141', '2026-09-28', 'yes', 'card');
+select is(public.plan_notifications('2026-09-28 20:05-05'), 0, 'no question for a day already answered on the card');
 select is((select expires_at from public.notifications where kind = 'followup'), '2026-09-30 00:00-05'::timestamptz,
   'it is not sent after midnight');
 
@@ -98,13 +103,17 @@ values ('41414141-4141-4141-4141-414141414141', current_date + 1, 'morning', now
 select is((select count(*)::int from public.claim_due_notifications()), 1, 'a due notification is claimed');
 select is((select count(*)::int from public.claim_due_notifications()), 0, 'and never claimed twice');
 select is(public.send_due_notifications(), null, 'with nothing pending, the sender is not called');
+update public.notifications set claimed_at = now() - interval '6 minutes' where status = 'sending';
+select is((select count(*)::int from public.claim_due_notifications()), 0, 'a send left unfinished is not sent again');
+select is((select status || ' ' || error from public.notifications where date = current_date + 1), 'failed sender_stopped',
+  'it is marked failed instead (at most one, R48)');
 
 -- Signed in: what was shown, answers and taps.
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "41414141-4141-4141-4141-414141414141", "role": "authenticated"}';
 select lives_ok($$select public.record_shown('2026-09-29')$$, 'the card records what it showed');
 select lives_ok($$select public.record_shown('2026-09-29')$$, 'again');
-select is((select count(*)::int from public.shown_status where via = 'card'), 1, 'once, never overwritten (D61)');
+select is((select count(*)::int from public.shown_status where via = 'card' and date = '2026-09-29'), 1, 'once, never overwritten (D61)');
 select lives_ok($$select public.record_shown('2026-09-30')$$, 'a day without a status');
 select is((select count(*)::int from public.shown_status where date = '2026-09-30'), 0, 'records nothing');
 select throws_ok($$select public.submit_followthrough('2026-09-29', 'maybe', 'card')$$, '22023', 'unknown answer',

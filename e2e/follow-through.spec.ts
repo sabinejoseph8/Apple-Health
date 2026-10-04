@@ -51,6 +51,24 @@ test.describe('the 8pm question on an iPhone', () => {
     expect(app.calls.filter((c) => c.name === 'submit_followthrough').map((c) => (c.body as { p_answer: string }).p_answer)).toEqual(['yes', 'no'])
   })
 
+  test('asks about the nudge that was shown, not a later recalculation (D61)', async ({ page }) => {
+    // The morning showed train as planned; the status has since become Ease off.
+    await openApp(page, {
+      at: EVENING,
+      tables: { ...day, shown_status: [{ date: TODAY, nudge: 'train_as_planned', shown_at: '2026-09-29T11:44:00Z' }] },
+    })
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+    await expect(page.getByText(f.question)).toHaveCount(0)
+  })
+
+  test('first opened at 8pm, the card records what it shows before the answer is saved', async ({ page }) => {
+    const app = await openApp(page, { at: EVENING, tables: { ...day, shown_status: [] } })
+    await page.getByRole('button', { name: f.yes, exact: true }).click()
+    await expect(page.getByText(f.followed)).toBeVisible()
+    const names = app.calls.map((c) => c.name)
+    expect(names.lastIndexOf('record_shown')).toBeLessThan(names.indexOf('submit_followthrough'))
+  })
+
   test('is never asked on a train-as-planned day (R50)', async ({ page }) => {
     const ready = { ...statusRow, status: 'ready', nudge: 'train_as_planned' }
     await openApp(page, {
@@ -62,7 +80,7 @@ test.describe('the 8pm question on an iPhone', () => {
   })
 
   test('opened from the 8pm notification: the tap is logged and the answer counts as given there (R51, R56)', async ({ page }) => {
-    const app = await openApp(page, { at: EVENING, tables: { ...day, notifications: [{ id: 12, kind: 'followup', status: 'sent' }] }, path: '/?n=12' })
+    const app = await openApp(page, { at: EVENING, tables: day, path: '/?n=12&k=followup' })
     await expect.poll(() => app.calls.find((c) => c.name === 'log_notification_tap')?.body).toEqual({ p_id: 12 })
     await expect.poll(() => page.evaluate(() => window.location.search)).toBe('')
     await page.getByRole('button', { name: f.no, exact: true }).click()

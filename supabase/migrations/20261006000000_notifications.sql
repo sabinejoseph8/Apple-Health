@@ -199,7 +199,10 @@ begin
       if found then v_count := v_count + 1; end if;
     end if;
 
-    if v_local::time >= '20:00' and public.shown_change_nudge(v_person.user_id, v_local::date) is not null then
+    -- Not when the day has already been answered on the card.
+    if v_local::time >= '20:00' and public.shown_change_nudge(v_person.user_id, v_local::date) is not null
+       and not exists (select 1 from public.followthrough f
+                        where f.user_id = v_person.user_id and f.date = v_local::date) then
       insert into public.notifications (user_id, date, kind, expires_at)
       values (v_person.user_id, v_local::date, 'followup',
               public.local_moment(v_person.user_id, v_local::date + 1, '00:00'))
@@ -222,9 +225,10 @@ as $$
 begin
   update public.notifications set status = 'expired'
    where status = 'pending' and expires_at <= now();
-  -- A claim left by a sender that stopped is retried after 5 minutes.
-  update public.notifications set status = 'pending', claimed_at = null
-   where status = 'sending' and claimed_at < now() - interval '5 minutes' and expires_at > now();
+  -- A claim left by a sender that stopped may already have been delivered,
+  -- so it is marked failed rather than sent again (at most one, R48).
+  update public.notifications set status = 'failed', error = 'sender_stopped'
+   where status = 'sending' and claimed_at < now() - interval '5 minutes';
   return query
     update public.notifications n set status = 'sending', claimed_at = now()
      where n.id in (select id from public.notifications

@@ -85,7 +85,7 @@ const d = crypto.createDecipheriv('aes-128-gcm', cek, nonce); d.setAuthTag(ciphe
 const plain = Buffer.concat([d.update(cipher.subarray(0, cipher.length - 16)), d.final()])
 const payload = JSON.parse(plain.subarray(0, plain.lastIndexOf(2)).toString())
 const id = sql(`select id from public.notifications where user_id = '${uid}' and kind = 'morning'`)
-ok(payload.title === 'Clarivi' && payload.body === 'Ease off today: HRV well below your usual, sleep short' && payload.url === `/?n=${id}`,
+ok(payload.title === 'Clarivi' && payload.body === 'Ease off today: HRV well below your usual, sleep short' && payload.url === `/?n=${id}&k=morning`,
   `the phone can read it: ${payload.body}`)
 
 for (let i = 0; i < 20 && sql(`select status from public.notifications where id = ${id}`) !== 'sent'; i++) await new Promise((r) => setTimeout(r, 250))

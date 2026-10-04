@@ -14,8 +14,9 @@ export interface TodayData {
   // Today's latest check-in answer, and whether today's check-in was skipped.
   checkin: CheckinAnswer | null
   skipped: boolean
-  // Today's and yesterday's change days as shown, with their answers (R52 to R55).
-  follow: { today: FollowDay | null; yesterday: FollowDay | null }
+  // Today's and yesterday's change days as shown, with their answers (R52 to
+  // R55), and whether anything has been shown today at all (D61).
+  follow: { today: FollowDay | null; yesterday: FollowDay | null; shownToday: boolean }
   // How the latest notification of the last two days went (R34).
   lastNotification: { kind: string; status: string } | null
 }
@@ -68,10 +69,8 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     supabase.from('followthrough').select('date, answer, answered_at').in('date', [yesterday, today]),
     supabase.from('notifications').select('kind, status').gte('created_at', twoDaysAgo).order('created_at', { ascending: false }).limit(1),
   ])
-  const follow = followDays(
-    must(shown) as { date: string; nudge: Nudge; shown_at: string }[],
-    must(answers) as { date: string; answer: FollowAnswer; answered_at: string }[],
-  )
+  const shownRows = must(shown) as { date: string; nudge: Nudge; shown_at: string }[]
+  const follow = followDays(shownRows, must(answers) as { date: string; answer: FollowAnswer; answered_at: string }[])
 
   // The normals' minimum nights only matter while learning.
   const minValidNights: Partial<Record<Reading, number>> = {}
@@ -92,7 +91,7 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     },
     checkin: (must(checkin) as { answer: CheckinAnswer } | null)?.answer ?? null,
     skipped: (must(skipped) ?? []).length > 0,
-    follow: { today: follow.get(today) ?? null, yesterday: follow.get(yesterday) ?? null },
+    follow: { today: follow.get(today) ?? null, yesterday: follow.get(yesterday) ?? null, shownToday: shownRows.some((r) => r.date === today) },
     lastNotification: ((must(notifications) ?? []) as { kind: string; status: string }[])[0] ?? null,
   }
 }
@@ -102,23 +101,21 @@ export async function submitFollowThrough(date: string, answer: FollowAnswer, ch
   if (error) throw error
 }
 
-// The card showing a status records what it showed (D61). Never in the way.
-export function recordShown(date: string): void {
+// The card showing a status records what it showed (D61). The card doesn't
+// wait for it; an answer does, as the server checks what was shown.
+export async function recordShown(date: string): Promise<void> {
+  const { error } = await supabase.rpc('record_shown', { p_date: date })
+  if (error) throw error
+}
+
+// A notification's tap opens the app with "?n=<id>": record the tap (R51).
+export function noteNotificationTap(id: number): void {
   supabase
-    .rpc('record_shown', { p_date: date })
+    .rpc('log_notification_tap', { p_id: id })
     .then(
       () => undefined,
       () => undefined,
     )
-}
-
-// A notification's tap opens the app with "?n=<id>": record the tap (R51)
-// and say which kind it was, so an answer after the 8pm one counts as given
-// from the notification (R56).
-export async function noteNotificationTap(id: number): Promise<string | null> {
-  await supabase.rpc('log_notification_tap', { p_id: id })
-  const { data } = await supabase.from('notifications').select('kind').eq('id', id).maybeSingle()
-  return (data as { kind: string } | null)?.kind ?? null
 }
 
 export async function submitCheckin(today: string, answer: CheckinAnswer, statusSeen: boolean): Promise<void> {

@@ -62,3 +62,6 @@ __pycache__/
 
 # Screenshots for review (SCREENS=1 npx playwright test e2e/screens.spec.ts)
 screenshots/
+
+# Deno writes a lock file on some commands; the tests run without one.
+deno.lock

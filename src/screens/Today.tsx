@@ -103,17 +103,21 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
     if (logged.current.has(key)) return
     logged.current.add(key)
     logUsage('card_view', { date: data.inputs.today, status_shown: kind === 'status', state: kind })
-    if (kind === 'status') recordShown(data.inputs.today)
+    if (kind === 'status') recordShown(data.inputs.today).catch(() => undefined)
   }, [data, kind, onCard])
 
-  // Today's change day: as shown, or from the status the card shows now,
-  // which the card records as shown (D61).
+  // Today's change day is decided by what was first shown (D61). Only when
+  // nothing has been shown yet does the status on this card decide, as the
+  // card records it as shown now.
   const row = model?.state.kind === 'status' ? model.state.row : null
+  const cardNudge = row?.nudge && row.nudge !== 'train_as_planned' ? row.nudge : null
   const followToday: FollowDay | null =
-    data?.follow.today ?? (row?.nudge && row.nudge !== 'train_as_planned' ? { date: row.date, nudge: row.nudge, answer: null } : null)
-  const evening = row !== null && askTonight(now, followToday)
+    data?.follow.today ?? (row && cardNudge && !data?.follow.shownToday ? { date: row.date, nudge: cardNudge, answer: null } : null)
+  const evening = askTonight(now, followToday)
 
   async function answerFollow(day: 'today' | 'yesterday', date: string, a: FollowAnswer) {
+    // The server checks what was shown, so make sure the card's record is in.
+    if (day === 'today' && !data?.follow.today) await recordShown(date)
     // From the 8pm notification, the card after 8pm, or the next morning (R56).
     await submitFollowThrough(date, a, day === 'yesterday' ? 'next_morning' : fromFollowUp ? 'push' : 'card')
     setData((d) => {
@@ -314,6 +318,23 @@ function NoStatus({ pill, headline, lines }: { pill: string; headline: string; l
   )
 }
 
+// "Open Settings" at the foot of a notice.
+function SettingsLink({ label }: { label: string }) {
+  return (
+    <a
+      className="link-row"
+      href="#/settings"
+      onClick={(e) => {
+        e.preventDefault()
+        go('settings')
+      }}
+    >
+      <span>{label}</span>
+      <ChevronRightIcon className="chevron" />
+    </a>
+  )
+}
+
 // When notifications are off on this phone or the last one failed, say so
 // and how to turn them back on (R34). Nothing while they can't work here
 // (outside the Home Screen app); Settings explains that.
@@ -334,19 +355,7 @@ function NotificationHealth({ push, lastFailed }: { push: PushState | null; last
         </h2>
       </div>
       <p className="body">{body}</p>
-      {!blocked && (
-        <a
-          className="link-row"
-          href="#/settings"
-          onClick={(e) => {
-            e.preventDefault()
-            go('settings')
-          }}
-        >
-          <span>{h.settings}</span>
-          <ChevronRightIcon className="chevron" />
-        </a>
-      )}
+      {!blocked && <SettingsLink label={h.settings} />}
     </section>
   )
 }
@@ -362,19 +371,7 @@ function RejectedNotice({ kind }: { kind: 'token' | 'other' }) {
         </h2>
       </div>
       <p className="body">{kind === 'token' ? s.rejected.token : s.rejected.other}</p>
-      {kind === 'token' && (
-        <a
-          className="link-row"
-          href="#/settings"
-          onClick={(e) => {
-            e.preventDefault()
-            go('settings')
-          }}
-        >
-          <span>{s.rejected.settings}</span>
-          <ChevronRightIcon className="chevron" />
-        </a>
-      )}
+      {kind === 'token' && <SettingsLink label={s.rejected.settings} />}
     </section>
   )
 }

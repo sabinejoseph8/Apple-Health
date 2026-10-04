@@ -47,7 +47,7 @@ Deno.test('the morning notification says the status and reason, and opens the ca
   assertEquals(messageFor(row(7, 'morning'), sampleDay), {
     title: 'Clarivi',
     body: 'Ease off today: HRV well below your usual, sleep short',
-    url: '/?n=7',
+    url: '/?n=7&k=morning',
   })
 })
 

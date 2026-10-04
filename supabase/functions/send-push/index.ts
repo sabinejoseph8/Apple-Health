@@ -92,7 +92,9 @@ async function sendDueNotifications() {
       return (data ?? []) as OutboxRow[]
     },
     async dayStatus(userId, date) {
-      const { data } = await admin.from('daily_status').select('*').eq('user_id', userId).eq('date', date).maybeSingle()
+      const { data, error } = await admin.from('daily_status').select('*').eq('user_id', userId).eq('date', date).maybeSingle()
+      // A failed lookup is a failed send, never a day without a status.
+      if (error) throw new Error('status lookup failed')
       return data as DayStatus | null
     },
     devices: activeDevices,

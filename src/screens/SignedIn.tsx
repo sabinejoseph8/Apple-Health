@@ -20,14 +20,15 @@ export default function SignedIn({ session }: { session: Session }) {
       .then((subscribed) => setPush({ support: currentPushSupport(), subscribed }))
       .catch(() => setPush({ support: currentPushSupport(), subscribed: false }))
 
-    // Opened from a notification: "?n=<id>" records the tap (R51), then
-    // leaves the address.
-    const id = Number(new URLSearchParams(window.location.search).get('n'))
+    // Opened from a notification: "?n=<id>&k=<kind>" records the tap (R51),
+    // and an answer after the 8pm one counts as given there (R56). Then the
+    // address is tidied.
+    const params = new URLSearchParams(window.location.search)
+    const id = Number(params.get('n'))
     if (id > 0) {
-      window.history.replaceState(null, '', window.location.pathname + window.location.hash)
       noteNotificationTap(id)
-        .then((kind) => kind === 'followup' && setFromFollowUp(true))
-        .catch(() => undefined)
+      if (params.get('k') === 'followup') setFromFollowUp(true)
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash)
     }
   }, [])
 

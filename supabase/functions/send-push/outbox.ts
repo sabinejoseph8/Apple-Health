@@ -56,9 +56,10 @@ export interface OutboxDeps {
 
 // The message for a notification, or null when there is nothing to say: a
 // morning whose status has since become "none" sends nothing (R48). Tapping
-// opens the card with the notification's id, which records the tap (R51).
+// opens the card with the notification's id and kind: the id records the tap
+// (R51), and the kind lets an answer after the 8pm one count as given there (R56).
 export function messageFor(row: OutboxRow, day: DayStatus | null): Message | null {
-  const url = `/?n=${row.id}`
+  const url = `/?n=${row.id}&k=${row.kind}`
   const p = wording.push
   if (row.kind === 'reminder') return { title: p.reminderTitle, body: p.reminder, url }
   if (row.kind === 'followup') return { title: p.followUpTitle, body: p.followUp, url }
