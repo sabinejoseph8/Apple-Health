@@ -65,8 +65,14 @@ const phone = client(), laptop = client()
 await phone.auth.signInWithPassword({ email, password: second })
 await laptop.auth.signInWithPassword({ email, password: second })
 ok(!(await laptop.auth.refreshSession()).error, 'the laptop session works')
+sql(`insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values
+     ('${uid}', 'https://push.example/phone-${uid}', 'k', 'a'), ('${uid}', 'https://push.example/laptop-${uid}', 'k', 'a');`)
+const forgot = await phone.rpc('forget_all_devices')
+ok(forgot.data === 2 && sql(`select count(*) from public.push_subscriptions where user_id = '${uid}' and revoked_at is null`) === '0',
+  'sign out everywhere first stops notifications to both devices')
 await phone.auth.signOut({ scope: 'global' })
 ok(!!(await laptop.auth.refreshSession()).error, 'after sign out everywhere on the phone, the laptop is signed out too')
+ok(!!(await laptop.auth.getUser()).error, 'and the server refuses its sign-in at once, which sends the app to sign-in')
 
 // The owner resets a tester's password (R63, D74).
 const ownerEmail = `account-owner-${Date.now()}@example.test`

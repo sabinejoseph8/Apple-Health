@@ -268,7 +268,7 @@ Each call carries the user's session.
 - Sessions:
   - Long-lived, with refresh token rotation.
   - A 30-day inactivity timeout needs Supabase Pro, so it isn't enforced during the test. Until the move to Pro, a session lasts until the user signs out or uses "Sign out everywhere". The product spec's 30-day default (R6) applies from then on.
-  - "Sign out everywhere" ends every session for the user.
+  - "Sign out everywhere" ends every session for the user. Built in Phase 5 (and fixed before its manual check 3): it first calls `forget_all_devices()`, which stops notifications to every one of the user's devices, so a lost or shared phone never shows their status on its lock screen; then it ends every session. The server refuses an ended session at once, and the app checks its sign-in (`getUser`) when it opens and when it comes back to the front, going straight to the sign-in screen (and dropping that device's notifications) when it has ended; no connection is not taken as a sign-out. A device that signs in again registers afresh.
 - First sign-in: the change-password flag sends the user straight to "Set a new password". The flag is cleared only by `account-first-login`, in the same step that saves the new password.
 - Password re-checks before sensitive actions are done by the server function signing in with the password. Supabase's built-in re-authentication sends an email code, and there is no email in this app. Known limit (Phase 5 code review, accepted for v1): every check signs in from the functions' servers, so all users' checks share Supabase's sign-in rate limit for one address; many wrong tries by one person could briefly make others' checks fail. With four people this is unlikely; if it happens, wait a few minutes.
 
