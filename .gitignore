@@ -26,6 +26,7 @@ backups/
 node_modules/
 dist/
 dist-ssr/
+dist-e2e/
 *.local
 npm-debug.log*
 
