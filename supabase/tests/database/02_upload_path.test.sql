@@ -4,7 +4,7 @@
 -- bodies and too many posts are refused.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(47);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'user-a@example.test'),
@@ -132,6 +132,14 @@ select is((select count(*)::int from public.upload_tokens
 select is((select last_used_at is not null from public.upload_tokens where token_hash = repeat('d', 64)), true,
   'a token''s last use is recorded');
 
+-- Readings the server function set aside are counted on the upload row.
+select is((public.ingest_upload(repeat('d', 64), pg_temp.body('daily', jsonb_build_array(
+            pg_temp.reading('heart_rate', now() - interval '3 hours', 55, 'count/min')))
+            || '{"set_aside": 2, "set_aside_note": "sample 2 (heart_rate): value out of range"}') ->> 'duplicates')::int, 1,
+  'a post with readings set aside still stores the rest');
+select is((select set_aside_count from public.uploads where set_aside_note like 'sample 2%'), 2,
+  'the upload row records how many readings were set aside, and why');
+
 -- A body the server function rejected is logged against the token's user.
 select is(public.ingest_upload(repeat('d', 64), null, 'sample 3: unknown type') ->> 'error', 'invalid_body',
   'a rejected body gets an error reply');
@@ -144,8 +152,8 @@ insert into public.uploads (user_id, token_id, status, error)
 select '22222222-2222-2222-2222-222222222222', id, 'rejected', 'test'
   from public.upload_tokens, generate_series(1, 60)
  where token_hash = repeat('b', 64);
-select is(public.ingest_upload(repeat('b', 64), pg_temp.body('ping', '[]')) ->> 'error', 'rate_limited',
-  'more than 60 posts an hour from one token are refused');
+select is(public.ingest_upload(repeat('b', 64), pg_temp.body('daily', '[]')) ->> 'error', 'rate_limited',
+  'more than 60 daily posts an hour from one token are refused');
 
 -- Act as user A in the app.
 set local role authenticated;

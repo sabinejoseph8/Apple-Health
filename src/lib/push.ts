@@ -73,6 +73,16 @@ export async function refreshSubscription(): Promise<boolean> {
   return true
 }
 
+// Stops this device getting notifications before signing out, so a signed-out
+// person's status never appears on this phone's lock screen (R23). The
+// server stops sending once the push service reports the subscription gone.
+export async function forgetThisDevice(): Promise<void> {
+  if (!('serviceWorker' in navigator)) return
+  const reg = await navigator.serviceWorker.getRegistration()
+  const sub = await reg?.pushManager.getSubscription()
+  await sub?.unsubscribe()
+}
+
 export async function sendTestNotification(delaySeconds: number): Promise<void> {
   const { error } = await supabase.functions.invoke('send-push', {
     body: { kind: 'test', delay_seconds: delaySeconds },

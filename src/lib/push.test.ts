@@ -30,3 +30,26 @@ describe('urlBase64ToUint8Array', () => {
     expect(Array.from(urlBase64ToUint8Array('AQID_-8'))).toEqual([1, 2, 3, 255, 239])
   })
 })
+
+describe('forgetThisDevice', () => {
+  it('unsubscribes this device from notifications before sign-out', async () => {
+    let unsubscribed = false
+    const sub = { unsubscribe: async () => { unsubscribed = true; return true } }
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { serviceWorker: { getRegistration: async () => ({ pushManager: { getSubscription: async () => sub } }) } },
+      configurable: true,
+    })
+    const { forgetThisDevice } = await import('./push')
+    await forgetThisDevice()
+    expect(unsubscribed).toBe(true)
+  })
+
+  it('does nothing on a device with no subscription', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { serviceWorker: { getRegistration: async () => ({ pushManager: { getSubscription: async () => null } }) } },
+      configurable: true,
+    })
+    const { forgetThisDevice } = await import('./push')
+    await expect(forgetThisDevice()).resolves.toBeUndefined()
+  })
+})

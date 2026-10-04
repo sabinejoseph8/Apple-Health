@@ -5,7 +5,7 @@ import { configured, supabase } from './lib/supabase'
 import { screenFor } from './lib/screens'
 import SignIn from './screens/SignIn'
 import SetPassword from './screens/SetPassword'
-import Home from './screens/Home'
+import SignedIn from './screens/SignedIn'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -36,6 +36,6 @@ export default function App() {
     case 'set-password':
       return <SetPassword session={session!} />
     case 'home':
-      return <Home key={session!.user.id} session={session!} />
+      return <SignedIn key={session!.user.id} session={session!} />
   }
 }

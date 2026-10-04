@@ -9,6 +9,10 @@ describe('formatWhen', () => {
     expect(formatWhen(new Date(2026, 9, 3, 6, 42).toISOString(), now)).toBe('today at 6:42am')
   })
 
+  it('says "yesterday" for a time yesterday', () => {
+    expect(formatWhen(new Date(2026, 9, 2, 6, 51).toISOString(), now)).toBe('yesterday at 6:51am')
+  })
+
   it('gives the day and month for another day', () => {
     expect(formatWhen(new Date(2026, 9, 1, 18, 5).toISOString(), now)).toBe('1 Oct at 6:05pm')
   })
