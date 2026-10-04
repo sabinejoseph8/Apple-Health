@@ -105,10 +105,12 @@ html, body {
 .page {
   max-width: 480px;
   margin: 0 auto;
-  padding: max(env(safe-area-inset-top), 47px) var(--gutter) max(env(safe-area-inset-bottom), 34px);
+  /* From the Home Screen the page starts below the status bar; with
+     viewport-fit=cover the home indicator's space comes from the inset. */
+  padding: calc(env(safe-area-inset-top, 0px) + var(--space-16)) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + var(--space-16));
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .large-title {
@@ -165,13 +167,21 @@ html, body {
 
 .pill {
   align-self: flex-start;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--separator);
-  padding: 4px 10px;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 var(--space-10);
+  border-radius: var(--radius-pill);
+  font: var(--type-pill);
+  white-space: nowrap;
+  color: var(--neutral-text);
+  background: var(--neutral-pill);
 }
+
+.pill-ready { color: var(--ready-text); background: var(--ready-pill); }
+.pill-ease_off { color: var(--ease-text); background: var(--ease-pill); }
+.pill-rest { color: var(--rest-text); background: var(--rest-pill); }
+.pill-neutral { color: var(--neutral-text); background: var(--neutral-pill); }
 
 .field {
   display: flex;
@@ -254,4 +264,179 @@ html, body {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* ---- Phase 3: the readiness card, check-in and navigation ---- */
+
+.eyebrow {
+  margin: 0;
+  font: var(--type-eyebrow);
+  font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-12);
+}
+
+.app-header .eyebrow { margin-bottom: var(--space-4); }
+
+.icon-button {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.briefing { gap: var(--space-12); }
+.briefing.loading { min-height: 300px; }
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-10);
+}
+
+.sync-time {
+  font: var(--type-caption);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.nudge {
+  border-radius: var(--radius-nudge);
+  padding: var(--space-14) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: var(--bg);
+}
+
+.nudge .eyebrow { font-size: 12px; }
+.nudge-ease_off { background: var(--ease-tint); }
+.nudge-ease_off .eyebrow { color: var(--ease-text); }
+.nudge-rest { background: var(--rest-pill); }
+.nudge-rest .eyebrow { color: var(--rest-text); }
+
+.nudge-action { margin: 0; font: var(--type-section-title); }
+.nudge-detail { margin: 0; font: var(--type-body); color: var(--text-secondary); }
+
+.link-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--separator);
+  color: var(--link-blue);
+  font: var(--type-body);
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.chevron { color: var(--chevron); flex: none; }
+
+.list-card {
+  background: var(--surface);
+  border-radius: var(--radius-card-small);
+  padding: 0 var(--space-16);
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-height: 56px;
+}
+
+.list-row + .list-row { border-top: 1px solid var(--separator); }
+.row-icon { flex: none; color: var(--link-blue); }
+.row-text { flex: 1; min-width: 0; font: var(--type-body); font-size: 16px; color: var(--text); }
+
+.row-action {
+  flex: none;
+  min-height: var(--tap);
+  padding: 0 0 0 var(--space-8);
+  border: 0;
+  background: transparent;
+  color: var(--link-blue);
+  font: var(--type-body);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.caption.aside { padding: 0 var(--space-4); }
+
+.notice { gap: var(--space-8); }
+.notice-title { display: flex; align-items: center; gap: var(--space-8); }
+.notice-icon { flex: none; color: var(--attention); }
+
+/* The check-in: three answers of equal size and weight (R16). */
+.checkin { gap: var(--space-16); }
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+
+.answer {
+  min-height: var(--tap-answer);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--button-tint);
+  color: var(--button-blue);
+  font: var(--type-emphasis);
+  cursor: pointer;
+}
+
+.answer:disabled, .text-button:disabled { opacity: 0.6; }
+
+/* "< Today" and a centred title. */
+.nav-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  min-height: var(--tap);
+}
+
+.nav-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--tap);
+  margin-left: -6px;
+  padding: 0 var(--space-8) 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--link-blue);
+  font: 400 17px var(--font);
+  cursor: pointer;
+}
+
+.nav-title {
+  margin: 0;
+  font: var(--type-emphasis);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--link-blue);
+  outline-offset: 2px;
 }

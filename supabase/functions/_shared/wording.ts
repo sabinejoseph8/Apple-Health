@@ -209,10 +209,11 @@ export const wording = {
       headline: 'Not enough data last night',
       noSleep: "Your Watch didn't record any sleep last night, so there's no status today.",
       tooFew: "Two or more of last night's readings are missing, so there's no status today.",
+      unfinished: "Last night's sleep hadn't arrived by noon, so there's no status today.",
     },
     learning: {
       pill: 'Learning your normal',
-      headline: 'Learning your normal',
+      headline: 'Still getting to know your normal',
       progress: (nights: number, needed: number) => `${nights} of ${needed} nights so far. Clarivi needs ${needed} nights to know your normal.`,
       // Last night's values in plain words, with no verdicts (R32).
       lastNight: (parts: string) => `Last night ${parts}.`,
