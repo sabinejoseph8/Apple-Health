@@ -105,7 +105,7 @@ Built in Phase 1a (3 October 2026):
 
 Built in Phase 1b (3 October 2026):
 - `upload_tokens`: at most one working token per user (a unique index on unrevoked tokens). The app can read when its token was made and last used, but never the hash (column-level grants).
-- `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?".
+- `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?". A run blocked by a locked phone at its first step (reading the "synced today" file) never reaches the server, so the locked-phone count adds the owner's notes (D75, 4 October 2026).
 - `samples.sample_hash` is a SHA-256 of the type, start, end, value, stage and source. The time zone isn't part of it, so the same moment posted from another time zone is the same reading. Heart rate is stored only from 6pm to noon, by each reading's own local time (D43). Sleep readings arrive with no source: Shortcuts doesn't report one for sleep (Phase 1b), so Watch sleep is recognised by its stages (core, deep, REM, awake) for D10.
 - All writes go through two database functions callable only with the secret key: `ingest_upload(token_hash, upload, error)` and `issue_upload_token(user, token_hash)`.
 
