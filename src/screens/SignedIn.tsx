@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { currentPushSupport, refreshSubscription } from '../lib/push'
 import { useRoute } from '../lib/route'
+import { endIfSignedOutElsewhere } from '../lib/session'
 import { noteNotificationTap } from '../lib/today'
 import Digest from './Digest'
 import Owner from './Owner'
@@ -15,6 +16,15 @@ export default function SignedIn({ session }: { session: Session }) {
   const route = useRoute()
   const [push, setPush] = useState<PushState | null>(null)
   const [fromFollowUp, setFromFollowUp] = useState(false)
+
+  // Each time the app opens or comes back to the front, check the sign-in
+  // still stands (R7).
+  useEffect(() => {
+    endIfSignedOutElsewhere().catch(() => undefined)
+    const onVisible = () => document.visibilityState === 'visible' && endIfSignedOutElsewhere().catch(() => undefined)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   useEffect(() => {
     // Re-register this phone for notifications each time the app opens, so a

@@ -59,6 +59,13 @@ export async function openApp(
       app.calls.push({ name: `auth:sign-out:${url.searchParams.get('scope') ?? 'local'}`, body: null })
       return route.fulfill({ status: 204 })
     }
+    // "auth/user" in the tables gives the sign-in check's reply (status 0:
+    // no connection), else the user.
+    if (url.pathname === '/auth/v1/user') {
+      const reply = (tables['auth/user'] as { status: number; body: unknown }[] | undefined)?.[0]
+      if (reply?.status === 0) return route.abort('internetdisconnected')
+      return json(reply?.body ?? USER, reply?.status ?? 200)
+    }
     if (url.pathname.startsWith('/auth/v1/')) return json(USER)
     // Server functions: "fn/<name>" in the tables gives the reply, else ok.
     if (url.pathname.startsWith('/functions/v1/')) {
