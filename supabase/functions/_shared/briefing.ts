@@ -129,8 +129,8 @@ export function briefing(day: DayWords): string[] {
     return []
   })
   const normal = normalClause(readingsOfKind(day, 'normal'))
+  const better = readingsOfKind(day, 'better').map((r) => b.better[r])
   const rest = [
-    ...readingsOfKind(day, 'better').map((r) => b.better[r]),
     ...readingsOfKind(day, 'missing').map((r) => b.missing[r]),
     ...readingsOfKind(day, 'building').map((r) => b.building[r]),
     ...(day.composite_fired === true ? [b.illnessFired] : day.composite_fired === false ? [b.illnessClear] : []),
@@ -140,11 +140,12 @@ export function briefing(day: DayWords): string[] {
   if (offClauses.length > 0) {
     sentences.push(sentence(joinClauses(offClauses)))
     sentences.push(meaning(day, worse, slight))
-    const last = normal ? [normal, ...rest] : rest
+    const last = [...(normal ? [normal] : []), ...better, ...rest]
     if (last.length > 0) sentences.push(sentence(joinClauses(last)))
   } else {
-    // Nothing worse than normal: say what was normal first.
-    if (normal) sentences.push(sentence(normal))
+    // Nothing worse than normal: the good news first, then what was normal.
+    const first = [...better, ...(normal ? [normal] : [])]
+    if (first.length > 0) sentences.push(sentence(joinClauses(first)))
     sentences.push(meaning(day, worse, slight))
     if (rest.length > 0) sentences.push(sentence(joinClauses(rest)))
   }
@@ -156,12 +157,70 @@ export function briefing(day: DayWords): string[] {
 export function morningNotification(day: DayWords): string | null {
   if (day.status === 'none') return null
   const label = wording.card.status[day.status]
-  if (day.status === 'ready') return wording.push.morning(label, wording.push.readyReason)
-  const reasons = day.reason_codes
-    .map((code) => wording.push.reasons[code as keyof typeof wording.push.reasons])
-    .filter(Boolean)
-    .slice(0, 2)
-  return wording.push.morning(label, reasons.join(wording.push.reasonJoin))
+  const reasons = (codes: string[]) =>
+    codes
+      .map((code) => wording.push.reasons[code as keyof typeof wording.push.reasons])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join(wording.push.reasonJoin)
+  if (day.status === 'ready') {
+    const outside = day.reason_codes.filter((code) => code.endsWith('_outside_range'))
+    return wording.push.morning(label, outside.length > 0 ? wording.push.readyDespite(reasons(outside)) : wording.push.readyReason)
+  }
+  return wording.push.morning(label, reasons(day.reason_codes))
+}
+
+// "7h 10m": minutes asleep, as the design writes them.
+export function formatDuration(minutes: number): string {
+  const total = Math.round(minutes)
+  return wording.why.duration(Math.floor(total / 60), total % 60)
+}
+
+// Last night's values in plain words for "Learning your normal", with no
+// verdicts (R32): "Last night you slept 6h 10m, your heart rate variability
+// was 42 ms, and your heart rate while you slept was 55 bpm."
+export function learningLastNight(night: { asleep_min: number | null; hrv: number | null; sleeping_hr: number | null }): string | null {
+  const l = wording.states.learning
+  const parts = [
+    ...(night.asleep_min !== null ? [l.slept(formatDuration(night.asleep_min))] : []),
+    ...(night.hrv !== null ? [l.hrv(String(Math.round(night.hrv)))] : []),
+    ...(night.sleeping_hr !== null ? [l.sleepingHr(String(Math.round(night.sleeping_hr)))] : []),
+  ]
+  return parts.length > 0 ? l.lastNight(joinClauses(parts)) : null
+}
+
+export type IllnessCheck = 'fired' | 'clear' | 'not_run'
+export interface AlsoReading {
+  value: number | null
+  verdict: Verdict | null
+}
+
+// "Also checked" on Why today (R39): breathing rate while asleep, yesterday's
+// resting heart rate and the illness check. The design's words when both are
+// normal and the check found nothing.
+export function alsoChecked(breathing: AlsoReading, resting: AlsoReading, illness: IllnessCheck): string[] {
+  const a = wording.why.alsoChecked
+  const shown = (r: AlsoReading) => r.value !== null && r.verdict !== null && r.verdict !== 'missing'
+  const breath = shown(breathing) ? capitalise(a.breathing(breathing.value!.toFixed(1))) : null
+  const rest = shown(resting) ? a.resting(String(Math.round(resting.value!))) : null
+  const illnessSentence = illness === 'fired' ? a.fired : illness === 'clear' ? a.clear : a.notRun
+
+  if (breath && rest && breathing.verdict === 'in_range' && resting.verdict === 'in_range') {
+    return illness === 'clear' ? [a.bothNormalClear(breath, rest)] : [a.bothNormal(breath, rest), illnessSentence]
+  }
+
+  const one = (r: AlsoReading, words: string | null, missing: string, building: string) => {
+    if (r.verdict === 'building') return building
+    if (!words) return missing
+    if (r.verdict === 'above') return a.higher(capitalise(words))
+    if (r.verdict === 'below') return a.lower(capitalise(words))
+    return a.normal(capitalise(words))
+  }
+  return [
+    one(breathing, breath, a.missingBreathing, a.buildingBreathing),
+    one(resting, rest, a.missingResting, a.buildingResting),
+    illnessSentence,
+  ]
 }
 
 // Why today's summary (R36): how many readings were outside the normal range,

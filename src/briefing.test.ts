@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  alsoChecked,
   briefing,
   type DayWords,
+  formatDuration,
   headline,
+  learningLastNight,
   morningNotification,
   type Reading,
   type ReadingPoints,
@@ -37,6 +40,40 @@ describe('the design sample day (Tuesday 29 September)', () => {
         'Your sleeping heart rate was normal for you.',
       ],
     })
+  })
+})
+
+describe("Why today's other words", () => {
+  it('has the designed "Also checked" sentence (R39)', () => {
+    expect(alsoChecked({ value: 14.8, verdict: 'in_range' }, { value: 55, verdict: 'in_range' }, 'clear')).toEqual([
+      "Your breathing rate while asleep (14.8 breaths a minute) and yesterday's resting heart rate (55 bpm) were both normal for you, so there is no early sign of illness or heavy strain.",
+    ])
+  })
+
+  it('only says "no early sign" when the illness check ran (R33)', () => {
+    for (const illness of ['fired', 'not_run'] as const) {
+      const text = alsoChecked({ value: 14.8, verdict: 'in_range' }, { value: 55, verdict: 'in_range' }, illness).join(' ')
+      expect(text).not.toContain('no early sign')
+    }
+  })
+
+  it('names a reading that was off, and one that is missing', () => {
+    expect(alsoChecked({ value: 17.2, verdict: 'above' }, { value: null, verdict: 'missing' }, 'not_run')).toEqual([
+      'Your breathing rate while asleep (17.2 breaths a minute) was higher than normal for you.',
+      'There was no resting heart rate reading for yesterday.',
+      "There weren't enough readings to check how they moved together.",
+    ])
+  })
+
+  it('writes sleep the way the design does', () => {
+    expect(formatDuration(430)).toBe('7h 10m')
+    expect(formatDuration(45)).toBe('45m')
+  })
+
+  it("gives last night's values in plain words while learning your normal (R32)", () => {
+    expect(learningLastNight({ asleep_min: 370, hrv: 41.6, sleeping_hr: 55 })).toBe(
+      'Last night you slept 6h 10m, your heart rate variability was 42 ms, and your heart rate while you slept was 55 bpm.',
+    )
   })
 })
 
@@ -92,6 +129,31 @@ describe('other days', () => {
     expect(headline(day)).toBe('A short night, so take it a little easier')
     expect(briefing(day)[1]).toBe('A short night can leave you less ready for a hard session.')
     expect(morningNotification(day)).toBe('Ease off today: sleep short')
+  })
+
+  it('is honest about a short night on a Ready day', () => {
+    const day: DayWords = {
+      status: 'ready',
+      readings_used: 3,
+      reason_codes: ['sleep_outside_range'],
+      composite_fired: false,
+      points: { hrv: reading('hrv', 52, 52, 6), sleep: reading('sleep', 340, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
+    }
+    expect(headline(day)).toBe('A short night, but the rest looks normal')
+    expect(morningNotification(day)).toBe('Ready today: sleep short, but the rest looks normal')
+  })
+
+  it('leads with good news when a reading was better than normal', () => {
+    const day: DayWords = {
+      status: 'ready',
+      readings_used: 3,
+      reason_codes: [],
+      composite_fired: null,
+      points: { hrv: reading('hrv', 66, 52, 6), sleep: reading('sleep', 430, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
+    }
+    expect(briefing(day)[0]).toBe(
+      'Your heart rate variability was higher than normal for you, and your sleep and heart rate while you slept were both normal.',
+    )
   })
 
   it('gives no notification text on a day without a status (R48)', () => {

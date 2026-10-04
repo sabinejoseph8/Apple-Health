@@ -109,6 +109,8 @@ export const wording = {
     // "Ease off today: HRV well below your usual, sleep short" (R48).
     morning: (status: string, reasons: string) => `${status} today: ${reasons}`,
     readyReason: 'your readings are close to your normal',
+    // A Ready day with a reading outside its range: "sleep short, but the rest looks normal".
+    readyDespite: (reasons: string) => `${reasons}, but the rest looks normal`,
     reasons: {
       hrv_outside_range: 'HRV well below your usual',
       hrv_worse_than_normal: 'HRV a little below your usual',
@@ -163,7 +165,7 @@ export const wording = {
     partial: 'Based on 2 of 3 readings',
     nudgeLabel: "Today's nudge",
     nudges: {
-      train_as_planned: { action: 'Train as planned', detail: 'Your body looks ready for whatever you had planned today.' },
+      train_as_planned: { action: 'Train as planned', detail: 'Go ahead with the training you had planned for today.' },
       train_easy: { action: 'Train easy today', detail: 'Swap anything hard for something easy, like a walk or a gentle ride.' },
       rest: { action: 'Rest today', detail: 'Skip training and keep any movement gentle, like a short walk.' },
       prioritise_sleep: { action: 'Prioritise sleep tonight', detail: 'Keep today light and aim to be in bed earlier than usual.' },
@@ -234,9 +236,9 @@ export const wording = {
       ready: {
         allNormal: 'You look well recovered',
         small: 'Close to your normal',
-        sleep: 'A short night, but your body has recovered',
-        hrv: 'Heart rate variability was low, but the rest looks fine',
-        sleeping_hr: 'Your heart rate was up overnight, but the rest looks fine',
+        sleep: 'A short night, but the rest looks normal',
+        hrv: 'Heart rate variability was low, but the rest looks normal',
+        sleeping_hr: 'Your heart rate was up overnight, but the rest looks normal',
       },
       ease_off: {
         sleepAndHrv: "A short night, and your body hasn't fully recovered",
@@ -403,6 +405,7 @@ export const wording = {
   time: {
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     todayAt: (time: string) => `today at ${time}`,
+    yesterdayAt: (time: string) => `yesterday at ${time}`,
     dayAt: (day: string, time: string) => `${day} at ${time}`,
   },
 

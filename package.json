@@ -15,7 +15,8 @@
     "check:local": "node scripts/local-1a-check.mjs",
     "check:local:sync": "node scripts/local-1b-check.mjs",
     "check:local:import": "node scripts/local-import-load.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "wording:sheet": "node scripts/wording-sheet.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

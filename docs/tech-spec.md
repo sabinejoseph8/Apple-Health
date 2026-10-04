@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61)
+**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -146,10 +146,10 @@ Built in Phase 2c (3 October 2026):
 **User answers and logs**
 | Table | Holds | Key fields |
 |---|---|---|
-| `checkins` | Daily check-in, every change kept | `date`, `answer`, `answered_at`, `status_seen_before`, `is_first` |
+| `checkins` | Daily check-in, every change kept (built in Phase 3) | `date`, `answer`, `answered_at`, `status_seen_before`, `is_first` |
 | `followthrough` | Nudge answers, every change kept | `date`, `answer`, `answered_at`, `channel` (push, card, next_morning) |
 | `notifications` | Outbox and delivery log | `user_id`, `date`, `kind` (morning, reminder, followup), `status` (pending, sent, failed), `payload`, `sent_at`, `tapped_at`, `error`; unique on (`user_id`, `date`, `kind`) |
-| `usage_events` | Card views, Why today and trend opens, digest opens, sign-ins | `event`, `at`, `meta` (never health values) |
+| `usage_events` | Card views, Why today and trend opens, digest opens, sign-ins (built in Phase 3 with card views, Why today opens and skipped check-ins; later phases add their events) | `event`, `at`, `meta` (never health values) |
 
 **Owner and research**
 | Table | Holds | Key fields |
@@ -193,10 +193,11 @@ Built in Phase 2c (3 October 2026):
 The app uses the Supabase client with the public (publishable) key and the user's session. Row-level security applies to every call.
 - **Reads:** views such as `v_today`, `v_why_today`, `v_trends` and `v_digest_latest`, each built from the results tables.
 - **Writes:** database functions only:
-  - `submit_checkin(answer)`
+  - `submit_checkin(date, answer, status_seen)` (built in Phase 3: the phone's local date, which must be today somewhere on Earth; every answer is kept, with whether it was the first of the day and whether the status had been seen, from the app or from a logged card view showing a status; at most 50 a day)
   - `submit_followthrough(date, answer)` (accepted only from 8pm on change days, and until the next morning)
   - `register_push(subscription)`
-  - `log_usage(event)`
+  - `log_usage(event, meta)` (built in Phase 3: events `card_view`, `why_today_open`, `checkin_skipped`; the meta may hold only `date`, `status_shown` and `state`, the kind of card, never a status or a reading; past 500 events in a day it stops logging quietly)
+- **Zone numbers (D62, built in Phase 3):** `status_zones(version)` returns a settings version's Ease off and Rest limits, its normal window and minimum valid nights (overall and per reading) and the readings in order of weight, never the weights; with no version it gives the active one. Signed-in users only.
 
 ### Web app to server functions
 Each call carries the user's session.
@@ -220,6 +221,7 @@ Each call carries the user's session.
 
 ### Wording
 - One shared wording module, `supabase/functions/_shared/wording.ts`, holds every sentence the app and notifications use: briefings, verdicts, nudges, notification text and state messages. It is plain TypeScript, so the web app and the server functions import the same file.
+- Built in Phase 3: `supabase/functions/_shared/briefing.ts` puts the words together from a `daily_status` row (the card's headline and briefing, the morning notification's reason, Why today's summary and "Also checked", and last night's values while learning). The briefing says what was off (outside the range, or at least one spread worse inside it: "a little"), what it means, then what was normal, better, missing or still being learned, with the illness check's words only when it ran. `npm run wording:sheet` prints a sample sheet of every state's words on made-up days, for review.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
 ---
