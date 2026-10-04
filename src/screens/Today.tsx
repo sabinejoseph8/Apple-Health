@@ -6,7 +6,7 @@ import { ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { go } from '../lib/route'
 import { type CheckinAnswer, loadToday, logUsage, submitCheckin, type TodayData } from '../lib/today'
-import { formatTime, formatWhen } from '../lib/when'
+import { formatWhen, localDate, syncWhen } from '../lib/when'
 import CheckIn from './CheckIn'
 
 const c = wording.card
@@ -23,21 +23,27 @@ export default function Today() {
   // The check-in screen: shown first each day, or opened from the card.
   const [checkin, setCheckin] = useState<'first' | 'later' | null>(null)
   const logged = useRef(new Set<string>())
-  // The day the check-in was answered or skipped on this phone, so a reload
-  // before the server has the answer never asks twice.
-  const settledFor = useRef<string | null>(null)
+  // The check-in answered or skipped on this phone today, so a reload that
+  // started before the server had it never asks again or shows it unanswered.
+  const settled = useRef<{ date: string; answer: CheckinAnswer | null } | null>(null)
+  // Only the newest load may update the card, however the replies arrive.
+  const loads = useRef(0)
 
   const load = useCallback(async () => {
     const at = new Date()
+    const mine = ++loads.current
     try {
-      const d = await loadToday(at)
+      let d = await loadToday(at)
+      if (mine !== loads.current) return
+      const local = settled.current?.date === d.inputs.today ? settled.current : null
+      if (local) d = { ...d, checkin: d.checkin ?? local.answer, skipped: d.skipped || local.answer === null }
       setNow(at)
       setData(d)
       setFailed(false)
       // The first open of the day asks how you feel before the status (R16).
-      if (!d.checkin && !d.skipped && settledFor.current !== d.inputs.today) setCheckin((open) => open ?? 'first')
+      if (!d.checkin && !d.skipped) setCheckin((open) => open ?? 'first')
     } catch {
-      setFailed(true)
+      if (mine === loads.current) setFailed(true)
     }
   }, [])
 
@@ -51,14 +57,18 @@ export default function Today() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [load])
 
+  // Each minute: check again while a sync is awaited, and start afresh when
+  // the day changes, so yesterday's status never shows as today's (R25).
+  const shownDay = data?.inputs.today
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (document.visibilityState !== 'visible') return
-      if (kind && WATCHING.includes(kind)) load()
-      else setNow(new Date())
+      const t = new Date()
+      if ((kind && WATCHING.includes(kind)) || (shownDay && localDate(t) !== shownDay)) load()
+      else setNow(t)
     }, 60_000)
     return () => window.clearInterval(timer)
-  }, [kind, load])
+  }, [kind, shownDay, load])
 
   // Each card view is logged once per kind of card, never with health values (R43).
   useEffect(() => {
@@ -71,17 +81,19 @@ export default function Today() {
 
   async function answer(a: CheckinAnswer) {
     if (!data) return
-    await submitCheckin(data.inputs.today, a, checkin === 'later' && kind === 'status')
-    settledFor.current = data.inputs.today
-    setData({ ...data, checkin: a })
+    const date = data.inputs.today
+    await submitCheckin(date, a, checkin === 'later' && kind === 'status')
+    settled.current = { date, answer: a }
+    setData((d) => (d && d.inputs.today === date ? { ...d, checkin: a } : d))
     setCheckin(null)
   }
 
   function skip() {
     if (!data) return
-    logUsage('checkin_skipped', { date: data.inputs.today })
-    settledFor.current = data.inputs.today
-    setData({ ...data, skipped: true })
+    const date = data.inputs.today
+    logUsage('checkin_skipped', { date })
+    settled.current = { date, answer: null }
+    setData((d) => (d && d.inputs.today === date ? { ...d, skipped: true } : d))
     setCheckin(null)
   }
 
@@ -115,7 +127,7 @@ export default function Today() {
 function Card({ state, now }: { state: CardState; now: Date }) {
   switch (state.kind) {
     case 'status':
-      return <StatusCard state={state} />
+      return <StatusCard state={state} now={now} />
     case 'waiting':
       return (
         <NoStatus
@@ -125,7 +137,11 @@ function Card({ state, now }: { state: CardState; now: Date }) {
         />
       )
     case 'analysing':
-      return <NoStatus pill={s.analysing.pill} headline={s.analysing.headline} lines={[s.analysing.detail]} />
+      return state.delayed ? (
+        <NoStatus pill={s.analysing.pill} headline={s.analysing.delayedHeadline} lines={[s.analysing.delayedDetail]} />
+      ) : (
+        <NoStatus pill={s.analysing.pill} headline={s.analysing.headline} lines={[s.analysing.detail]} />
+      )
     case 'night_unfinished':
       return <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} />
     case 'missed':
@@ -155,7 +171,7 @@ function Card({ state, now }: { state: CardState; now: Date }) {
   }
 }
 
-function StatusCard({ state }: { state: Extract<CardState, { kind: 'status' }> }) {
+function StatusCard({ state, now }: { state: Extract<CardState, { kind: 'status' }>; now: Date }) {
   const { row } = state
   if (row.status === 'none') return null
   const nudge = row.nudge ? c.nudges[row.nudge] : null
@@ -164,7 +180,7 @@ function StatusCard({ state }: { state: Extract<CardState, { kind: 'status' }> }
       <div className="status-row">
         <span className={`pill pill-${row.status}`}>{c.status[row.status]}</span>
         {state.late && <span className="pill pill-neutral">{c.late}</span>}
-        {state.syncedAt && <span className="sync-time">{c.synced(formatTime(state.syncedAt))}</span>}
+        {state.syncedAt && <span className="sync-time">{c.synced(syncWhen(state.syncedAt, now))}</span>}
       </div>
       {row.readings_used === 2 && <p className="caption">{c.partial}</p>}
       <h2 id="card-headline" className="card-headline">

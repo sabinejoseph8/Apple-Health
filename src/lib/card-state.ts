@@ -56,7 +56,8 @@ export interface CardInputs {
 export type CardState =
   | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean }
   | { kind: 'waiting'; lastSync: Date | null }
-  | { kind: 'analysing' }
+  // delayed: the readings arrived a while ago and there is still no status.
+  | { kind: 'analysing'; delayed: boolean }
   | { kind: 'night_unfinished' }
   | { kind: 'missed' }
   | { kind: 'no_sync'; afterNoon: boolean }
@@ -74,6 +75,8 @@ export interface CardModel {
 // A sync after 11:30am is late (R28); after noon there is no status (R29).
 export const LATE_FROM = 11 * 60 + 30
 export const NOON = 12 * 60
+// The status usually follows a sync within a minute or two.
+export const ANALYSING_FOR_MS = 15 * 60 * 1000
 const SCORE_READINGS: Reading[] = ['hrv', 'sleep', 'sleeping_hr']
 const DEFAULT_MIN_VALID = 21
 
@@ -126,7 +129,10 @@ function selectState(i: CardInputs): CardState {
   }
 
   // No status row yet.
-  if (first) return firstAfterNoon ? { kind: 'no_sync', afterNoon: true } : { kind: 'analysing' }
+  if (first) {
+    if (firstAfterNoon) return { kind: 'no_sync', afterNoon: true }
+    return { kind: 'analysing', delayed: i.now.getTime() - first.getTime() > ANALYSING_FOR_MS }
+  }
   if (nowMin < LATE_FROM) return { kind: 'waiting', lastSync: i.lastSync ? time(i.lastSync) : null }
   if (nowMin < NOON) return { kind: 'missed' }
   return { kind: 'no_sync', afterNoon: false }

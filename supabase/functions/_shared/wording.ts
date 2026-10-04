@@ -159,7 +159,8 @@ export const wording = {
     status: { ready: 'Ready', ease_off: 'Ease off', rest: 'Rest' },
     // R35: the link and Why today's title follow the status.
     why: { ready: "Why you're ready today", ease_off: 'Why ease off today', rest: 'Why rest today' },
-    synced: (time: string) => `Updated from your Watch at ${time}`,
+    // "at 6:42am" this morning, or "yesterday at 9:15pm".
+    synced: (when: string) => `Updated from your Watch ${when}`,
     late: 'Late',
     lateNote: 'This sync came after 11:30am, later than usual.',
     partial: 'Based on 2 of 3 readings',
@@ -187,6 +188,8 @@ export const wording = {
       pill: 'Waiting',
       headline: 'Your readings are in',
       detail: "Clarivi is working out today's status. This takes about a minute.",
+      delayedHeadline: "Today's status is taking longer than usual",
+      delayedDetail: "Clarivi has your readings but hasn't worked out today's status yet. If this lasts, contact Sabine.",
     },
     nightUnfinished: {
       pill: 'Sleep in progress',
@@ -308,7 +311,7 @@ export const wording = {
     back: 'Today',
     title: 'Why today',
     noStatus: "There's no status today, so there's nothing to explain yet.",
-    dateLine: (date: string, time: string) => `${date} · updated from your Watch at ${time}`,
+    dateLine: (date: string, when: string) => `${date} · updated from your Watch ${when}`,
     // R36: how many readings were outside the normal range.
     counts: ['None', 'One', 'Two', 'Three'],
     countsLower: ['none', 'one', 'two', 'three'],
@@ -408,6 +411,7 @@ export const wording = {
   // Times in the design's style: "today at 6:42am", "3 Oct at 6:42am".
   time: {
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    at: (time: string) => `at ${time}`,
     todayAt: (time: string) => `today at ${time}`,
     yesterdayAt: (time: string) => `yesterday at ${time}`,
     dayAt: (day: string, time: string) => `${day} at ${time}`,

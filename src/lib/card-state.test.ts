@@ -50,8 +50,9 @@ describe('which card shows (R25 to R32)', () => {
     expect(state.kind).toBe('waiting')
   })
 
-  it('says the readings are in while the status is being worked out', () => {
-    expect(selectCard(inputs({ recentUploads: [upload(at(6, 42))] })).state.kind).toBe('analysing')
+  it('says the readings are in while the status is being worked out, then that it is late', () => {
+    expect(selectCard(inputs({ recentUploads: [upload(at(6, 42))] })).state).toEqual({ kind: 'analysing', delayed: false })
+    expect(selectCard(inputs({ now: at(7, 0), recentUploads: [upload(at(6, 42))] })).state).toEqual({ kind: 'analysing', delayed: true })
   })
 
   it("shows today's status with the time of the sync that completed the night", () => {

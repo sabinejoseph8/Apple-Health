@@ -65,6 +65,20 @@ test.describe('the readiness card on an iPhone', () => {
 test.describe('cards without a status', () => {
   const answered = { checkins: [{ answer: 'good' }] }
 
+  test("starts afresh at midnight, never keeping yesterday's status (R25)", async ({ page }) => {
+    await openApp(page, { at: '2026-09-29T23:59:30-05:00', tables: { ...answered, ...sampleTables }, ticking: true })
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+    await page.clock.fastForward('02:00')
+    await expect(page.getByText('Wednesday 30 September')).toBeVisible()
+    await expect(page.getByRole('heading', { name: wording.states.waiting.headline })).toBeVisible()
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toHaveCount(0)
+  })
+
+  test('says when the status is taking longer than usual', async ({ page }) => {
+    await openApp(page, { at: '2026-09-29T07:10:00-05:00', tables: { ...answered, uploads: [dailySync('2026-09-29T06:42:00-05:00')] } })
+    await expect(page.getByRole('heading', { name: wording.states.analysing.delayedHeadline })).toBeVisible()
+  })
+
   test("waits for this morning's sync, never showing yesterday's status (R25)", async ({ page }) => {
     await openApp(page, { at: MORNING, tables: { ...answered, uploads: [dailySync('2026-09-28T06:51:00-05:00')] } })
     await expect(page.getByRole('heading', { name: wording.states.waiting.headline })).toBeVisible()

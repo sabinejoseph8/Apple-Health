@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bigValue, chartDates, fourWeeksText, rangeText, shortValue, vsNormalText, zoneNumber } from './why'
+import { bigValue, chartDates, fourWeeksText, rangeText, shortValue, totalText, vsNormalText, zoneNumber } from './why'
 
 // The design's sample day, Why today with the numbers open.
 describe('the numbers panel', () => {
@@ -32,6 +32,15 @@ describe('the numbers panel', () => {
     expect(fourWeeksText(nights.map((p, k) => (k === 4 ? { ...p, value: 60 } : p)), 60)).toBe('Your highest night')
     expect(fourWeeksText(nights.map((p, k) => (k === 4 ? { ...p, value: 49 } : p)), 49)).toBe('Lower than 2 of 3 nights')
     expect(fourWeeksText([{ date: '2026-09-29', value: 38 }], 38)).toBeNull()
+  })
+
+  it("never rounds today's total onto a zone's limit", () => {
+    const zones = { ease_off_at: 1.2, rest_at: 2.4 }
+    expect(totalText(1.64, zones)).toBe('1.6')
+    expect(totalText(1.19, zones)).toBe('1.19')
+    expect(totalText(2.38, zones)).toBe('2.38')
+    expect(totalText(1.2, zones)).toBe('1.2')
+    expect(totalText(0.04, zones)).toBe('0.0')
   })
 
   it('writes the zone numbers simply', () => {

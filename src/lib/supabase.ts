@@ -10,3 +10,9 @@ export const configured = Boolean(url && key)
 export const supabase = createClient(url || 'http://localhost', key || 'missing', {
   auth: { persistSession: true, autoRefreshToken: true, storageKey: 'clarivi-auth' },
 })
+
+// A query's rows, or its error thrown, so a failed read never looks empty.
+export function must<T>(result: { data: T; error: unknown }): T {
+  if (result.error) throw result.error
+  return result.data
+}

@@ -3,7 +3,7 @@
 
 import type { Reading } from '../../supabase/functions/_shared/briefing.ts'
 import { type BaselineRow, type CardInputs, importMonthsFrom, type NightRow, type StatusRow, type UploadRow } from './card-state'
-import { supabase } from './supabase'
+import { must, supabase } from './supabase'
 import { localDate } from './when'
 
 export type CheckinAnswer = 'good' | 'okay' | 'off'
@@ -17,16 +17,13 @@ export interface TodayData {
 
 const UPLOAD_COLUMNS = 'received_at, kind, status, error, local_date, night_complete'
 
-function must<T>(result: { data: T; error: unknown }): T {
-  if (result.error) throw result.error
-  return result.data
-}
-
-export async function loadToday(now: Date = new Date()): Promise<TodayData> {
+// Enough to pick a card with a status and its sync time: today's status row,
+// the last few days of uploads and the newest accepted sync. Why today needs
+// only this; the card adds the rest below.
+export async function loadStatusInputs(now: Date): Promise<CardInputs> {
   const today = localDate(now)
   const since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
-
-  const [status, recent, last, backfill, baselines, night, checkin, skipped] = await Promise.all([
+  const [status, recent, last] = await Promise.all([
     supabase.from('daily_status').select('*').eq('date', today).maybeSingle(),
     supabase.from('uploads').select(UPLOAD_COLUMNS).gte('received_at', since).order('received_at', { ascending: false }).limit(200),
     supabase
@@ -37,6 +34,24 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
       .order('received_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+  ])
+  return {
+    now,
+    today,
+    status: must(status) as StatusRow | null,
+    recentUploads: must(recent) as UploadRow[],
+    lastSync: must(last) as UploadRow | null,
+    baselines: [],
+    night: null,
+    minValidNights: {},
+    importMonths: null,
+  }
+}
+
+export async function loadToday(now: Date = new Date()): Promise<TodayData> {
+  const today = localDate(now)
+  const [inputs, backfill, baselines, night, checkin, skipped] = await Promise.all([
+    loadStatusInputs(now),
     supabase.from('uploads').select('month_id, local_date').eq('kind', 'backfill').eq('status', 'accepted').eq('month_complete', true),
     supabase.from('baselines').select('metric, valid_nights, building').eq('night_date', today),
     supabase.from('nights').select('asleep_min, hrv_median, sleeping_hr').eq('night_date', today).maybeSingle(),
@@ -44,11 +59,10 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     supabase.from('usage_events').select('id').eq('event', 'checkin_skipped').eq('meta->>date', today).limit(1),
   ])
 
-  const statusRow = must(status) as StatusRow | null
   // The normals' minimum nights only matter while learning.
   const minValidNights: Partial<Record<Reading, number>> = {}
-  if (statusRow?.no_status_reason === 'learning') {
-    const zones = must(await supabase.rpc('status_zones', { p_version: statusRow.settings_version }).maybeSingle()) as {
+  if (inputs.status?.no_status_reason === 'learning') {
+    const zones = must(await supabase.rpc('status_zones', { p_version: inputs.status.settings_version }).maybeSingle()) as {
       readings: Record<Reading, { min_valid_nights: number }>
     } | null
     for (const [r, v] of Object.entries(zones?.readings ?? {})) minValidNights[r as Reading] = v.min_valid_nights
@@ -56,11 +70,7 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
 
   return {
     inputs: {
-      now,
-      today,
-      status: statusRow,
-      recentUploads: must(recent) as UploadRow[],
-      lastSync: must(last) as UploadRow | null,
+      ...inputs,
       baselines: must(baselines) as BaselineRow[],
       night: must(night) as NightRow | null,
       minValidNights,

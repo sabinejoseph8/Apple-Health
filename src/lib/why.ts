@@ -5,7 +5,7 @@
 
 import { formatDuration, type IllnessCheck, type Reading, type Verdict } from '../../supabase/functions/_shared/briefing.ts'
 import { wording } from '../../supabase/functions/_shared/wording'
-import { supabase } from './supabase'
+import { must, supabase } from './supabase'
 
 const n = wording.why.numbers
 const u = wording.why.units
@@ -54,11 +54,6 @@ export function chartDates(today: string): string[] {
     d.setUTCDate(end.getUTCDate() - (CHART_NIGHTS - 1 - k))
     return d.toISOString().slice(0, 10)
   })
-}
-
-function must<T>(result: { data: T; error: unknown }): T {
-  if (result.error) throw result.error
-  return result.data
 }
 
 export async function loadWhy(today: string, settingsVersion: number): Promise<WhyData> {
@@ -141,6 +136,14 @@ export function fourWeeksText(nights: NightPoint[], last: number): string | null
   const higher = others.filter((v) => v > last).length
   const lower = others.filter((v) => v < last).length
   return higher >= lower ? n.lowerThan(higher, others.length) : n.higherThan(lower, others.length)
+}
+
+// Today's total to one decimal, as designed, unless rounding would carry it
+// onto a zone's limit: a total of 1.19 is Ready and shows as 1.19, not 1.2.
+export function totalText(total: number, zones: { ease_off_at: number; rest_at: number }): string {
+  const one = Math.round(total * 10) / 10
+  const crosses = [zones.ease_off_at, zones.rest_at].some((limit) => total < limit && one >= limit)
+  return crosses ? total.toFixed(2) : one.toFixed(1)
 }
 
 // "1.2", "2.4", "1".

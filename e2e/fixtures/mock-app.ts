@@ -34,9 +34,15 @@ export interface MockApp {
   calls: { name: string; body: unknown }[]
 }
 
-export async function openApp(page: Page, { at, tables, path = '/' }: { at: string; tables: Tables; path?: string }): Promise<MockApp> {
+// The clock is fixed at `at`; with `ticking`, it starts there and the test
+// moves it on with page.clock.fastForward.
+export async function openApp(
+  page: Page,
+  { at, tables, path = '/', ticking = false }: { at: string; tables: Tables; path?: string; ticking?: boolean },
+): Promise<MockApp> {
   const app: MockApp = { calls: [] }
-  await page.clock.setFixedTime(new Date(at))
+  if (ticking) await page.clock.install({ time: new Date(at) })
+  else await page.clock.setFixedTime(new Date(at))
   await page.addInitScript((session) => localStorage.setItem('clarivi-auth', session), JSON.stringify(SESSION))
 
   await page.route('http://127.0.0.1:54321/**', async (route: Route) => {

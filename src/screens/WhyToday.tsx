@@ -1,13 +1,13 @@
 import { useEffect, useId, useState } from 'react'
-import { alsoChecked, type Reading, type ReadingPoints, WHY_ORDER, whySummary } from '../../supabase/functions/_shared/briefing'
+import { alsoChecked, capitalise, type Reading, type ReadingPoints, WHY_ORDER, whySummary } from '../../supabase/functions/_shared/briefing'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { ArrowDownIcon, ArrowUpIcon, HeartIcon, MoonIcon, PulseIcon, TickCircleIcon } from '../components/Icons'
 import MiniChart, { cssName } from '../components/MiniChart'
 import NavBar from '../components/NavBar'
 import { type CardState, selectCard, type StatusRow } from '../lib/card-state'
-import { loadToday, logUsage } from '../lib/today'
-import { dateLine, formatTime } from '../lib/when'
-import { bigValue, fourWeeksText, loadWhy, rangeText, shortValue, vsNormalText, type WhyData, zoneNumber, type Zones } from '../lib/why'
+import { loadStatusInputs, logUsage } from '../lib/today'
+import { dateLine, syncWhen } from '../lib/when'
+import { bigValue, fourWeeksText, loadWhy, rangeText, shortValue, totalText, vsNormalText, type WhyData, zoneNumber, type Zones } from '../lib/why'
 
 const w = wording.why
 const ICONS: Record<Reading, typeof PulseIcon> = { hrv: PulseIcon, sleep: MoonIcon, sleeping_hr: HeartIcon }
@@ -22,10 +22,10 @@ export default function WhyToday() {
   async function load() {
     const now = new Date()
     try {
-      const t = await loadToday(now)
-      const { state } = selectCard({ ...t.inputs, now })
-      const why = state.kind === 'status' ? await loadWhy(t.inputs.today, state.row.settings_version) : null
-      setLoaded({ now, today: t.inputs.today, state, why })
+      const inputs = await loadStatusInputs(now)
+      const { state } = selectCard(inputs)
+      const why = state.kind === 'status' ? await loadWhy(inputs.today, state.row.settings_version) : null
+      setLoaded({ now, today: inputs.today, state, why })
       setFailed(false)
     } catch {
       setFailed(true)
@@ -76,7 +76,7 @@ function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardSta
   const nudge = row.nudge ? wording.card.nudges[row.nudge].action : null
   return (
     <>
-      {state.syncedAt && <p className="caption date-line">{w.dateLine(dateLine(now), formatTime(state.syncedAt))}</p>}
+      {state.syncedAt && <p className="caption date-line">{w.dateLine(dateLine(now), syncWhen(state.syncedAt, now))}</p>}
 
       <section className="card summary" aria-labelledby="why-summary">
         <div className="status-row">
@@ -209,12 +209,11 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
   if (row.status === 'none') return null
   const order = zones?.reading_order?.filter((r) => r in w.names) ?? WHY_ORDER
   const name = (r: Reading) => w.names[r]
-  const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
   return (
     <section className="card decided">
       <p className="body">
-        {d.intro} {order.length === 3 && d.order(capital(name(order[0])), name(order[1]), name(order[2]))} {d.adds[row.status]}
+        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {d.adds[row.status]}
       </p>
       {zones && (
         <>
@@ -235,7 +234,7 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
                     const p = row.points[r]
                     return (
                       <tr key={r}>
-                        <th scope="row">{capital(name(r))}</th>
+                        <th scope="row">{capitalise(name(r))}</th>
                         <td>{p?.counted && p.points !== null ? p.points.toFixed(1) : d.notCounted}</td>
                       </tr>
                     )
@@ -244,7 +243,7 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
                 <tfoot>
                   <tr>
                     <th scope="row">{d.total}</th>
-                    <td>{(row.total ?? 0).toFixed(1)}</td>
+                    <td>{totalText(row.total ?? 0, zones)}</td>
                   </tr>
                 </tfoot>
               </table>

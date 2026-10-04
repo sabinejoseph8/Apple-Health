@@ -1,58 +1,17 @@
 import { expect, test } from '@playwright/test'
 import { wording } from '../supabase/functions/_shared/wording'
 import { sampleDay } from '../src/lib/sample-days'
-import { dailySync, openApp, TZ } from './fixtures/mock-app'
+import { openApp, TZ } from './fixtures/mock-app'
+import { normal, statusRow, synced, TODAY, whyTables } from './fixtures/sample-data'
 
 // The service worker would take requests past the made-up answers.
 test.use({ timezoneId: TZ, serviceWorkers: 'block' })
 
-// The design's sample day, with four weeks of made-up nights around the
-// design's normals, ending with last night (HRV 38, sleep 5h 52m, 51 bpm).
-const TODAY = '2026-09-29'
-const dates = Array.from({ length: 28 }, (_, k) => {
-  const d = new Date(Date.UTC(2026, 8, 2 + k, 12))
-  return d.toISOString().slice(0, 10)
-})
-const nights = dates.map((night_date, k) =>
-  k === 27
-    ? { night_date, asleep_min: 352, hrv_median: 38, sleeping_hr: 51 }
-    : { night_date, asleep_min: 430 + ((k * 13) % 50) - 25, hrv_median: 52 + ((k * 7) % 12) - 6, sleeping_hr: 50 + ((k * 3) % 5) - 2 },
-)
-const normal = (metric: string, median: number, spread: number) => ({
-  night_date: TODAY,
-  metric,
-  median_28: median,
-  range_low: median - 2 * spread,
-  range_high: median + 2 * spread,
-  valid_nights: 42,
-  building: false,
-})
 const tables = {
-  daily_status: [{ ...sampleDay, date: TODAY, no_status_reason: null, settings_version: 2 }],
-  uploads: [dailySync('2026-09-29T06:42:00-05:00')],
+  daily_status: [statusRow],
+  uploads: synced,
   checkins: [{ answer: 'okay' }],
-  nights,
-  baselines: [normal('hrv', 52, 6), normal('sleep', 430, 34), normal('sleeping_hr', 50, 2.5)],
-  insights: [
-    { date: TODAY, module: 'also_checked', metric: 'resp_rate', value: 14.8, severity: 'in_range' },
-    { date: TODAY, module: 'also_checked', metric: 'resting_hr', value: 55, severity: 'in_range' },
-    { date: TODAY, module: 'illness_check', metric: 'pattern', value: 0, severity: 'clear' },
-  ],
-  'rpc/status_zones': [
-    {
-      version: 2,
-      ease_off_at: 1.2,
-      rest_at: 2.4,
-      window_nights: 42,
-      min_valid_nights: 21,
-      reading_order: ['hrv', 'sleeping_hr', 'sleep'],
-      readings: {
-        hrv: { window_nights: 42, min_valid_nights: 21 },
-        sleep: { window_nights: 42, min_valid_nights: 21 },
-        sleeping_hr: { window_nights: 42, min_valid_nights: 21 },
-      },
-    },
-  ],
+  ...whyTables,
 }
 
 test.describe('Why today on an iPhone', () => {

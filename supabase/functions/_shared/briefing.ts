@@ -53,7 +53,7 @@ export function kindOf(reading: Reading, p: ReadingPoints | undefined): Kind {
 
 const b = wording.briefing
 
-function capitalise(s: string): string {
+export function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
