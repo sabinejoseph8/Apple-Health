@@ -123,3 +123,21 @@ export function HeartIcon(props: IconProps) {
     </Svg>
   )
 }
+
+export function BellIcon(props: IconProps) {
+  return (
+    <Svg size={16} {...props}>
+      <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z" />
+      <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+    </Svg>
+  )
+}
+
+export function DashCircleIcon(props: IconProps) {
+  return (
+    <Svg size={16} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12h8" />
+    </Svg>
+  )
+}

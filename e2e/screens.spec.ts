@@ -5,7 +5,7 @@ import { MORNING, statusRow, synced, TODAY, whyTables } from './fixtures/sample-
 
 // Screenshots of every card state on made-up data, for review against the
 // design. Skipped unless asked for: SCREENS=1 npx playwright test e2e/screens.spec.ts
-// They land in test-results/screens/ (never committed).
+// They land in screenshots/ (never committed).
 test.skip(!process.env.SCREENS, 'screenshots only on request')
 test.use({ timezoneId: TZ, serviceWorkers: 'block', viewport: { width: 390, height: 763 } })
 
@@ -38,22 +38,45 @@ for (const [name, at, tables] of shots) {
   test(name, async ({ page }) => {
     await openApp(page, { at, tables })
     await page.locator(name === '01-check-in' ? '.checkin' : '.list-row').waitFor()
-    await page.screenshot({ path: `test-results/screens/${name}.png` })
+    await page.screenshot({ path: `screenshots/${name}.png` })
   })
 }
 
 test('03-why-today and 04-why-today-numbers-open', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced, ...why }, path: '/#/why' })
   await page.locator('.decided').waitFor()
-  await page.screenshot({ path: 'test-results/screens/03-why-today.png', fullPage: true })
+  await page.screenshot({ path: 'screenshots/03-why-today.png', fullPage: true })
   await page.locator('.reading-hrv .text-link').click()
   await page.locator('.decided .text-link').click()
-  await page.screenshot({ path: 'test-results/screens/04-why-today-numbers-open.png', fullPage: true })
+  await page.screenshot({ path: 'screenshots/04-why-today-numbers-open.png', fullPage: true })
+})
+
+// Phase 4: the 8pm question on a change day, and yesterday's the next morning.
+const shownEaseOff = [{ date: TODAY, nudge: 'train_easy', shown_at: '2026-09-29T11:44:00Z' }]
+test('16-card-8pm-question and 17-card-8pm-answered', async ({ page }) => {
+  await openApp(page, { at: '2026-09-29T20:00:00-05:00', tables: { ...answered, daily_status: [row], uploads: synced, shown_status: shownEaseOff } })
+  await page.locator('.follow-through').waitFor()
+  await page.screenshot({ path: 'screenshots/16-card-8pm-question.png' })
+  await page.getByRole('button', { name: 'Yes', exact: true }).click()
+  await page.locator('.follow-recorded').waitFor()
+  await page.screenshot({ path: 'screenshots/17-card-8pm-answered.png' })
+})
+
+test('18-next-morning-question', async ({ page }) => {
+  await openApp(page, { at: '2026-09-30T07:00:00-05:00', tables: { shown_status: shownEaseOff } })
+  await page.locator('.follow-through').waitFor()
+  await page.screenshot({ path: 'screenshots/18-next-morning-question.png' })
+})
+
+test('19-card-notification-failed', async ({ page }) => {
+  await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced, notifications: [{ kind: 'morning', status: 'failed' }] } })
+  await page.locator('.list-row').waitFor()
+  await page.screenshot({ path: 'screenshots/19-card-notification-failed.png', fullPage: true })
 })
 
 test('15-settings', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: answered, path: '/#/settings' })
   await page.locator('.nav-title').waitFor()
   await page.waitForTimeout(500)
-  await page.screenshot({ path: 'test-results/screens/15-settings.png' })
+  await page.screenshot({ path: 'screenshots/15-settings.png' })
 })

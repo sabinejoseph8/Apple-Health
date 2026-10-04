@@ -46,6 +46,8 @@ export const wording = {
     on: 'Notifications are on for this device.',
     devices: (n: number) => (n === 1 ? '1 device gets your notifications.' : `${n} devices get your notifications.`),
     sendTest: 'Send a test notification in 15 seconds',
+    lastDelivered: (when: string) => `Last notification delivered ${when}.`,
+    noneDelivered: 'No notifications delivered yet.',
     testScheduled: 'Sending in 15 seconds. You can lock your phone now.',
     failed: "That didn't work. Check your connection and try again.",
   },
@@ -173,6 +175,35 @@ export const wording = {
     },
     loadFailed: "Couldn't load today's card. Check your connection and try again.",
     retry: 'Try again',
+  },
+
+  // Did you follow today's nudge? From 8pm on change days, and the next
+  // morning until noon if unanswered (R52 to R56, D67, D68).
+  followThrough: {
+    label: "Today's nudge",
+    yesterdayLabel: "Yesterday's nudge",
+    question: 'Did you follow it?',
+    yes: 'Yes',
+    no: 'No',
+    hint: 'You can change your answer until tomorrow morning',
+    yesterdayHint: 'You can answer until noon.',
+    followed: 'Recorded: you followed it',
+    notFollowed: "Recorded: you didn't follow it",
+    change: 'Change',
+    notNow: 'Not now',
+    failed: "Your answer didn't save. Check your connection and try again.",
+    showBriefing: "Show this morning's briefing",
+    hideBriefing: "Hide this morning's briefing",
+  },
+
+  // When notifications are off or failing (R34).
+  notificationHealth: {
+    offHeadline: 'Notifications are off on this phone',
+    off: 'Turn them on in Settings to get your status each morning.',
+    blockedHeadline: 'Notifications are turned off for Clarivi',
+    failingHeadline: "Your last notification didn't arrive",
+    failing: 'Open Settings to check notifications are on for this phone.',
+    settings: 'Open Settings',
   },
 
   // Cards without a status (R25 to R32), and notices that sit on any card

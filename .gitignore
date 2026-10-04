@@ -59,3 +59,9 @@ __pycache__/
 
 # Playwright MCP browser output (local screenshots and snapshots)
 .playwright-mcp/
+
+# Screenshots for review (SCREENS=1 npx playwright test e2e/screens.spec.ts)
+screenshots/
+
+# Deno writes a lock file on some commands; the tests run without one.
+deno.lock
