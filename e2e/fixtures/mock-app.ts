@@ -49,9 +49,24 @@ export async function openApp(page: Page, { at, tables, path = '/' }: { at: stri
       const rows = tables[name]
       return rows ? json(rows) : route.fulfill({ status: 204 })
     }
-    // Import progress asks for months; everything else gets the table's rows.
+    // Import progress asks for months; everything else gets the table's rows,
+    // narrowed by simple filters on the columns the made-up rows have.
     const select = url.searchParams.get('select') ?? ''
-    let rows = (select.includes('month_id') ? tables['uploads:months'] : tables[name]) ?? []
+    let rows = ((select.includes('month_id') ? tables['uploads:months'] : tables[name]) ?? []) as Record<string, unknown>[]
+    for (const [column, filter] of url.searchParams) {
+      if (['select', 'order', 'limit', 'offset'].includes(column)) continue
+      const [op, ...rest] = filter.split('.')
+      const want = rest.join('.')
+      rows = rows.filter((row) => {
+        if (!(column in row)) return true
+        const have = String(row[column])
+        if (op === 'eq') return have === want
+        if (op === 'gte') return have >= want
+        if (op === 'lte') return have <= want
+        if (op === 'in') return want.replace(/[()"]/g, '').split(',').includes(have)
+        return true
+      })
+    }
     const limit = url.searchParams.get('limit')
     if (limit) rows = rows.slice(0, Number(limit))
     return json(rows)

@@ -153,7 +153,21 @@ const upload = (extra) => ({
   local_date: today, sample_count: 1200, duplicate_count: 0, night_complete: true, status: 'accepted', ...extra,
 })
 
-if (['sample', 'ready', 'partial'].includes(state)) await insert('daily_status', [statusRow(TONIGHT[state])])
+if (['sample', 'ready', 'partial'].includes(state)) {
+  await insert('daily_status', [statusRow(TONIGHT[state])])
+  // "Also checked": breathing rate and yesterday's resting heart rate, and the illness check.
+  const also = (metric) => {
+    const v = TONIGHT[state][metric]
+    const b = NORMALS[metric]
+    const verdict = v === null ? 'missing' : v < b.median - 2 * b.spread ? 'below' : v > b.median + 2 * b.spread ? 'above' : 'in_range'
+    return { user_id: uid, date: today, module: 'also_checked', metric, value: v, baseline: b.median, deviation: v === null ? null : (v - b.median) / b.spread, severity: verdict, explanation_code: `${metric}_${verdict}`, payload: {} }
+  }
+  await insert('insights', [
+    also('resp_rate'),
+    also('resting_hr'),
+    { user_id: uid, date: today, module: 'illness_check', metric: 'pattern', value: 0, severity: 'clear', explanation_code: 'no_pattern', payload: { inputs: ['sleeping_hr', 'hrv', 'resp_rate', 'resting_hr'], moved: [] } },
+  ])
+}
 if (state === 'learning') await insert('daily_status', [none('learning')])
 if (state === 'not-enough') await insert('daily_status', [none('not_enough_data', 1)])
 if (state === 'unfinished') await insert('daily_status', [none('night_unfinished')])

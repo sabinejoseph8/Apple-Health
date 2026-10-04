@@ -98,3 +98,28 @@ export function TickCircleIcon(props: IconProps) {
     </Svg>
   )
 }
+
+// The three readings' icons, shown in each reading's colour.
+export function PulseIcon(props: IconProps) {
+  return (
+    <Svg size={16} {...props}>
+      <path d="M2.5 12.5h4l2.2-5.5 4 11 2.6-7 1.4 1.5h4.8" />
+    </Svg>
+  )
+}
+
+export function MoonIcon(props: IconProps) {
+  return (
+    <Svg size={16} {...props}>
+      <path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z" />
+    </Svg>
+  )
+}
+
+export function HeartIcon(props: IconProps) {
+  return (
+    <Svg size={16} {...props}>
+      <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z" />
+    </Svg>
+  )
+}

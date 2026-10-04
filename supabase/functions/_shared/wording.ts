@@ -306,6 +306,8 @@ export const wording = {
   // Why today (R35 to R43).
   why: {
     back: 'Today',
+    title: 'Why today',
+    noStatus: "There's no status today, so there's nothing to explain yet.",
     dateLine: (date: string, time: string) => `${date} · updated from your Watch at ${time}`,
     // R36: how many readings were outside the normal range.
     counts: ['None', 'One', 'Two', 'Three'],
@@ -334,7 +336,7 @@ export const wording = {
     },
     units: { hrv: 'ms', sleeping_hr: 'bpm', hours: 'hr', minutes: 'min' },
     // "7h 10m"
-    duration: (h: number, m: number) => (h === 0 ? `${m}m` : `${h}h ${m}m`),
+    duration: (h: number, m: number) => (h === 0 ? `${m}m` : `${h}h ${String(m).padStart(2, '0')}m`),
     normalForYou: 'Normal for you',
     verdicts: {
       below: 'Below your normal range',
