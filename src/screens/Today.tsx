@@ -3,7 +3,7 @@ import { briefing, headline, learningLastNight } from '../../supabase/functions/
 import { wording } from '../../supabase/functions/_shared/wording'
 import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
-import { BellIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
+import { BellIcon, CalendarIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
@@ -17,7 +17,7 @@ import {
   submitFollowThrough,
   type TodayData,
 } from '../lib/today'
-import { formatWhen, localDate, syncWhen } from '../lib/when'
+import { formatWhen, localDate, nextDigestDay, shortDate, syncWhen } from '../lib/when'
 import CheckIn from './CheckIn'
 
 const c = wording.card
@@ -197,6 +197,7 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
           {model.importMonths !== null && <p className="caption aside">{wording.sync.importProgress(model.importMonths)}</p>}
           <section className="list-card">
             <CheckinRow answer={data.checkin} onOpen={() => setCheckin('later')} />
+            <DigestRow latest={data.latestDigest} now={now} />
           </section>
         </>
       )}
@@ -276,7 +277,6 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
           {unfolded ? wording.followThrough.hideBriefing : wording.followThrough.showBriefing}
         </button>
       )}
-      {state.late && showBriefing && <p className="caption">{c.lateNote}</p>}
       {nudge && (
         <div className={`nudge nudge-${row.status}`}>
           <p className="eyebrow">{c.nudgeLabel}</p>
@@ -376,11 +376,34 @@ function RejectedNotice({ kind }: { kind: 'token' | 'other' }) {
   )
 }
 
+// "Weekly digest" with the latest week, or when the first one comes (R20, R57, R58).
+function DigestRow({ latest, now }: { latest: TodayData['latestDigest']; now: Date }) {
+  const d = wording.digest
+  const detail = latest
+    ? d.rangeShort(shortDate(latest.week_start), shortDate(latest.week_end))
+    : d.firstShort(shortDate(localDate(nextDigestDay(now))))
+  return (
+    <a
+      className="list-row digest-row"
+      href="#/digest"
+      onClick={(e) => {
+        e.preventDefault()
+        go('digest')
+      }}
+    >
+      <CalendarIcon className="row-icon" />
+      <span className="row-text">{d.row}</span>
+      <span className="row-detail">{detail}</span>
+      <ChevronRightIcon className="chevron" />
+    </a>
+  )
+}
+
 // "You said you feel okay today" with Change, or a prompt after Skip (R17, R18).
 function CheckinRow({ answer, onOpen }: { answer: CheckinAnswer | null; onOpen: () => void }) {
   const w = wording.checkin
   return (
-    <div className="list-row">
+    <div className="list-row checkin-row">
       <FaceIcon answer={answer} className="row-icon" />
       <span className="row-text">
         {answer ? (

@@ -16,6 +16,11 @@
   .venv/bin/python scripts/reference/owner_data.py change-password
       Sets a new Clarivi password (run it in the Mac's Terminal app).
 
+  .venv/bin/python scripts/reference/owner_data.py reset-password [--local]
+      Gives a tester a new temporary password (R63, D74). Asks for their
+      email, then the temporary password twice (hidden; run it in the Mac's
+      Terminal app). At their next sign-in they must choose their own.
+
 private/events.csv has one line per event, a range for several days:
   date,end_date,type,note
   2026-02-03,2026-02-06,illness,cold
@@ -185,12 +190,43 @@ def change_password() -> None:
     print('Password changed. If your iPhone asks, sign in there with the new one.')
 
 
+def reset_password(local: bool) -> None:
+    """Resets a tester's password to a temporary one, through the
+    owner-only owner-reset-password function, signed in as you. The
+    secret key never leaves the server (D74). Nothing typed is printed."""
+    if local:
+        env = api.local_env()
+        url, key = env['API_URL'], env['PUBLISHABLE_KEY']
+    else:
+        env = api.live_env()
+        url, key = env['SUPABASE_URL'], env['SUPABASE_PUBLISHABLE_KEY']
+    headers = api.owner_session(url, key)
+    email = input("The tester's email: ").strip()
+    temporary = getpass.getpass('A temporary password for them, at least 12 characters (hidden): ')
+    if len(temporary) < 12:
+        raise SystemExit('Use at least 12 characters.')
+    if getpass.getpass('Type it again (hidden): ') != temporary:
+        raise SystemExit('The two passwords differ. Nothing changed.')
+    status, body = api.call(f'{url}/functions/v1/owner-reset-password', headers, 'POST', {'email': email, 'password': temporary})
+    messages = {
+        'not_found': 'No Clarivi account has that email. Nothing changed.',
+        'own_account': 'That is your own account. Change your password in Settings instead.',
+        'not_owner': 'Only the owner can reset passwords.',
+    }
+    if status != 200:
+        error = body.get('error') if isinstance(body, dict) else ''
+        raise SystemExit(messages.get(error, f'The password was not reset ({status}).'))
+    print('Done. Give them the temporary password; at their next sign-in they choose their own.')
+
+
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else ''
     if cmd == 'workouts-from-export':
         workouts_from_export()
     elif cmd == 'change-password':
         change_password()
+    elif cmd == 'reset-password':
+        reset_password('--local' in sys.argv)
     elif cmd in ('load-events', 'load-workouts'):
         load(cmd.split('-')[1], '--local' in sys.argv)
     else:

@@ -29,7 +29,7 @@ test.describe('the readiness card on an iPhone', () => {
     await expect(page.getByRole('heading', { name: "A short night, and your body hasn't fully recovered" })).toBeVisible()
     await expect(page.getByText('Train easy today')).toBeVisible()
     await expect(page.getByRole('link', { name: 'Why ease off today' })).toBeVisible()
-    await expect(page.locator('.list-row')).toContainText('You said you feel okay today')
+    await expect(page.locator('.checkin-row')).toContainText('You said you feel okay today')
 
     // The answer was saved for today, before the status was seen (R18).
     expect(app.calls.find((c) => c.name === 'submit_checkin')?.body).toEqual({ p_date: '2026-09-29', p_answer: 'okay', p_status_seen: false })
@@ -44,13 +44,13 @@ test.describe('the readiness card on an iPhone', () => {
     const app = await openApp(page, { at: MORNING, tables: sampleTables })
     await page.getByRole('button', { name: wording.checkin.skip }).click()
     await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
-    await expect(page.locator('.list-row')).toContainText(wording.checkin.question)
+    await expect(page.locator('.checkin-row')).toContainText(wording.checkin.question)
     expect(app.calls.find((c) => c.name === 'log_usage')?.body).toEqual({ p_event: 'checkin_skipped', p_meta: { date: '2026-09-29' } })
 
     // Answering later records that the status had already been seen.
     await page.getByRole('button', { name: wording.checkin.answer }).click()
     await page.getByRole('button', { name: wording.checkin.answers.off }).click()
-    await expect(page.locator('.list-row')).toContainText('You said you feel off today')
+    await expect(page.locator('.checkin-row')).toContainText('You said you feel off today')
     expect(app.calls.find((c) => c.name === 'submit_checkin')?.body).toEqual({ p_date: '2026-09-29', p_answer: 'off', p_status_seen: true })
   })
 
@@ -154,7 +154,7 @@ test.describe('one screen in the morning', () => {
   ] as const) {
     test(`fits without scrolling: ${name}`, async ({ page }) => {
       await openApp(page, { at: '2026-09-29T11:55:00-05:00', tables: { daily_status: [row], uploads: [dailySync(sync)], checkins: [{ answer: 'okay' }] } })
-      await expect(page.locator('.list-row')).toBeVisible()
+      await expect(page.locator('.checkin-row')).toBeVisible()
       const overflow = await page.evaluate(() => ({
         down: document.documentElement.scrollHeight - window.innerHeight,
         across: document.documentElement.scrollWidth - window.innerWidth,

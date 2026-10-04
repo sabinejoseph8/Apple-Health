@@ -8,6 +8,7 @@ import io
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -103,3 +104,43 @@ class OwnerData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ResetPassword(unittest.TestCase):
+    """The reset-password command sends the email and temporary password to
+    the owner-only function and turns its refusals into plain messages."""
+
+    def run_reset(self, status, body, typed=('temporary-pass-1234', 'temporary-pass-1234')):
+        sent = {}
+        answers = iter(typed)
+        saved = (owner_data.api.live_env, owner_data.api.owner_session, owner_data.api.call, owner_data.getpass.getpass)
+        owner_data.api.live_env = lambda: {'SUPABASE_URL': 'https://project.example', 'SUPABASE_PUBLISHABLE_KEY': 'pk'}
+        owner_data.api.owner_session = lambda url, key: {'Authorization': 'Bearer made-up'}
+        def call(url, headers, method, payload):
+            sent.update(url=url, method=method, payload=payload)
+            return status, body
+        owner_data.api.call = call
+        owner_data.getpass.getpass = lambda prompt: next(answers)
+        try:
+            with unittest.mock.patch('builtins.input', return_value='Tester@Example.test '), redirect_stdout(io.StringIO()) as out:
+                owner_data.reset_password(local=False)
+            return sent, out.getvalue()
+        finally:
+            owner_data.api.live_env, owner_data.api.owner_session, owner_data.api.call, owner_data.getpass.getpass = saved
+
+    def test_sends_email_and_temporary_password(self):
+        sent, out = self.run_reset(200, {'ok': True})
+        self.assertEqual(sent['url'], 'https://project.example/functions/v1/owner-reset-password')
+        self.assertEqual(sent['payload'], {'email': 'Tester@Example.test', 'password': 'temporary-pass-1234'})
+        self.assertIn('Done.', out)
+        self.assertNotIn('temporary-pass-1234', out)
+
+    def test_unknown_email_says_so(self):
+        with self.assertRaises(SystemExit) as stop:
+            self.run_reset(404, {'error': 'not_found'})
+        self.assertIn('No Clarivi account has that email', str(stop.exception))
+
+    def test_mismatched_passwords_change_nothing(self):
+        with self.assertRaises(SystemExit) as stop:
+            self.run_reset(200, {'ok': True}, typed=('temporary-pass-1234', 'temporary-pass-9999'))
+        self.assertIn('Nothing changed', str(stop.exception))

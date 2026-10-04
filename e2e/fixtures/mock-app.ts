@@ -32,6 +32,8 @@ export type Tables = Partial<Record<string, unknown[]>>
 export interface MockApp {
   // Every call the app made to a database function, in order.
   calls: { name: string; body: unknown }[]
+  // Every table the app read, in order.
+  reads: string[]
 }
 
 // The clock is fixed at `at`; with `ticking`, it starts there and the test
@@ -40,7 +42,7 @@ export async function openApp(
   page: Page,
   { at, tables, path = '/', ticking = false }: { at: string; tables: Tables; path?: string; ticking?: boolean },
 ): Promise<MockApp> {
-  const app: MockApp = { calls: [] }
+  const app: MockApp = { calls: [], reads: [] }
   if (ticking) await page.clock.install({ time: new Date(at) })
   else await page.clock.setFixedTime(new Date(at))
   await page.addInitScript((session) => localStorage.setItem('clarivi-auth', session), JSON.stringify(SESSION))
@@ -48,13 +50,30 @@ export async function openApp(
   await page.route('http://127.0.0.1:54321/**', async (route: Route) => {
     const url = new URL(route.request().url())
     const json = (body: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
+    // Signing in again gives a session; signing out (anywhere) succeeds.
+    if (url.pathname === '/auth/v1/token') {
+      app.calls.push({ name: 'auth:sign-in', body: null })
+      return json(SESSION)
+    }
+    if (url.pathname === '/auth/v1/logout') {
+      app.calls.push({ name: `auth:sign-out:${url.searchParams.get('scope') ?? 'local'}`, body: null })
+      return route.fulfill({ status: 204 })
+    }
     if (url.pathname.startsWith('/auth/v1/')) return json(USER)
+    // Server functions: "fn/<name>" in the tables gives the reply, else ok.
+    if (url.pathname.startsWith('/functions/v1/')) {
+      const fn = url.pathname.replace('/functions/v1/', '')
+      app.calls.push({ name: `fn:${fn}`, body: route.request().postDataJSON() })
+      const reply = (tables[`fn/${fn}`] as { status: number; body: unknown }[] | undefined)?.shift()
+      return json(reply?.body ?? { ok: true }, reply?.status ?? 200)
+    }
     const name = url.pathname.replace('/rest/v1/', '')
     if (name.startsWith('rpc/')) {
       app.calls.push({ name: name.slice(4), body: route.request().postDataJSON() })
       const rows = tables[name]
       return rows ? json(rows) : route.fulfill({ status: 204 })
     }
+    app.reads.push(name)
     // Import progress asks for months; everything else gets the table's rows,
     // narrowed by simple filters on the columns the made-up rows have.
     const select = url.searchParams.get('select') ?? ''
