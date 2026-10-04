@@ -2,10 +2,21 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { briefing, headline, learningLastNight } from '../../supabase/functions/_shared/briefing'
 import { wording } from '../../supabase/functions/_shared/wording'
 import AppHeader from '../components/AppHeader'
-import { ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
+import FollowThroughCard from '../components/FollowThroughCard'
+import { BellIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
+import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
+import type { PushSupport } from '../lib/push'
 import { go } from '../lib/route'
-import { type CheckinAnswer, loadToday, logUsage, submitCheckin, type TodayData } from '../lib/today'
+import {
+  type CheckinAnswer,
+  loadToday,
+  logUsage,
+  recordShown,
+  submitCheckin,
+  submitFollowThrough,
+  type TodayData,
+} from '../lib/today'
 import { formatWhen, localDate, syncWhen } from '../lib/when'
 import CheckIn from './CheckIn'
 
@@ -15,13 +26,23 @@ const s = wording.states
 // While a sync could arrive at any moment, the card checks again each minute.
 const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed']
 
-// The readiness card: the app's home (R20 to R34).
-export default function Today() {
+// This phone's notifications: whether they can work here and are on (R34).
+export interface PushState {
+  support: PushSupport
+  subscribed: boolean
+}
+
+// The readiness card: the app's home (R20 to R34), with the 8pm question on
+// change days and yesterday's unanswered question the next morning (R52 to R56).
+export default function Today({ push, fromFollowUp }: { push: PushState | null; fromFollowUp: boolean }) {
   const [data, setData] = useState<TodayData | null>(null)
   const [failed, setFailed] = useState(false)
   const [now, setNow] = useState(() => new Date())
   // The check-in screen: shown first each day, or opened from the card.
   const [checkin, setCheckin] = useState<'first' | 'later' | null>(null)
+  // Yesterday's unanswered question, asked before today's check-in (D68).
+  const [askingYesterday, setAskingYesterday] = useState(false)
+  const yesterdayDone = useRef<string | null>(null)
   const logged = useRef(new Set<string>())
   // The check-in answered or skipped on this phone today, so a reload that
   // started before the server had it never asks again or shows it unanswered.
@@ -40,7 +61,10 @@ export default function Today() {
       setNow(at)
       setData(d)
       setFailed(false)
-      // The first open of the day asks how you feel before the status (R16).
+      // The next morning asks about yesterday first (R55, D68), then how
+      // you feel, both before today's status (R16).
+      const y = d.follow.yesterday
+      if (askYesterday(at, y) && y && yesterdayDone.current !== y.date) setAskingYesterday(true)
       if (!d.checkin && !d.skipped) setCheckin((open) => open ?? 'first')
     } catch {
       if (mine === loads.current) setFailed(true)
@@ -70,14 +94,39 @@ export default function Today() {
     return () => window.clearInterval(timer)
   }, [kind, shownDay, load])
 
-  // Each card view is logged once per kind of card, never with health values (R43).
+  // Each card view is logged once per kind of card, never with health values
+  // (R43); a card showing a status also records what it showed (D61).
+  const onCard = !checkin && !askingYesterday
   useEffect(() => {
-    if (!data || !kind || checkin) return
+    if (!data || !kind || !onCard) return
     const key = `${data.inputs.today}:${kind}`
     if (logged.current.has(key)) return
     logged.current.add(key)
     logUsage('card_view', { date: data.inputs.today, status_shown: kind === 'status', state: kind })
-  }, [data, kind, checkin])
+    if (kind === 'status') recordShown(data.inputs.today)
+  }, [data, kind, onCard])
+
+  // Today's change day: as shown, or from the status the card shows now,
+  // which the card records as shown (D61).
+  const row = model?.state.kind === 'status' ? model.state.row : null
+  const followToday: FollowDay | null =
+    data?.follow.today ?? (row?.nudge && row.nudge !== 'train_as_planned' ? { date: row.date, nudge: row.nudge, answer: null } : null)
+  const evening = row !== null && askTonight(now, followToday)
+
+  async function answerFollow(day: 'today' | 'yesterday', date: string, a: FollowAnswer) {
+    // From the 8pm notification, the card after 8pm, or the next morning (R56).
+    await submitFollowThrough(date, a, day === 'yesterday' ? 'next_morning' : fromFollowUp ? 'push' : 'card')
+    setData((d) => {
+      if (!d) return d
+      const base = d.follow[day] ?? (day === 'today' ? followToday : null)
+      return base ? { ...d, follow: { ...d.follow, [day]: { ...base, answer: a } } } : d
+    })
+  }
+
+  function doneYesterday() {
+    yesterdayDone.current = data?.follow.yesterday?.date ?? null
+    setAskingYesterday(false)
+  }
 
   async function answer(a: CheckinAnswer) {
     if (!data) return
@@ -109,11 +158,38 @@ export default function Today() {
           </button>
         </section>
       )}
-      {data && model && checkin && <CheckIn mode={checkin} onAnswer={answer} onSkip={skip} onCancel={() => setCheckin(null)} />}
-      {data && model && !checkin && (
+      {data && model && askingYesterday && data.follow.yesterday && (
+        <>
+          <FollowThroughCard
+            label={wording.followThrough.yesterdayLabel}
+            action={c.nudges[data.follow.yesterday.nudge].action}
+            answer={null}
+            hint={wording.followThrough.yesterdayHint}
+            onAnswer={async (a) => {
+              await answerFollow('yesterday', data.follow.yesterday!.date, a)
+              doneYesterday()
+            }}
+          />
+          <button className="text-button" type="button" onClick={doneYesterday}>
+            {wording.followThrough.notNow}
+          </button>
+        </>
+      )}
+      {data && model && !askingYesterday && checkin && <CheckIn mode={checkin} onAnswer={answer} onSkip={skip} onCancel={() => setCheckin(null)} />}
+      {data && model && onCard && (
         <>
           {model.rejected && <RejectedNotice kind={model.rejected} />}
-          <Card state={model.state} now={now} />
+          {evening && followToday && (
+            <FollowThroughCard
+              label={wording.followThrough.label}
+              action={c.nudges[followToday.nudge].action}
+              answer={followToday.answer}
+              hint={wording.followThrough.hint}
+              onAnswer={(a) => answerFollow('today', followToday.date, a)}
+            />
+          )}
+          <Card state={model.state} now={now} folded={evening} />
+          <NotificationHealth push={push} lastFailed={data.lastNotification?.status === 'failed'} />
           {model.importMonths !== null && <p className="caption aside">{wording.sync.importProgress(model.importMonths)}</p>}
           <section className="list-card">
             <CheckinRow answer={data.checkin} onOpen={() => setCheckin('later')} />
@@ -124,10 +200,10 @@ export default function Today() {
   )
 }
 
-function Card({ state, now }: { state: CardState; now: Date }) {
+function Card({ state, now, folded }: { state: CardState; now: Date; folded: boolean }) {
   switch (state.kind) {
     case 'status':
-      return <StatusCard state={state} now={now} />
+      return <StatusCard state={state} now={now} folded={folded} />
     case 'waiting':
       return (
         <NoStatus
@@ -171,10 +247,14 @@ function Card({ state, now }: { state: CardState; now: Date }) {
   }
 }
 
-function StatusCard({ state, now }: { state: Extract<CardState, { kind: 'status' }>; now: Date }) {
+// From 8pm on a change day the briefing folds to its headline and the nudge
+// block is left out, as the question above repeats it (R53).
+function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 'status' }>; now: Date; folded: boolean }) {
+  const [unfolded, setUnfolded] = useState(false)
   const { row } = state
   if (row.status === 'none') return null
-  const nudge = row.nudge ? c.nudges[row.nudge] : null
+  const nudge = row.nudge && !folded ? c.nudges[row.nudge] : null
+  const showBriefing = !folded || unfolded
   return (
     <section className="card briefing" aria-labelledby="card-headline">
       <div className="status-row">
@@ -186,8 +266,13 @@ function StatusCard({ state, now }: { state: Extract<CardState, { kind: 'status'
       <h2 id="card-headline" className="card-headline">
         {headline(row)}
       </h2>
-      <p className="body">{briefing(row).join(' ')}</p>
-      {state.late && <p className="caption">{c.lateNote}</p>}
+      {showBriefing && <p className="body">{briefing(row).join(' ')}</p>}
+      {folded && (
+        <button className="text-link" type="button" aria-expanded={unfolded} onClick={() => setUnfolded(!unfolded)}>
+          {unfolded ? wording.followThrough.hideBriefing : wording.followThrough.showBriefing}
+        </button>
+      )}
+      {state.late && showBriefing && <p className="caption">{c.lateNote}</p>}
       {nudge && (
         <div className={`nudge nudge-${row.status}`}>
           <p className="eyebrow">{c.nudgeLabel}</p>
@@ -225,6 +310,43 @@ function NoStatus({ pill, headline, lines }: { pill: string; headline: string; l
           {line}
         </p>
       ))}
+    </section>
+  )
+}
+
+// When notifications are off on this phone or the last one failed, say so
+// and how to turn them back on (R34). Nothing while they can't work here
+// (outside the Home Screen app); Settings explains that.
+function NotificationHealth({ push, lastFailed }: { push: PushState | null; lastFailed: boolean }) {
+  const h = wording.notificationHealth
+  if (!push) return null
+  const off = push.support === 'ready' && !push.subscribed
+  const blocked = push.support === 'blocked'
+  if (!off && !blocked && !lastFailed) return null
+  const head = blocked ? h.blockedHeadline : off ? h.offHeadline : h.failingHeadline
+  const body = blocked ? wording.notifications.blocked : off ? h.off : h.failing
+  return (
+    <section className="card notice" role="status" aria-labelledby="notify-headline">
+      <div className="notice-title">
+        <BellIcon className="notice-icon" />
+        <h2 id="notify-headline" className="emphasis">
+          {head}
+        </h2>
+      </div>
+      <p className="body">{body}</p>
+      {!blocked && (
+        <a
+          className="link-row"
+          href="#/settings"
+          onClick={(e) => {
+            e.preventDefault()
+            go('settings')
+          }}
+        >
+          <span>{h.settings}</span>
+          <ChevronRightIcon className="chevron" />
+        </a>
+      )}
     </section>
   )
 }

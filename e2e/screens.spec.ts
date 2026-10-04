@@ -51,6 +51,29 @@ test('03-why-today and 04-why-today-numbers-open', async ({ page }) => {
   await page.screenshot({ path: 'test-results/screens/04-why-today-numbers-open.png', fullPage: true })
 })
 
+// Phase 4: the 8pm question on a change day, and yesterday's the next morning.
+const shownEaseOff = [{ date: TODAY, nudge: 'train_easy', shown_at: '2026-09-29T11:44:00Z' }]
+test('16-card-8pm-question and 17-card-8pm-answered', async ({ page }) => {
+  await openApp(page, { at: '2026-09-29T20:00:00-05:00', tables: { ...answered, daily_status: [row], uploads: synced, shown_status: shownEaseOff } })
+  await page.locator('.follow-through').waitFor()
+  await page.screenshot({ path: 'test-results/screens/16-card-8pm-question.png' })
+  await page.getByRole('button', { name: 'Yes', exact: true }).click()
+  await page.locator('.follow-recorded').waitFor()
+  await page.screenshot({ path: 'test-results/screens/17-card-8pm-answered.png' })
+})
+
+test('18-next-morning-question', async ({ page }) => {
+  await openApp(page, { at: '2026-09-30T07:00:00-05:00', tables: { shown_status: shownEaseOff } })
+  await page.locator('.follow-through').waitFor()
+  await page.screenshot({ path: 'test-results/screens/18-next-morning-question.png' })
+})
+
+test('19-card-notification-failed', async ({ page }) => {
+  await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced, notifications: [{ kind: 'morning', status: 'failed' }] } })
+  await page.locator('.list-row').waitFor()
+  await page.screenshot({ path: 'test-results/screens/19-card-notification-failed.png', fullPage: true })
+})
+
 test('15-settings', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: answered, path: '/#/settings' })
   await page.locator('.nav-title').waitFor()
