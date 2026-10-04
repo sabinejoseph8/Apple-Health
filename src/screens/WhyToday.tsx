@@ -4,6 +4,7 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import { ArrowDownIcon, ArrowUpIcon, HeartIcon, MoonIcon, PulseIcon, TickCircleIcon } from '../components/Icons'
 import MiniChart, { cssName } from '../components/MiniChart'
 import NavBar from '../components/NavBar'
+import { go } from '../lib/route'
 import { type CardState, selectCard, type StatusRow } from '../lib/card-state'
 import { loadStatusInputs, logUsage } from '../lib/today'
 import { dateLine, syncWhen } from '../lib/when'
@@ -104,6 +105,10 @@ function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardSta
 
       <h2 className="section-title">{w.decided.title}</h2>
       <Decided row={row} zones={why.zones} recorded={why.normals.sleep?.validNights ?? null} />
+
+      <button className="primary" type="button" onClick={() => go('trends')}>
+        {wording.trends.see}
+      </button>
     </>
   )
 }

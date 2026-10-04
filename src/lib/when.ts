@@ -46,3 +46,32 @@ export function greeting(d: Date): string {
 export function minutesOfDay(d: Date): number {
   return d.getHours() * 60 + d.getMinutes()
 }
+
+const asDay = (date: string) => new Date(`${date}T12:00:00Z`)
+
+// "Tue 29 Sep", for a night on the trend charts.
+export function shortNight(date: string): string {
+  const d = asDay(date)
+  return `${wording.day.weekdaysShort[d.getUTCDay()]} ${d.getUTCDate()} ${t.months[d.getUTCMonth()]}`
+}
+
+// "21 Sep", and "21 September".
+export function shortDate(date: string): string {
+  const d = asDay(date)
+  return `${d.getUTCDate()} ${t.months[d.getUTCMonth()]}`
+}
+
+export function longDate(date: string): string {
+  const d = asDay(date)
+  return `${d.getUTCDate()} ${wording.day.monthsLong[d.getUTCMonth()]}`
+}
+
+// The Monday the next weekly digest is built (from 5am local, D72): today if
+// it is Monday before 5am, otherwise the coming Monday.
+export function nextDigestDay(now: Date): Date {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const daysToMonday = (8 - d.getDay()) % 7
+  const sameDay = daysToMonday === 0 && now.getHours() < 5
+  d.setDate(d.getDate() + (sameDay ? 0 : daysToMonday === 0 ? 7 : daysToMonday))
+  return d
+}

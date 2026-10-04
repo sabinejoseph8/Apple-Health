@@ -3,8 +3,10 @@ import type { Session } from '@supabase/supabase-js'
 import { currentPushSupport, refreshSubscription } from '../lib/push'
 import { useRoute } from '../lib/route'
 import { noteNotificationTap } from '../lib/today'
+import Digest from './Digest'
 import Settings from './Settings'
 import Today, { type PushState } from './Today'
+import Trends from './Trends'
 import WhyToday from './WhyToday'
 
 // The signed-in app: the card, Why today and Settings.
@@ -39,5 +41,9 @@ export default function SignedIn({ session }: { session: Session }) {
       return <WhyToday />
     case 'settings':
       return <Settings session={session} />
+    case 'trends':
+      return <Trends />
+    case 'digest':
+      return <Digest />
   }
 }
