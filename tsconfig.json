@@ -18,12 +18,14 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": [
       "vite/client"
     ]
   },
   "include": [
     "src",
-    "supabase/functions/_shared/wording.ts"
+    "supabase/functions/_shared/wording.ts",
+    "supabase/functions/_shared/briefing.ts"
   ]
 }

@@ -1,17 +1,95 @@
-/* Base tokens from docs/design.md. The full set arrives in Phase 3. */
+/* Design tokens from docs/design.md, section 2. Screens use these names only,
+   never raw colours or sizes, so the app stays matched to the design. */
 :root {
+  /* Base */
   --bg: #f2f2f7;
   --surface: #ffffff;
   --text: #000000;
   --text-secondary: #3a3a3c;
   --text-muted: #6c6c70;
   --separator: #e5e5ea;
+  --divider-strong: #d1d1d6;
+  --chevron: #c4c4c8;
+
+  /* Action */
   --link-blue: #0a60d8;
+  --button-blue: #0a4fb8;
+  --button-tint: #eef3fc;
+
+  /* Status */
+  --ease-text: #8a4100;
+  --ease-pill: #ffebd6;
+  --ease-tint: #fff4e8;
+  --ease-line: #f1d9bf;
+  --ease-border: #e6cbae;
+  --attention: #e07000;
+  --normal-green: #1f7a35;
+  --ready-text: #1f7a35;
+  --ready-pill: #e3f4e8;
   --rest-text: #a1261d;
+  --rest-pill: #fde7e5;
+  --neutral-text: #3a3a3c;
+  --neutral-pill: #e5e5ea;
+
+  /* Readings: line, normal-range band, normal (median) line */
+  --hrv: #0071a4;
+  --hrv-band: #e1f0f7;
+  --hrv-median: #7fb6d2;
+  --sleep: #5856d6;
+  --sleep-band: #ecebfb;
+  --sleep-median: #a9a8ec;
+  --sleeping-hr: #c4262f;
+  --sleeping-hr-band: #fbe7e8;
+  --sleeping-hr-median: #e79aa0;
+
+  /* Type: weight, size and line height together */
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  --type-large-title: 700 32px/1.15 var(--font);
+  --type-big-value: 700 34px/1.1 var(--font);
+  --type-summary-title: 700 24px/1.2 var(--font);
+  --type-card-headline: 700 22px/1.25 var(--font);
+  --type-section-title: 700 20px/1.25 var(--font);
+  --type-emphasis: 600 17px/1.3 var(--font);
+  --type-body: 400 15px/1.5 var(--font);
+  --type-question: 400 16px/1.4 var(--font);
+  --type-small: 400 14px/1.4 var(--font);
+  --type-caption: 400 13px/1.4 var(--font);
+  --type-eyebrow: 600 12px/1.3 var(--font);
+  --type-micro: 400 11px/1.3 var(--font);
+  --type-pill: 600 13px/1 var(--font);
+  --tracking-large-title: -0.01em;
+  --tracking-big-value: -0.02em;
+  --tracking-eyebrow: 0.04em;
+
+  /* Spacing: a 4-point base */
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
   --gutter: 16px;
+  --safe-top: 47px;
+  --safe-bottom: 34px;
+  --tap: 44px;
+  --tap-answer: 48px;
+
+  /* Corner radius */
   --radius-card: 18px;
+  --radius-card-small: 16px;
+  --radius-nudge: 14px;
   --radius-control: 12px;
+  --radius-box: 10px;
+  --radius-pill: 999px;
+
+  /* Motion: panels open and close; instant with Reduce Motion (below) */
+  --motion-panel: 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-panel: 0ms linear; }
 }
 
 * { box-sizing: border-box; }
