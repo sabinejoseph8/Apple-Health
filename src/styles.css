@@ -583,3 +583,27 @@ button:focus-visible, a:focus-visible {
 .follow-recorded { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 .recorded { margin: 0; display: inline-flex; align-items: center; gap: var(--space-6); font: var(--type-small); color: var(--text-muted); }
 .recorded-yes { color: var(--normal-green); }
+
+/* ---- Phase 5: Settings ---- */
+
+.settings-list { display: flex; flex-direction: column; }
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: var(--tap);
+  padding: var(--space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--separator);
+  background: transparent;
+  color: var(--text);
+  font: var(--type-body);
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-row:first-child { border-top: 0; }
+.settings-row.danger { color: var(--rest-text); }
+.primary.destructive { background: var(--rest-text); }

@@ -36,6 +36,34 @@ export const wording = {
     signOut: 'Sign out',
   },
 
+  // Settings (R4, R7, R8, R59; design.md, Settings list).
+  settings: {
+    account: 'Account',
+    changePassword: 'Change password',
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    confirmPassword: 'Type it again',
+    save: 'Save password',
+    saving: 'Saving…',
+    passwordChanged: 'Your password is changed. Other phones and computers will ask you to sign in again.',
+    wrongCurrent: "That isn't your current password.",
+    samePassword: 'Choose a new password that is different from your current one.',
+    signOut: 'Sign out of this phone',
+    signOutEverywhere: 'Sign out everywhere',
+    signOutEverywhereNote: 'This signs you out of Clarivi on every phone and computer, including this one.',
+    signingOut: 'Signing out…',
+    deleteData: 'Delete my data',
+    deleteNote:
+      "This removes all your readings, results, answers, your upload token and your notification settings from Clarivi. Your account stays, so you can start again. It can't be undone.",
+    passwordPrompt: 'Enter your password to continue.',
+    password: 'Password',
+    deleting: 'Deleting…',
+    deleted: 'Your data has been deleted.',
+    wrongPassword: "That password isn't right. Try again.",
+    cancel: 'Cancel',
+    done: 'Done',
+  },
+
   notifications: {
     title: 'Notifications',
     notInstalled: 'To get notifications, add Clarivi to your Home Screen, then open it from there.',

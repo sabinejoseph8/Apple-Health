@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
+import { callFunction } from '../lib/functions'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 
@@ -8,8 +9,8 @@ const w = wording.uploadToken
 type Current = { created_at: string; last_used_at: string | null } | null
 
 // Creates or reissues the token the iPhone Shortcut uses (R8, R10, R11).
-// Asks for the password first, then shows the new token once. It lives on
-// the temporary home screen until the Settings screen (Phase 5).
+// Asks for the password first, then shows the new token once. Part of
+// Settings.
 export default function UploadToken() {
   // undefined while loading, null when there is no working token.
   const [current, setCurrent] = useState<Current | undefined>(undefined)
@@ -38,21 +39,15 @@ export default function UploadToken() {
     const password = String(new FormData(e.currentTarget).get('password') ?? '')
     setBusy(true)
     setError(null)
-    const { data, error } = await supabase.functions.invoke('account-token', { body: { password } })
+    const result = await callFunction<{ token: string }>('account-token', { password })
     setBusy(false)
-    if (error) {
-      let code = ''
-      try {
-        code = (await (error as { context?: Response }).context?.json())?.error ?? ''
-      } catch {
-        // no readable reply
-      }
-      setError(code === 'wrong_password' ? w.wrongPassword : wording.general.offline)
+    if (!result.ok) {
+      setError(result.code === 'wrong_password' ? w.wrongPassword : wording.general.offline)
       return
     }
     setAsking(false)
     setCopied(false)
-    setToken(data.token)
+    setToken(result.data.token)
     await load()
   }
 
