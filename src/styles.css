@@ -621,3 +621,8 @@ button:focus-visible, a:focus-visible {
 .trend-dot.flagged { background: var(--attention); }
 .trend-dot.picked { width: 10px; height: 10px; }
 .trend-guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--divider-strong); transform: translateX(-50%); pointer-events: none; }
+
+/* ---- Phase 5: the owner page ---- */
+.person { gap: var(--space-6); }
+.person-name { overflow-wrap: anywhere; }
+.body.warn { color: var(--ease-text); font-weight: 600; }
