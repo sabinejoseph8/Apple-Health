@@ -2,7 +2,7 @@
 
 Scoping the smallest version that proves the idea | Apple Health Analytics Tool | Sabine Joseph
 
-**Last updated:** 4 October 2026 (Phases 3 to 5 built and live, Phase 5 done with every manual check passed, no new decisions; earlier: Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69; Phase 5 planning decisions D70 to D74).
+**Last updated:** 4 October 2026 (Phases 3 to 5 built and live, Phase 5 done with every manual check passed, no new decisions; earlier: Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69; Phase 5 planning decisions D70 to D74; Phase 1b locked-phone count D75).
 
 **Format note:** converted from MVP.pdf on 2 October 2026. This Markdown file is now the version that is kept up to date; a PDF can be made from it when one is needed.
 
@@ -239,6 +239,7 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
 - **D72** The weekly digest sends no notification; it waits on the card (decided 4 October 2026, planning Phase 5). Consequences: quiet by default; at most three notifications a day stays the rule.
 - **D73** Settings links to the setup guide from Phase 6, when the guide exists (decided 4 October 2026, planning Phase 5; R10). Consequences: no link to a page that doesn't exist yet, as with D63.
 - **D74** Resetting a tester's password uses a small owner-only server function, called by the owner's script while signed in as the owner; it sets a temporary password and the change-password flag (decided 4 October 2026, planning Phase 5; R63). New accounts are still created in the Supabase dashboard. Consequences: the main secret key stays only in the functions' secret store (CLAUDE.md safety rule), never on the owner's Mac; the function refuses anyone who isn't the owner.
+- **D75** Until about 10 October 2026, Phase 1b's locked-phone rate is counted from the uploads log (which automation delivered each morning's sync, and when) plus Sabine's notes of the mornings she sees the Shortcuts message that the device is locked (decided 4 October 2026 by Sabine; A7, R9). Why: a blocked run now stops at its first step, reading the "synced today" file, before it contacts the server, so the log alone misses it (seen on 4 October). Consequences: no change to the Shortcut and nothing to reinstall; the count depends on Sabine noting each one.
 - **D64** The card's "Sync is being rejected" state (R11) and its import progress ("Importing your history: 5 of 12 months", R12) are built in Phase 3 with the other card states (decided 3 October 2026, planning Phase 3; no phase had them). Consequences: Phase 5's token-reissue check finds the rejected state already in place.
 
 ### Reversal and its consequences
@@ -330,6 +331,7 @@ All scoping decisions are now made, and the D9 targets are confirmed. The D24 nu
 | D72 Digest notification (DECIDED) | None; the digest waits on the card. | Quiet by default. |
 | D73 Setup guide link (DECIDED) | Added in Phase 6 with the guide. | No dead links. |
 | D74 Password reset (DECIDED) | An owner-only server function called by the owner's script; accounts still made in the dashboard. | The secret key never leaves the functions' secret store. |
+| D75 Counting locked-phone runs (DECIDED) | The uploads log (which automation delivered each morning) plus the owner's notes of the Shortcuts "device is locked" message. | A blocked run that never reaches the server is still counted; nothing to reinstall. |
 
 ## 7. Clarifying Questions and Answers
 
