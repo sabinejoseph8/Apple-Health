@@ -259,6 +259,26 @@ export const wording = {
     nudgeLine: (lead: string, parts: string) => `${lead}: ${parts}.`,
   },
 
+  // The owner's page (R64): operational facts only, never a reading.
+  owner: {
+    link: 'Owner page',
+    title: 'Owner',
+    notOwner: 'Only the owner can open this page.',
+    you: 'You',
+    projectHeading: 'Project',
+    database: (mb: string) => `Database: ${mb} MB of 500 MB on the free plan.`,
+    databaseHigh: 'Nearly full: make a backup and plan the move to Supabase Pro.',
+    lastSync: (when: string) => `Last sync ${when}`,
+    noSync: 'No sync yet',
+    reminders: (n: number) => (n === 0 ? 'No 11:30 reminders in the last 14 days' : `11:30 reminder on ${n} of the last 14 days`),
+    inARow: 'Two days in a row: check their Shortcut and automations.',
+    failures: (n: number) =>
+      n === 0 ? 'No failed notifications in the last 2 days' : n === 1 ? '1 failed notification in the last 2 days' : `${n} failed notifications in the last 2 days`,
+    importAll: 'History: all 12 months imported',
+    importSome: (n: number) => `History: ${n} of 12 months imported`,
+    importNone: 'History: not imported yet',
+  },
+
   // The trend view (R44 to R46).
   trends: {
     title: 'Your trends',

@@ -209,7 +209,8 @@ Each call carries the user's session.
 - **`account-change-password`** (built in Phase 5, R4): checks the current password, refuses a new one under 12 or over 72 characters or the same as the current one, then saves it. Saving a password ends every session, so the app signs straight back in. The password re-check is now one shared helper (`passwordMatches` in `_shared/http.ts`), used by `account-token` too.
 - **`account-first-login`:** takes the new password, refuses one under 12 characters or the temporary password itself, then saves it and clears the change-password flag in one step. Saving a password ends every session, so the app signs straight back in with the new one.
 - **`send-push`:** in Phase 1a, sends a test notification to the signed-in user's own devices after an optional delay (up to 30 seconds), replying at once and sending in the background. Phase 4 (built on the local copy, 4 October 2026) adds `{"kind": "due"}`, accepted only with the cron key in the `x-clarivi-cron` header, which the sender checks by asking the database (`cron_key_ok`, service role only; D66): it claims due outbox rows (`claim_due_notifications`, so no row is sent twice and anything past its time expires), writes each message from the wording module (`send-push/outbox.ts`: the morning status and reason, or the reminder or 8pm question with no health detail; a tap opens `/?n=<id>&k=<kind>`), sends it to each of the person's phones, retires phones the push service says are gone, records the morning's shown status (D61) and marks the row sent, skipped (no status any more, or no phone) or failed.
-- **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values.
+- **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values. Built in Phase 5 as a database function, `owner_status()`, which works out the caller from the session and refuses anyone but the owner (like `replace_my_events`), so it needs no server function: each person's last accepted daily sync, the days in the last 14 that needed the 11:30 reminder and whether two came in a row (in the last 7 days), failed notifications in the last 2 days, months imported (as the card counts them), and the database's size in MB.
+- **`owner-reset-password`** (built in Phase 5, R63, D74): owner only (checked from the profile); takes a tester's email and a temporary password (12 to 72 characters), refuses the owner's own account, sets the password and the change-password flag. Called by `owner_data.py reset-password`, signed in as the owner; never logs the email or password.
 
 ### Schedulers
 - **Every minute:** `run_analysis_queue()` processes queued work (built in Phase 2: it merges each user's pending work, waits while an import is still arriving, and retries failed work up to 3 times), then writes morning notifications to the outbox (Phase 4).
@@ -220,7 +221,7 @@ Each call carries the user's session.
 
 ### Owner administration
 - Create accounts in the Supabase dashboard with a temporary password, marked as confirmed so no email is sent.
-- A short admin script (Supabase admin interface) resets a password and sets the change-password flag again.
+- A short admin script resets a password and sets the change-password flag again: built in Phase 5 as `.venv/bin/python scripts/reference/owner_data.py reset-password`, run in the Mac's Terminal app, which calls the owner-only `owner-reset-password` function, so the secret key stays in the functions' secret store (D74).
 - Events for the owner's year are loaded from a small file with a script.
 
 ### Wording

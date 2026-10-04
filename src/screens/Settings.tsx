@@ -3,7 +3,9 @@ import type { Session } from '@supabase/supabase-js'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
+import { ChevronRightIcon } from '../components/Icons'
 import NavBar from '../components/NavBar'
+import { go } from '../lib/route'
 import AccountSettings from './AccountSettings'
 import UploadToken from './UploadToken'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
@@ -86,6 +88,19 @@ export default function Settings({ session }: { session: Session }) {
         <p className="caption">{wording.home.signedInAs}</p>
         <p className="emphasis">{session.user.email}</p>
         {isOwner && <span className="pill">{wording.home.owner}</span>}
+        {isOwner && (
+          <a
+            className="link-row"
+            href="#/owner"
+            onClick={(e) => {
+              e.preventDefault()
+              go('owner')
+            }}
+          >
+            <span>{wording.owner.link}</span>
+            <ChevronRightIcon className="chevron" />
+          </a>
+        )}
       </section>
 
       <section className="card" aria-labelledby="notif-h">
