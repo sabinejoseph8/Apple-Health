@@ -159,6 +159,7 @@ export const wording = {
   // The top of the readiness card (R20).
   day: {
     weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     monthsLong: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     // "Tuesday 29 September"
     date: (weekday: string, day: number, month: string) => `${weekday} ${day} ${month}`,
@@ -192,7 +193,6 @@ export const wording = {
     // "at 6:42am" this morning, or "yesterday at 9:15pm".
     synced: (when: string) => `Updated from your Watch ${when}`,
     late: 'Late',
-    lateNote: 'This sync came after 11:30am, later than usual.',
     partial: 'Based on 2 of 3 readings',
     nudgeLabel: "Today's nudge",
     nudges: {
@@ -222,6 +222,56 @@ export const wording = {
     failed: "Your answer didn't save. Check your connection and try again.",
     showBriefing: "Show this morning's briefing",
     hideBriefing: "Hide this morning's briefing",
+  },
+
+  // The weekly digest (R57, R58): a fixed template, filled from the week's
+  // facts by digest.ts.
+  digest: {
+    row: 'Weekly digest',
+    title: 'Your week',
+    rangeShort: (start: string, end: string) => `${start} to ${end}`,
+    firstOn: (date: string) => `Your first weekly digest arrives on ${date}.`,
+    firstShort: (date: string) => `From ${date}`,
+    nightsAll: 'Clarivi had readings from all 7 nights.',
+    nightsSome: (n: number) => `Clarivi had readings from ${n} of 7 nights, so this summary is based on those.`,
+    nightsNone: 'Clarivi had no readings from your Watch this week.',
+    statusHeading: 'Your status',
+    statusLine: (parts: string) => `Your status was ${parts}.`,
+    statusPart: (label: string, n: number) => `${label} on ${n} ${n === 1 ? 'day' : 'days'}`,
+    noStatus: 'There was no status on any day this week.',
+    flagged: (days: string) => `Ease off or Rest on ${days}.`,
+    readingsHeading: 'Your readings',
+    names: { hrv: 'Heart rate variability', sleep: 'Sleep', sleeping_hr: 'Sleeping heart rate' },
+    below: (name: string, k: number, n: number) => `${name} was below your normal range on ${k} of ${n} nights.`,
+    above: (name: string, k: number, n: number) => `${name} was above your normal range on ${k} of ${n} nights.`,
+    both: (name: string, below: number, above: number, n: number) =>
+      `${name} was below your normal range on ${below} and above it on ${above} of ${n} nights.`,
+    inRange: (name: string, n: number) => (n === 1 ? `${name} was in your normal range on the one night it was counted.` : `${name} stayed in your normal range on all ${n} nights.`),
+    noReadings: (name: string) => `${name} had no readings that counted this week.`,
+    pattern: (n: number) =>
+      n === 1 ? 'Several overnight readings moved the wrong way together on one night.' : `Several overnight readings moved the wrong way together on ${n} nights.`,
+    nudgesHeading: 'Your nudges',
+    noChange: 'No nudge asked you to change anything this week.',
+    changeDays: (n: number) => (n === 1 ? 'The nudge asked for a change on one day' : `The nudge asked for a change on ${n} days`),
+    followed: (n: number) => `you followed it on ${n}`,
+    notFollowed: (n: number) => `didn't on ${n}`,
+    unanswered: (n: number) => `didn't answer on ${n}`,
+    nudgeLine: (lead: string, parts: string) => `${lead}: ${parts}.`,
+  },
+
+  // The trend view (R44 to R46).
+  trends: {
+    title: 'Your trends',
+    see: 'See your trends',
+    period: 'The last 8 weeks',
+    start: '8 weeks ago',
+    end: 'Last night',
+    legend: 'Shaded: your normal range. Orange: outside it.',
+    hint: 'Tap a night to see its value.',
+    night: (date: string, value: string) => `${date}: ${value}`,
+    noReading: (date: string) => `${date}: no reading`,
+    building: (nights: number, needed: number) => `Still learning your normal: ${nights} of ${needed} nights`,
+    chartLabel: (name: string) => `${name} over the last 8 weeks`,
   },
 
   // When notifications are off or failing (R34).

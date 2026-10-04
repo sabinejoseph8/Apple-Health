@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 
 // The signed-in screens, kept in the address after "#" so the phone's back
 // gesture and a notification's link can reach them: "#/why", "#/settings".
-export type Route = 'today' | 'why' | 'settings'
+export type Route = 'today' | 'why' | 'settings' | 'trends' | 'digest'
+
+const ROUTES: Route[] = ['why', 'settings', 'trends', 'digest']
 
 export function routeFrom(hash: string): Route {
   const name = hash.replace(/^#\/?/, '')
-  return name === 'why' || name === 'settings' ? name : 'today'
+  return (ROUTES as string[]).includes(name) ? (name as Route) : 'today'
 }
 
 // True while the current screen was opened from inside the app, so Back can
