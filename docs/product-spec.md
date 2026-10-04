@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states)
+**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -320,6 +320,8 @@
 | Links before Phase 5 (3 Oct 2026) | Until the trend view, digest and Settings exist, the card's Settings button opens the temporary account screen, and the digest row (R20) and "See your trends" (R44) are left out, so no link leads nowhere |
 | Rejected sync and import progress (3 Oct 2026) | Built with the other card states (R11, R12) |
 | Check-in day (3 Oct 2026) | A check-in belongs to the calendar day; it can be changed until midnight (R18) |
+| Follow-through window (4 Oct 2026) | An answer is accepted from 8pm on the change day until noon the next day (R52 to R55) |
+| Next-morning order (4 Oct 2026) | Yesterday's unanswered question first, then today's check-in, then the card (R16, R55) |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.
