@@ -2,7 +2,7 @@
 
 Scoping the smallest version that proves the idea | Apple Health Analytics Tool | Sabine Joseph
 
-**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69).
+**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69; Phase 5 planning decisions D70 to D74).
 
 **Format note:** converted from MVP.pdf on 2 October 2026. This Markdown file is now the version that is kept up to date; a PDF can be made from it when one is needed.
 
@@ -234,6 +234,11 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
 - **D67** A follow-through answer is accepted from 8pm local time on the change day until noon the next day, when the morning window ends; after that the day counts as unanswered (decided 4 October 2026, planning Phase 4; settles "until the next morning" in R54 and R55). Consequences: the next morning's card asks about yesterday only until noon; the Action result counts unanswered days separately.
 - **D68** On a morning after an unanswered change day, the app asks about yesterday first, then today's check-in, then shows the card (decided 4 October 2026, planning Phase 4; R16, R55). Consequences: both questions come before today's status, so neither answer is shaped by it.
 - **D69** Phases 1 to 3 merge into `main` once Phase 3 passes its checks on Sabine's iPhone, without waiting for Phase 1's locked-phone check (about 10 October 2026), which reads the server's upload log and isn't affected by the app; Phase 4 is released after that merge (decided 4 October 2026, planning Phase 4). Sabine runs the merge, as it deploys production. Consequences: a notification tap opens the new card in the Home Screen app; Phase 1 still closes when its last check is read.
+- **D70** The trend view's normal-range band follows each night's normal as it was then, so it shifts gently over the 8 weeks (decided 4 October 2026, planning Phase 5; R44). Consequences: a night is judged against the normal it actually had, matching its flag; while a reading's normal was still being learned, that stretch has no band (R46).
+- **D71** The weekly digest counts the status each person was shown each morning (D61), or the day's status when nothing was shown (decided 4 October 2026, planning Phase 5; R57). Consequences: the digest matches what people saw; a later recalculation doesn't change last week's summary.
+- **D72** The weekly digest sends no notification; it waits on the card (decided 4 October 2026, planning Phase 5). Consequences: quiet by default; at most three notifications a day stays the rule.
+- **D73** Settings links to the setup guide from Phase 6, when the guide exists (decided 4 October 2026, planning Phase 5; R10). Consequences: no link to a page that doesn't exist yet, as with D63.
+- **D74** Resetting a tester's password uses a small owner-only server function, called by the owner's script while signed in as the owner; it sets a temporary password and the change-password flag (decided 4 October 2026, planning Phase 5; R63). New accounts are still created in the Supabase dashboard. Consequences: the main secret key stays only in the functions' secret store (CLAUDE.md safety rule), never on the owner's Mac; the function refuses anyone who isn't the owner.
 - **D64** The card's "Sync is being rejected" state (R11) and its import progress ("Importing your history: 5 of 12 months", R12) are built in Phase 3 with the other card states (decided 3 October 2026, planning Phase 3; no phase had them). Consequences: Phase 5's token-reissue check finds the rejected state already in place.
 
 ### Reversal and its consequences
@@ -320,6 +325,11 @@ All scoping decisions are now made, and the D9 targets are confirmed. The D24 nu
 | D67 Follow-through window (DECIDED) | Answers from 8pm on the change day until noon the next day. | "Until the next morning" has a clear end. |
 | D68 Next-morning order (DECIDED) | Yesterday's question, then today's check-in, then the card. | Neither answer is shaped by today's status. |
 | D69 Merge before Phase 4 (DECIDED) | Merge Phases 1 to 3 into main once Phase 3 passes on the iPhone; then release Phase 4. | Notification taps open the new card. |
+| D70 Trend band (DECIDED) | The band follows each night's normal as it was then. | Nights are judged against the normal they had. |
+| D71 Digest status (DECIDED) | The digest counts the status shown each morning (D61). | The digest matches what people saw. |
+| D72 Digest notification (DECIDED) | None; the digest waits on the card. | Quiet by default. |
+| D73 Setup guide link (DECIDED) | Added in Phase 6 with the guide. | No dead links. |
+| D74 Password reset (DECIDED) | An owner-only server function called by the owner's script; accounts still made in the dashboard. | The secret key never leaves the functions' secret store. |
 
 ## 7. Clarifying Questions and Answers
 

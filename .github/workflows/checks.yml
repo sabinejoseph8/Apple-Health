@@ -37,9 +37,11 @@ jobs:
           if node scripts/check-build-secrets.mjs; then echo "The secret check missed a planted secret."; exit 1; fi
           rm dist/planted.js
 
+  # On a Mac, so WebKit draws text in Apple's system font, as the iPhone does:
+  # the one-screen check (R23) depends on it. Linux's stand-in font is taller.
   e2e:
     name: End to end (iPhone size, WebKit)
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -47,7 +49,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
+      - run: npx playwright install webkit
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -70,7 +72,7 @@ jobs:
       - run: npx supabase test db
 
   local-e2e:
-    name: Local end to end (tokens, sync and import against local Supabase)
+    name: Local end to end (tokens, sync, import and account settings against local Supabase)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -92,6 +94,7 @@ jobs:
           exit 1
       - run: npm run check:local:sync
       - run: npm run check:local:import
+      - run: npm run check:local:account
       - name: The database matches the pandas reference on a made-up history
         run: |
           python3 -m pip install --quiet -r scripts/reference/requirements.txt

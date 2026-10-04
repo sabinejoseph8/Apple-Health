@@ -26,6 +26,7 @@
   "include": [
     "src",
     "supabase/functions/_shared/wording.ts",
-    "supabase/functions/_shared/briefing.ts"
+    "supabase/functions/_shared/briefing.ts",
+    "supabase/functions/_shared/digest.ts"
   ]
 }

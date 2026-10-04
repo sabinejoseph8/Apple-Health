@@ -2,6 +2,9 @@
 // JSON replies, and the Supabase clients.
 import { createClient, type SupabaseClient, type User } from 'jsr:@supabase/supabase-js@2'
 
+export const MIN_PASSWORD_LENGTH = 12
+export const MAX_PASSWORD_LENGTH = 72
+
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -57,4 +60,19 @@ export async function userFromRequest(req: Request, admin: SupabaseClient): Prom
 
 export function mustChangePassword(user: User): boolean {
   return user.app_metadata?.must_change_password === true
+}
+
+// Password re-check before a sensitive action (R8): Supabase's own
+// re-authentication sends an email code, and this app has no email, so sign
+// in with the password instead (tech-spec section 6). The trial session is
+// signed out at once.
+export async function passwordMatches(user: User, password: unknown): Promise<boolean> {
+  if (!user.email || typeof password !== 'string' || password.length === 0 || password.length > MAX_PASSWORD_LENGTH) return false
+  const probe = createClient(supabaseUrl(), publishableKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data } = await probe.auth.signInWithPassword({ email: user.email, password })
+  if (!data.session) return false
+  await probe.auth.signOut({ scope: 'local' })
+  return data.user?.id === user.id
 }

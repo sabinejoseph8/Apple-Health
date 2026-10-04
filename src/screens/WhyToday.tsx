@@ -3,7 +3,9 @@ import { alsoChecked, capitalise, type Reading, type ReadingPoints, WHY_ORDER, w
 import { wording } from '../../supabase/functions/_shared/wording'
 import { ArrowDownIcon, ArrowUpIcon, HeartIcon, MoonIcon, PulseIcon, TickCircleIcon } from '../components/Icons'
 import MiniChart, { cssName } from '../components/MiniChart'
+import { Loading, LoadFailed } from '../components/LoadState'
 import NavBar from '../components/NavBar'
+import { go } from '../lib/route'
 import { type CardState, selectCard, type StatusRow } from '../lib/card-state'
 import { loadStatusInputs, logUsage } from '../lib/today'
 import { dateLine, syncWhen } from '../lib/when'
@@ -48,15 +50,8 @@ export default function WhyToday() {
   return (
     <main className="page why">
       <NavBar title={title} />
-      {!loaded && !failed && <section className="card loading" aria-busy="true" />}
-      {!loaded && failed && (
-        <section className="card">
-          <p className="body">{wording.card.loadFailed}</p>
-          <button className="text-button" type="button" onClick={load}>
-            {wording.card.retry}
-          </button>
-        </section>
-      )}
+      {!loaded && !failed && <Loading />}
+      {!loaded && failed && <LoadFailed onRetry={load} />}
       {loaded && state?.kind === 'status' && status && loaded.why ? (
         <StatusWhy now={loaded.now} state={state} row={state.row} why={loaded.why} />
       ) : (
@@ -104,6 +99,10 @@ function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardSta
 
       <h2 className="section-title">{w.decided.title}</h2>
       <Decided row={row} zones={why.zones} recorded={why.normals.sleep?.validNights ?? null} />
+
+      <button className="primary" type="button" onClick={() => go('trends')}>
+        {wording.trends.see}
+      </button>
     </>
   )
 }

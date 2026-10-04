@@ -1,8 +1,7 @@
-// Creates or reissues the signed-in user's upload token (R8, R10, R11).
-// The password is checked first. The token is returned once and only its
-// hash is stored; reissuing stops the old token working in the same step.
+// "Delete my data" (R59): once the password is checked, removes all of the
+// signed-in user's readings, results, answers, logs, token and notification
+// registrations. The account itself stays (tech-spec section 4).
 import { adminClient, corsHeaders, json, mustChangePassword, passwordMatches, userFromRequest } from '../_shared/http.ts'
-import { generateUploadToken, hashToken } from '../_shared/tokens.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -21,14 +20,11 @@ Deno.serve(async (req) => {
   }
   if (!(await passwordMatches(user, password))) return json({ error: 'wrong_password' }, 401)
 
-  const token = generateUploadToken()
-  const { data: createdAt, error } = await admin.rpc('issue_upload_token', {
-    p_user: user.id,
-    p_token_hash: await hashToken(token),
-  })
+  const { error } = await admin.rpc('delete_my_data', { p_user: user.id })
   if (error) {
-    console.error('account-token: issue failed', error.message)
-    return json({ error: 'issue_failed' }, 500)
+    console.error('account-delete-data: delete failed', error.message)
+    return json({ error: 'delete_failed' }, 500)
   }
-  return json({ token, created_at: createdAt })
+  console.log('account-delete-data: one account\'s data deleted')
+  return json({ ok: true })
 })

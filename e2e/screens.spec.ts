@@ -37,7 +37,7 @@ const shots: [string, string, Record<string, unknown[]>, string?][] = [
 for (const [name, at, tables] of shots) {
   test(name, async ({ page }) => {
     await openApp(page, { at, tables })
-    await page.locator(name === '01-check-in' ? '.checkin' : '.list-row').waitFor()
+    await page.locator(name === '01-check-in' ? '.checkin' : '.checkin-row').waitFor()
     await page.screenshot({ path: `screenshots/${name}.png` })
   })
 }
@@ -70,13 +70,55 @@ test('18-next-morning-question', async ({ page }) => {
 
 test('19-card-notification-failed', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced, notifications: [{ kind: 'morning', status: 'failed' }] } })
-  await page.locator('.list-row').waitFor()
+  await page.locator('.checkin-row').waitFor()
   await page.screenshot({ path: 'screenshots/19-card-notification-failed.png', fullPage: true })
+})
+
+// Phase 5: trends (8 weeks of made-up nights) and the digest.
+test('20-trends and 21-trends-night-picked', async ({ page }) => {
+  const dates = Array.from({ length: 56 }, (_, k) => new Date(Date.UTC(2026, 7, 5 + k, 12)).toISOString().slice(0, 10))
+  const nights = dates.map((night_date, k) => ({
+    night_date,
+    asleep_min: k === 55 ? 352 : 430 + ((k * 13) % 50) - 25 + (k === 40 ? -90 : 0),
+    hrv_median: k === 55 ? 38 : k === 30 || k === 31 ? null : 52 + ((k * 7) % 12) - 6 + (k === 20 ? 16 : 0),
+    sleeping_hr: k === 55 ? 51 : 50 + ((k * 3) % 5) - 2,
+  }))
+  const baselines = dates.flatMap((night_date, k) =>
+    ([['hrv', 52 + Math.sin(k / 9) * 2, 6], ['sleep', 430 + Math.sin(k / 7) * 8, 34], ['sleeping_hr', 50, 2.5]] as const).map(([metric, median, spread]) => {
+      const building = metric === 'hrv' && k < 14
+      return { night_date, metric, median_28: building ? null : median, range_low: building ? null : median - 2 * spread, range_high: building ? null : median + 2 * spread, building, valid_nights: building ? 7 + k : 42 }
+    }),
+  )
+  await openApp(page, { at: MORNING, tables: { nights, baselines, 'rpc/status_zones': why['rpc/status_zones'] }, path: '/#/trends' })
+  await page.locator('.reading-sleeping-hr .trend-plot').waitFor()
+  await page.screenshot({ path: 'screenshots/20-trends.png', fullPage: true })
+  const plot = page.locator('.reading-hrv .trend-plot')
+  const box = (await plot.boundingBox())!
+  await page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2)
+  await page.screenshot({ path: 'screenshots/21-trends-night-picked.png' })
+})
+
+test('22-digest', async ({ page }) => {
+  const facts = {
+    week_start: '2026-09-21', week_end: '2026-09-27', days_with_data: 6,
+    statuses: { ready: 2, ease_off: 2, rest: 1, none: 2 },
+    flagged: [{ date: '2026-09-22', status: 'ease_off' }, { date: '2026-09-23', status: 'ease_off' }, { date: '2026-09-24', status: 'rest' }],
+    readings: {
+      hrv: { nights: 5, below: 2, above: 0, average: 44.8, normal: 52 },
+      sleep: { nights: 5, below: 0, above: 0, average: 430, normal: 430 },
+      sleeping_hr: { nights: 5, below: 0, above: 1, average: 51.6, normal: 50 },
+    },
+    pattern_nights: 1,
+    nudges: { change_days: 3, followed: 1, not_followed: 1, unanswered: 1 },
+  }
+  await openApp(page, { at: MORNING, tables: { digests: [{ week_start: '2026-09-21', facts }] }, path: '/#/digest' })
+  await page.getByText('Your week').waitFor()
+  await page.screenshot({ path: 'screenshots/22-digest.png', fullPage: true })
 })
 
 test('15-settings', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: answered, path: '/#/settings' })
   await page.locator('.nav-title').waitFor()
   await page.waitForTimeout(500)
-  await page.screenshot({ path: 'screenshots/15-settings.png' })
+  await page.screenshot({ path: 'screenshots/15-settings.png', fullPage: true })
 })

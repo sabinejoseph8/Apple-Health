@@ -428,6 +428,15 @@ verify_jwt = false
 [functions.account-token]
 verify_jwt = false
 
+[functions.account-change-password]
+verify_jwt = false
+
+[functions.account-delete-data]
+verify_jwt = false
+
+[functions.owner-reset-password]
+verify_jwt = false
+
 # The Shortcut sends an upload token, not a session, so the gateway can't
 # check it; the function checks the token's hash in the database itself.
 [functions.ingest]
