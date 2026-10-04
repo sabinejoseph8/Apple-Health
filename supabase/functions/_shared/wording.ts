@@ -50,7 +50,8 @@ export const wording = {
     samePassword: 'Choose a new password that is different from your current one.',
     signOut: 'Sign out of this phone',
     signOutEverywhere: 'Sign out everywhere',
-    signOutEverywhereNote: 'This signs you out of Clarivi on every phone and computer, including this one.',
+    signOutEverywhereNote:
+      'This signs you out of Clarivi on every phone and computer, including this one, and stops notifications to all of them. Turn notifications back on after you sign in again.',
     signingOut: 'Signing out…',
     deleteData: 'Delete my data',
     deleteNote:
