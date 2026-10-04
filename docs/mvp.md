@@ -2,7 +2,7 @@
 
 Scoping the smallest version that proves the idea | Apple Health Analytics Tool | Sabine Joseph
 
-**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69; Phase 5 planning decisions D70 to D74).
+**Last updated:** 4 October 2026 (Phases 3 to 5 built and live, Phase 5 done with every manual check passed, no new decisions; earlier: Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65; Phase 4 planning decisions D66 to D69; Phase 5 planning decisions D70 to D74).
 
 **Format note:** converted from MVP.pdf on 2 October 2026. This Markdown file is now the version that is kept up to date; a PDF can be made from it when one is needed.
 
