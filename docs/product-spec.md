@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset)
+**Last updated:** 4 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
