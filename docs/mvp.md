@@ -2,7 +2,7 @@
 
 Scoping the smallest version that proves the idea | Apple Health Analytics Tool | Sabine Joseph
 
-**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64).
+**Last updated:** 3 October 2026 (Phase 1a spike results; decisions D40 and D41; Phase 1b sync spike decisions D42 to D44; Phase 1c decision D45; Phase 1 code review decisions D46 and D47; Phase 2a night rules D48, overlapping sleep records D49 and the 6pm-to-noon night D50; Phase 2b status decisions D51 to D53; Phase 2c decisions D54 to D60 and the Signal result on Sabine's year; Phase 2 code review decision D61; Phase 3 planning decisions D62 to D64; Phase 3 code review decision D65).
 
 **Format note:** converted from MVP.pdf on 2 October 2026. This Markdown file is now the version that is kept up to date; a PDF can be made from it when one is needed.
 
@@ -229,6 +229,7 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
 - **D61** What each person was shown each morning (status, nudge and reason) is saved permanently when the morning notification is sent and when the card is first opened, and the test's Signal and Action results use that record (decided 3 October 2026, from the Phase 2 code review; built in Phase 4). Recalculation rewrites recent days, so a day's status can be corrected after it was shown (for example when the rest of a night arrives the next morning, D50). Consequences: the analysis stays free to correct past days, including in the trend view; the evaluation never uses a status the tester didn't see.
 - **D62** The app reads the zone numbers and the normal's window from a small database function that returns only those numbers for a settings version (where Ease off and Rest start, how many nights the normal comes from and how many must be valid), never the weights (decided 3 October 2026, planning Phase 3; R40). Consequences: Why today stays correct if a later settings version changes them; each day shows the numbers of the version that scored it; users still can't read the settings table or the weights.
 - **D63** Until Phase 5, the card's Settings button opens the temporary account screen (notifications, upload token, sign out) as a stand-in, and the weekly digest row and the "See your trends" button are left out (decided 3 October 2026, planning Phase 3). Consequences: no links to screens that don't exist yet; the account tools stay one tap away; Phase 5 adds the row and the button with the digest and the trend view, and replaces the stand-in with the real Settings screen.
+- **D65** A check-in belongs to the phone's calendar day: from midnight the card moves to the new day, so the previous day's answer can be changed until midnight rather than "until the next morning's check-in" (decided 3 October 2026, from the Phase 3 code review; refines R18). Consequences: the check-in and the card always describe the same day; a correction after midnight isn't possible, which is rare since people are usually asleep then.
 - **D64** The card's "Sync is being rejected" state (R11) and its import progress ("Importing your history: 5 of 12 months", R12) are built in Phase 3 with the other card states (decided 3 October 2026, planning Phase 3; no phase had them). Consequences: Phase 5's token-reissue check finds the rejected state already in place.
 
 ### Reversal and its consequences
@@ -310,6 +311,7 @@ All scoping decisions are now made, and the D9 targets are confirmed. The D24 nu
 | D62 Zone numbers in the app (DECIDED) | A small database function returns a settings version's zone limits and normal window, never the weights. | Why today stays right if the settings change; weights stay hidden. |
 | D63 Links before Phase 5 (DECIDED) | Settings opens the temporary account screen; the digest row and trends button wait for Phase 5. | No dead links; account tools stay reachable. |
 | D64 Rejected sync and import progress (DECIDED) | Both card states built in Phase 3. | Every card state lands in one phase. |
+| D65 Check-in day (DECIDED) | A check-in belongs to the calendar day; changes are possible until midnight. | The check-in and the card always describe the same day. |
 
 ## 7. Clarifying Questions and Answers
 

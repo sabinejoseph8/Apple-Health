@@ -119,7 +119,7 @@
 ### Daily check-in
 - **R16** On the first open of the day, before the status shows, the app asks "How do you feel today?" with three equal answers (good, okay, off) and a Skip option.
 - **R17** If skipped, the card appears at once and keeps a small prompt to answer later that day.
-- **R18** An answer can be changed until the next morning's check-in. The first answer, its time and whether the status had already been seen are all kept.
+- **R18** An answer can be changed until the next morning's check-in. The first answer, its time and whether the status had already been seen are all kept. (Decided 3 October 2026: the check-in belongs to the calendar day, so in practice an answer can be changed until midnight, when the card moves to the new day.)
 - **R19** The check-in never changes the status.
 
 ### Readiness card (home screen)
@@ -319,6 +319,7 @@
 | Zone numbers on Why today (3 Oct 2026) | Shown from the settings version that scored the day (where Ease off and Rest start, and how many nights the normal comes from); the weights are never shown (R40) |
 | Links before Phase 5 (3 Oct 2026) | Until the trend view, digest and Settings exist, the card's Settings button opens the temporary account screen, and the digest row (R20) and "See your trends" (R44) are left out, so no link leads nowhere |
 | Rejected sync and import progress (3 Oct 2026) | Built with the other card states (R11, R12) |
+| Check-in day (3 Oct 2026) | A check-in belongs to the calendar day; it can be changed until midnight (R18) |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.
