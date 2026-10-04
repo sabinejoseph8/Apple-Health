@@ -9,7 +9,7 @@
 ## Summary
 
 - **Current phase:** Phases 2 and 5 are done. Phases 3 and 4 are built, reviewed and live, each with something left that only time or Sabine can close: Phase 3 waits on her wording sheet review; Phase 4's manual checks happen on real mornings and evenings (the first, the morning notification, on 5 October 2026). Phase 1 has one check left (about 10 October). Sabine's self-test runs until about 17 to 24 October. Phase 6 (hardening and dry run) is next, planned with Sabine first.
-- **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, which collects itself from the uploads log until about 10 October 2026; then Phase 1 closes.
+- **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, counted until about 10 October 2026 from the uploads log plus Sabine's notes of mornings she sees the Shortcuts "device is locked" message (D75); then Phase 1 closes.
 - **Phase 2 (Data and analysis), done 3 October 2026:**
   - Nights from the Watch's sleep stages (D48 to D50), normals (D11, now from 42 nights), the daily status, nudge and illness check (D51 to D53), insights, versioned score settings, and the every-minute analysis queue, all live.
   - Only Watch readings count, a Watch being any source that records heart rate; two watches' resting heart rates give their median (D56, D57).
@@ -78,7 +78,7 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - a year can be imported
 - users' data stays separate
 
-**Status:** In progress (1a, 1c and the Phase 1 code review done on 3 October 2026; 1b's last check, the locked-phone rate, collects itself until about 10 October)
+**Status:** In progress (1a, 1c and the Phase 1 code review done on 3 October 2026; 1b's last check, the locked-phone rate, counted until about 10 October from the uploads log plus Sabine's notes, D75)
 
 ### 1a. App, sign-in and push
 - [x] Create the GitHub repository with GitHub Actions
@@ -155,7 +155,8 @@ Requirement numbers (R1 to R67) refer to product-spec.md.
 - **First real morning (3 October 2026):** both automations ran on their own. Repeat runs stored nothing twice (every reading recognised as a duplicate). Two charger runs (4:47am and 5:04am) sent their ping but never read Health, the pattern of a locked phone; charger runs at 4:09am and 8:40am got through.
 - **The Watch's sleep record reached the iPhone after waking**, later than the 8:40am charger run and the 8:45am app run, so neither could complete the night. Until it arrived, Clarivi correctly said the night wasn't finished (no false "complete"). The next app run, at 9:14am, sent it (16 sleep stages, 5:05am to 8:35am, plus 26 breathing-rate readings) and the night was marked complete. This is what the catch-up trigger is for; how often it leaves the night incomplete until late morning is part of check 2.
 - **"Synced today" file:** the first automation runs couldn't save it: iOS needs a one-time permission for a shortcut to use iCloud Drive and can't ask while an automation runs in the background, so the save was quietly refused (the folder was created, the file wasn't). After one run by hand (permission allowed), the app automation found the file and stopped without contacting the server. The setup guide must include: run Clarivi Sync by hand once and allow Health and file access.
-- Still to measure: the locked-phone rate (check 2), over about a week of mornings.
+- **A blocked run can now leave no trace (4 October 2026):** the charger run at 10:38am stopped with the Shortcuts message "This shortcut requires privacy permissions that cannot be granted while your device is locked" and never reached the server (no ping). The Shortcut's first step reads the "synced today" file, and the lock blocks that too; on 3 October that file didn't exist yet, which is likely why the blocked runs then still sent their ping. The app automation caught up three minutes later (readings at 10:43am, the night complete at 10:52am), as D16 intends. So the log alone undercounts blocked charger runs (D75).
+- Still to measure: the locked-phone rate (check 2), until about 10 October 2026: from the log, which automation delivered each morning's sync and when; plus Sabine's notes of mornings she sees the locked message (D75). Mornings with the locked message so far: 4 October.
 
 **Phase 1 code review (3 October 2026)**
 - Reviewed everything Phase 1 changed (1a to 1c). Ten findings: eight fixed, one accepted for v1 (D46), one fixed by a decision (D47). All four GitHub checks pass afterwards, including a new "Local end to end" job that runs the token, sync and import checks against a local Supabase on every push.
