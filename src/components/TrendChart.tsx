@@ -73,7 +73,18 @@ export default function TrendChart({ reading, points, label }: { reading: Readin
       <p className="caption trend-readout" aria-live="polite">
         {readout}
       </p>
-      <div className="trend-plot" role="img" aria-label={label} tabIndex={0} onPointerDown={pick} onKeyDown={onKey}>
+      <div
+        className="trend-plot"
+        role="slider"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={points.length - 1}
+        aria-valuenow={picked ?? points.length - 1}
+        aria-valuetext={readout}
+        tabIndex={0}
+        onPointerDown={pick}
+        onKeyDown={onKey}
+      >
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height={H} aria-hidden="true">
           {bands.map((poly, i) => poly && <polygon key={i} points={poly} fill={`var(--${name}-band)`} />)}
           {medians.map((d, i) => (

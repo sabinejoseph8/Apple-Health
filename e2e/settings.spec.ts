@@ -67,9 +67,12 @@ test.describe('Settings on an iPhone', () => {
     await page.getByLabel(w.password, { exact: true }).fill('not-my-password')
     await page.getByRole('button', { name: w.deleteData }).click()
     await expect(page.getByRole('alert')).toHaveText(w.wrongPassword)
+    const tokenReadsBefore = app.reads.filter((r) => r === 'upload_tokens').length
     await page.getByLabel(w.password, { exact: true }).fill('my-password')
     await page.getByRole('button', { name: w.deleteData }).click()
     await expect(page.getByRole('status')).toHaveText(w.deleted)
+    // The token and phones shown above are read again, so they show as gone.
+    await expect.poll(() => app.reads.filter((r) => r === 'upload_tokens').length).toBeGreaterThan(tokenReadsBefore)
     expect(app.calls.filter((c) => c.name === 'fn:account-delete-data').map((c) => c.body)).toEqual([
       { password: 'not-my-password' },
       { password: 'my-password' },

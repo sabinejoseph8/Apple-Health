@@ -32,6 +32,8 @@ export type Tables = Partial<Record<string, unknown[]>>
 export interface MockApp {
   // Every call the app made to a database function, in order.
   calls: { name: string; body: unknown }[]
+  // Every table the app read, in order.
+  reads: string[]
 }
 
 // The clock is fixed at `at`; with `ticking`, it starts there and the test
@@ -40,7 +42,7 @@ export async function openApp(
   page: Page,
   { at, tables, path = '/', ticking = false }: { at: string; tables: Tables; path?: string; ticking?: boolean },
 ): Promise<MockApp> {
-  const app: MockApp = { calls: [] }
+  const app: MockApp = { calls: [], reads: [] }
   if (ticking) await page.clock.install({ time: new Date(at) })
   else await page.clock.setFixedTime(new Date(at))
   await page.addInitScript((session) => localStorage.setItem('clarivi-auth', session), JSON.stringify(SESSION))
@@ -71,6 +73,7 @@ export async function openApp(
       const rows = tables[name]
       return rows ? json(rows) : route.fulfill({ status: 204 })
     }
+    app.reads.push(name)
     // Import progress asks for months; everything else gets the table's rows,
     // narrowed by simple filters on the columns the made-up rows have.
     const select = url.searchParams.get('select') ?? ''

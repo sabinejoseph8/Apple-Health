@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { type DigestFacts, digestWords } from '../../supabase/functions/_shared/digest'
 import { wording } from '../../supabase/functions/_shared/wording'
+import { Loading, LoadFailed } from '../components/LoadState'
 import NavBar from '../components/NavBar'
 import { must, supabase } from '../lib/supabase'
-import { dateLine, longDate, nextDigestDay } from '../lib/when'
+import { logUsage } from '../lib/today'
+import { dateLine, localDate, longDate, nextDigestDay } from '../lib/when'
 
 const d = wording.digest
 
@@ -20,6 +22,7 @@ export default function Digest() {
       } | null
       setFacts(row?.facts ?? null)
       setFailed(false)
+      logUsage('digest_open', { date: localDate(new Date()) })
     } catch {
       setFailed(true)
     }
@@ -33,15 +36,8 @@ export default function Digest() {
   return (
     <main className="page digest">
       <NavBar title={d.row} />
-      {facts === undefined && !failed && <section className="card loading" aria-busy="true" />}
-      {facts === undefined && failed && (
-        <section className="card">
-          <p className="body">{wording.card.loadFailed}</p>
-          <button className="text-button" type="button" onClick={load}>
-            {wording.card.retry}
-          </button>
-        </section>
-      )}
+      {facts === undefined && !failed && <Loading />}
+      {facts === undefined && failed && <LoadFailed onRetry={load} />}
       {facts === null && (
         <section className="card">
           <p className="body">{d.firstOn(dateLine(nextDigestDay(new Date())))}</p>

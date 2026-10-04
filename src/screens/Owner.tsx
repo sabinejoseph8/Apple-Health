@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
+import { Loading, LoadFailed } from '../components/LoadState'
 import NavBar from '../components/NavBar'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
@@ -53,15 +54,8 @@ export default function Owner() {
           <p className="body">{w.notOwner}</p>
         </section>
       )}
-      {failed && (
-        <section className="card">
-          <p className="body">{wording.card.loadFailed}</p>
-          <button className="text-button" type="button" onClick={load}>
-            {wording.card.retry}
-          </button>
-        </section>
-      )}
-      {!status && !refused && !failed && <section className="card loading" aria-busy="true" />}
+      {failed && <LoadFailed onRetry={load} />}
+      {!status && !refused && !failed && <Loading />}
       {status && (
         <>
           <section className="card" aria-labelledby="owner-project">
@@ -71,8 +65,8 @@ export default function Owner() {
             <p className="body">{w.database(String(status.database_mb))}</p>
             {status.database_mb >= ALERT_MB && <p className="body warn">{w.databaseHigh}</p>}
           </section>
-          {status.people.map((p) => (
-            <section key={p.name} className="card person" aria-label={p.name}>
+          {status.people.map((p, i) => (
+            <section key={i} className="card person" aria-label={p.name}>
               <div className="status-row">
                 <h2 className="card-title person-name">{p.name}</h2>
                 {p.is_owner && <span className="pill">{w.you}</span>}

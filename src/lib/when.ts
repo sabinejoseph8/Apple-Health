@@ -66,12 +66,13 @@ export function longDate(date: string): string {
   return `${d.getUTCDate()} ${wording.day.monthsLong[d.getUTCMonth()]}`
 }
 
-// The Monday the next weekly digest is built (from 5am local, D72): today if
-// it is Monday before 5am, otherwise the coming Monday.
+// The Monday the next weekly digest is built: from 5am local, in the hourly
+// run after it (D72). On a Monday morning that is today; from Monday noon,
+// the coming Monday.
 export function nextDigestDay(now: Date): Date {
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const daysToMonday = (8 - d.getDay()) % 7
-  const sameDay = daysToMonday === 0 && now.getHours() < 5
-  d.setDate(d.getDate() + (sameDay ? 0 : daysToMonday === 0 ? 7 : daysToMonday))
+  const today = daysToMonday === 0 && now.getHours() < 12
+  d.setDate(d.getDate() + (today ? 0 : daysToMonday === 0 ? 7 : daysToMonday))
   return d
 }
