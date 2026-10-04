@@ -48,7 +48,23 @@ export async function openApp(
   await page.route('http://127.0.0.1:54321/**', async (route: Route) => {
     const url = new URL(route.request().url())
     const json = (body: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
+    // Signing in again gives a session; signing out (anywhere) succeeds.
+    if (url.pathname === '/auth/v1/token') {
+      app.calls.push({ name: 'auth:sign-in', body: null })
+      return json(SESSION)
+    }
+    if (url.pathname === '/auth/v1/logout') {
+      app.calls.push({ name: `auth:sign-out:${url.searchParams.get('scope') ?? 'local'}`, body: null })
+      return route.fulfill({ status: 204 })
+    }
     if (url.pathname.startsWith('/auth/v1/')) return json(USER)
+    // Server functions: "fn/<name>" in the tables gives the reply, else ok.
+    if (url.pathname.startsWith('/functions/v1/')) {
+      const fn = url.pathname.replace('/functions/v1/', '')
+      app.calls.push({ name: `fn:${fn}`, body: route.request().postDataJSON() })
+      const reply = (tables[`fn/${fn}`] as { status: number; body: unknown }[] | undefined)?.shift()
+      return json(reply?.body ?? { ok: true }, reply?.status ?? 200)
+    }
     const name = url.pathname.replace('/rest/v1/', '')
     if (name.startsWith('rpc/')) {
       app.calls.push({ name: name.slice(4), body: route.request().postDataJSON() })

@@ -70,7 +70,7 @@ jobs:
       - run: npx supabase test db
 
   local-e2e:
-    name: Local end to end (tokens, sync and import against local Supabase)
+    name: Local end to end (tokens, sync, import and account settings against local Supabase)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -92,6 +92,7 @@ jobs:
           exit 1
       - run: npm run check:local:sync
       - run: npm run check:local:import
+      - run: npm run check:local:account
       - name: The database matches the pandas reference on a made-up history
         run: |
           python3 -m pip install --quiet -r scripts/reference/requirements.txt

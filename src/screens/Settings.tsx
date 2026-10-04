@@ -4,14 +4,16 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 import NavBar from '../components/NavBar'
+import AccountSettings from './AccountSettings'
 import UploadToken from './UploadToken'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
 const w = wording.notifications
 const TEST_DELAY_SECONDS = 15
 
-// A stand-in for Settings until Phase 5 (D63): the account, notifications,
-// upload token and sign out, as on the temporary home screen of Phase 1.
+// Settings (design.md, Settings list): who is signed in, notifications
+// (R47), the upload token (R10, R11), the account (R4, R7, R59) and sign
+// out. The setup guide link arrives with the guide in Phase 6 (D73).
 export default function Settings({ session }: { session: Session }) {
   const [isOwner, setIsOwner] = useState(false)
   const [devices, setDevices] = useState<number | null>(null)
@@ -113,8 +115,10 @@ export default function Settings({ session }: { session: Session }) {
 
       <UploadToken />
 
+      <AccountSettings email={session.user.email ?? ''} />
+
       <button className="text-button" type="button" onClick={signOut}>
-        {wording.home.signOut}
+        {wording.settings.signOut}
       </button>
     </main>
   )

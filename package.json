@@ -16,6 +16,7 @@
     "check:local:sync": "node scripts/local-1b-check.mjs",
     "check:local:import": "node scripts/local-import-load.mjs",
     "check:local:notify": "node scripts/local-4-check.mjs",
+    "check:local:account": "node scripts/local-5-check.mjs",
     "test:e2e": "playwright test",
     "wording:sheet": "node scripts/wording-sheet.ts"
   },

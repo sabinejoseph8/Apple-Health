@@ -2,10 +2,17 @@
 // "must change password" flag in the same step, so the flag can only be
 // cleared once a new password is saved (tech-spec section 6).
 import { createClient } from 'jsr:@supabase/supabase-js@2'
-import { adminClient, corsHeaders, json, mustChangePassword, publishableKey, supabaseUrl, userFromRequest } from '../_shared/http.ts'
-
-const MIN_LENGTH = 12
-const MAX_LENGTH = 72
+import {
+  adminClient,
+  corsHeaders,
+  json,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  mustChangePassword,
+  publishableKey,
+  supabaseUrl,
+  userFromRequest,
+} from '../_shared/http.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -22,8 +29,8 @@ Deno.serve(async (req) => {
   } catch {
     return json({ error: 'bad_request' }, 400)
   }
-  if (typeof password !== 'string' || password.length < MIN_LENGTH) return json({ error: 'too_short' }, 400)
-  if (password.length > MAX_LENGTH) return json({ error: 'too_long' }, 400)
+  if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) return json({ error: 'too_short' }, 400)
+  if (password.length > MAX_PASSWORD_LENGTH) return json({ error: 'too_long' }, 400)
 
   // Refuse the temporary password: if it still signs in, it hasn't changed.
   const probe = createClient(supabaseUrl(), publishableKey(), {
