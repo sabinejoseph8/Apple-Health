@@ -45,6 +45,7 @@
   - Password checks in Settings share one sign-in rate limit with signing in (a known limit from the Phase 5 code review; tech-spec, Security).
   - If the Mac's copy of the project stalls with "mmap failed: Operation timed out", the files were not all on the Mac: in Finder, set the Clarivi folder to Keep Downloaded, then `git reset --hard origin/main` (only when nothing unsaved is in the folder). Seen 4 October 2026 while updating `main`.
   - The old Phase 2 commits removed from GitHub may stay reachable by their exact address for a while before GitHub cleans them up.
+  - The six merges rewritten on 4 October 2026 (Sabine's email removed) stay reachable in their old form through merge requests #3 to #6 until GitHub Support removes them; commit links in those merge requests point to the old copies.
 
 **Set-up so far (checked 3 October 2026, end of Phase 2)**
 | Item | State |
@@ -366,6 +367,11 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 **Goal:** make the app safe and ready for testers, then prove it with one tester for a week.
 
 **Status:** Planned 4 October 2026 (decisions D76 to D79), built on branch `phase-6-hardening` in three steps: 1, safety (the Content Security Policy, the secrets review, the live row-level security and upload-path checks, the first backup and a practice restore); 2, ready for testers (the app icon, the setup guide, Shortcut template v1, the Cayman Data Protection Act check, in-app consent, the fit on testers' phones); 3, the one-week dry run with one tester, then the release. Steps 1 and 2 need no tester; step 3 needs a tester's account and their consent.
+
+**Step 1 progress (4 October 2026):**
+- **Content Security Policy:** built. `vercel.json` sends a strict policy on every page and file (only the app's own code; connections only to itself and the live project; no framing, plugins or referrer) and other safety headers. `csp.test.ts` checks the policy; `e2e/csp.spec.ts` serves a production build with the same headers (the made-up database in place of the live project) and fails on anything blocked or any request to another site, shown to work by adding an inline script, which failed the test. Previews sit behind Vercel's sign-in, so the live headers are checked on production after the merge, and Sabine looks through the preview on her iPhone.
+- **Secrets review of the whole history (108 commits, all branches):** no keys, passwords, database addresses with passwords, `.env` files, health exports, backups or data files; the only key-like text is the made-up key planted to prove the build's secret check; the old MVP PDF (in history only) holds no email address or readings; the test account's email and Sabine's Apple relay address appear nowhere. The function secrets (secret keys, VAPID private key) are only in Supabase's secret store (`npx supabase secrets list` shows names and fingerprints only), and the app reads only its three public values.
+- **Found and fixed: Sabine's personal email on six merge commits.** GitHub stamps "Merge pull request" with the account's main email when email privacy is off. Sabine turned on "Keep my email addresses private" and "Block command line pushes that expose my email", then chose to rewrite history: the six merges now carry her private GitHub address (every commit's files checked identical), `main` and `phase-6-hardening` were force-updated, and the four merged branches that still held the old merges (`phase-5-settings`, `phase-5-checks`, `phase-5-done`, `phase-1-locked-count`) were deleted. GitHub still keeps its own copies through merge requests #3 to #6 until GitHub Support removes them (Sabine's request, optional).
 
 ### Tasks
 - [ ] Turn on a strict Content Security Policy; confirm there are no third-party scripts
