@@ -380,7 +380,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - every card state, Why today and the numbers toggles (built in Phase 3: `e2e/card.spec.ts` and `e2e/why-today.spec.ts`)
   - follow-through timing, with the clock set to before and after 8pm
   - the check that the morning card fits in 390 by 763 points (built in Phase 3)
-  - Phase 3's screen tests sign in a made-up tester and answer every database request with made-up rows (`e2e/fixtures/mock-app.ts`), with the clock fixed at the design's sample morning in a UTC-5 time zone. The service worker is blocked in these tests: once it controls the page, requests skip Playwright's interception and reach the real server (found in Phase 3, when it made the tests flaky). `SCREENS=1 npx playwright test e2e/screens.spec.ts` saves a screenshot of every state for review.
+  - Phase 3's screen tests sign in a made-up tester and answer every database request with made-up rows (`e2e/fixtures/mock-app.ts`), with the clock fixed at the design's sample morning in a UTC-5 time zone. The service worker is blocked in these tests: once it controls the page, requests skip Playwright's interception and reach the real server (found in Phase 3, when it made the tests flaky). `SCREENS=1 npx playwright test e2e/screens.spec.ts` saves a screenshot of every state to `screenshots/` (never committed) for review.
 - **Manual checks on real iPhones:**
   - install, sign in and Keychain autofill
   - notification taps
