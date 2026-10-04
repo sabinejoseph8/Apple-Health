@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights)
+**Last updated:** 4 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
@@ -249,10 +249,22 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - Trend view
 - Weekly digest
 - Change password (sign in and "Set a new password" were built in Phase 1a from the Forms pattern)
-- A temporary home screen (account, notifications and Sign out) stands in for the readiness card until Phase 3
+- Settings: until Phase 5, the Settings button opens the Phase 1 account screen (account, notifications, upload token, Sign out) under a "< Today" nav bar (D63)
 - Settings
 - Owner status page (R64)
-- Less common card states (waiting, night not finished, missed, late, no sync by noon, partial, not enough data, learning your normal, notifications off, sync rejected). These are left to the build, following the status pill and briefing card patterns.
+- Less common card states (waiting, night not finished, missed, late, no sync by noon, partial, not enough data, learning your normal, notifications off, sync rejected). These are left to the build, following the status pill and briefing card patterns. Built in Phase 3 (all but notifications off, which is Phase 4), as below.
+
+**As built in Phase 3 (4 October 2026), on the Default patterns:**
+- **Daily check-in screen:** the date and greeting header, then a white card: "How do you feel today?" (Card headline), three equal Button tint buttons (Good, Okay, Off; 48 points, 17/600 Button blue), the caption "Your answer never changes your status." and a quiet "Skip for now" text button. Opened again from the card, Skip becomes Cancel.
+- **Check-in row:** a face icon in Link blue (wide smile for good, small smile for okay, flat mouth for off), "You said you feel **okay** today" and Change; after Skip, "How do you feel today?" and Answer. The weekly digest row is left out until Phase 5 (D63).
+- **Greeting:** Good morning before noon, Good afternoon until 6pm, Good evening after.
+- **Nudge block by status:** Ease off tint on Ease off days (as designed); Rest pill tint with Rest text eyebrow on Rest days; on Ready days the quiet Background grey with a muted eyebrow, so a normal day stays calm.
+- **Late:** a neutral "Late" pill beside the status pill and a caption under the briefing ("This sync came after 11:30am, later than usual.").
+- **Cards without a status:** a neutral pill, a Card headline sentence and one or two plain lines (the last sync time, learning progress and last night's values); no nudge block and no Why link.
+- **Notices:** "Sync is being rejected" is a white card above the briefing card with an Attention orange warning icon, a line on the fix and an "Open Settings" link row. Import progress is a caption under the briefing card.
+- **Why today:** cards use 16 points of padding (so the summary headline stays on two lines); the "See your trends" button is left out until Phase 5 (D63); the zone boxes sit inside the numbers panel as white boxes, with today's box in the status's pill colour, an Attention orange inner ring and a "Today" tag.
+- **Icons:** drawn in the app in the SF Symbols style (gear, chevrons, faces, warning, and per reading a pulse line, a moon and a heart).
+- **Page padding:** 16 points below the status bar and above the home indicator (the safe-area insets plus 16), matching the canvas's 63 and 42 point frames.
 
 **Earlier options kept for reference only:**
 - "Readiness Card Screen" canvas, option B (plan first)

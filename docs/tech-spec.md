@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder)
+**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -199,6 +199,8 @@ The app uses the Supabase client with the public (publishable) key and the user'
   - `log_usage(event, meta)` (built in Phase 3: events `card_view`, `why_today_open`, `checkin_skipped`; the meta may hold only `date`, `status_shown` and `state`, the kind of card, never a status or a reading; past 500 events in a day it stops logging quietly)
 - **Zone numbers (D62, built in Phase 3):** `status_zones(version)` returns a settings version's Ease off and Rest limits, its normal window and minimum valid nights (overall and per reading) and the readings in order of weight, never the weights; with no version it gives the active one. Signed-in users only.
 
+- **Built in Phase 3, how the app reads (4 October 2026):** straight from the tables under row-level security rather than views, since each screen needs only a few small queries. The card (`src/lib/today.ts`) reads today's `daily_status`, the last three days of `uploads` and the newest accepted sync, import months, today's `baselines` and `nights`, today's check-in and whether it was skipped; `src/lib/card-state.ts` then picks the card from the phone's clock: the sync that completed the night sets the time shown, 11:30 marks it late, and a first sync after noon gives no status (R25 to R32). Why today (`src/lib/why.ts`) adds 28 nights, today's normals, today's `insights` and `status_zones` for the day's settings version. Screens: `#/` (the card), `#/why` and `#/settings`, in the address so a notification's link can reach them later. While a sync is awaited the card checks again each minute, and on every return to the app.
+
 ### Web app to server functions
 Each call carries the user's session.
 - **`account-token`:** checks the password, then creates or reissues the upload token. The token is returned once.
@@ -372,11 +374,12 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - `today.py` prints a day's status in plain words for the owner's self-test (end of Phase 2).
   - `measure.py --live` reports the Signal on her year for the current settings and a few alternatives, tried in pandas only. Disrupted mornings follow D55 and D60 (workouts judged by day, Watch workouts only).
   - Unit tests (`python -m unittest discover -s scripts/reference`) hold the reference to the same agreed examples as the database tests, on every push. Nothing these scripts read is saved.
-- **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules.
+- **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules. Built in Phase 3: `src/lib/card-state.test.ts` (every card situation from the clock and the day's data: waiting, readings in, sleep in progress, no sync yet, late, after noon, not enough data, learning, rejected sync, import months), `src/briefing.test.ts` (the design's sample day word for word, and the wording rules over 1,944 made-up days covering every mix of readings, statuses and illness-check results), `src/lib/why.test.ts` (the numbers panel's words).
 - **End-to-end tests (Playwright, iPhone screen size):** set up on 3 October 2026 (`npm run test:e2e`, tests in `e2e/`). They run in WebKit, Safari's engine, on an iPhone 14-sized screen (390 points wide), locally and on GitHub with every push. The first tests cover the sign-in screen: its form and contact line, no sideways scrolling, 44-point tap targets, and the manifest, icon and service worker. Still to come:
-  - every card state, Why today and the numbers toggles
+  - every card state, Why today and the numbers toggles (built in Phase 3: `e2e/card.spec.ts` and `e2e/why-today.spec.ts`)
   - follow-through timing, with the clock set to before and after 8pm
-  - the check that the morning card fits in 390 by 763 points
+  - the check that the morning card fits in 390 by 763 points (built in Phase 3)
+  - Phase 3's screen tests sign in a made-up tester and answer every database request with made-up rows (`e2e/fixtures/mock-app.ts`), with the clock fixed at the design's sample morning in a UTC-5 time zone. The service worker is blocked in these tests: once it controls the page, requests skip Playwright's interception and reach the real server (found in Phase 3, when it made the tests flaky). `SCREENS=1 npx playwright test e2e/screens.spec.ts` saves a screenshot of every state for review.
 - **Manual checks on real iPhones:**
   - install, sign in and Keychain autofill
   - notification taps

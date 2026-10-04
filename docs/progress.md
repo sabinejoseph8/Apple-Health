@@ -20,7 +20,12 @@
 - **Self-test:** each morning Sabine runs `.venv/bin/python scripts/reference/today.py` and saves how she felt with `--felt good|okay|off` (kept in `private/selftest.csv`, never committed). Day 1 (3 October): Ready, but she felt off after a short night, the case 2c flagged. At the end, compare her answers with the statuses; if "Ready after a short night" keeps meeting "off", a new settings version can still change it before the test (D59).
 - **Branches:** `main` holds 1a and the first part of 1b (what Vercel serves in production); `phase-1b-daily-sync` holds the rest of Phase 1; `phase-2c-tuning` holds Phase 2 on top of it (one clean commit plus follow-ups; `phase-2a-nights` and `phase-2b-status` were deleted in the history rewrite). The live database already has every migration through `20261004040000_phase2_review_fixes.sql`, and the `ingest` and `account-token` functions are deployed. When Phase 1 closes, Sabine merges into `main`, which deploys the app changes.
 - **Phase 3 plan (agreed 3 October 2026):** built on branch `phase-3-card` (from `phase-2c-tuning`) in three steps, each ending with something Sabine can look at: 1, groundwork (design tokens; the wording module, with a sample sheet of every state's words for Sabine to approve; the database additions: check-ins, the usage log and the zone-numbers function); 2, the check-in and the readiness card with every state; 3, Why today. Decisions: D62 (the zone numbers come from a small database function, never the weights), D63 (until Phase 5, Settings opens the temporary account screen, and the digest row and trends button are left out), D64 (the rejected-sync and import-progress card states are built in Phase 3).
-- **Next action:** Phase 3, step 1; read the locked-phone check around 10 October 2026.
+- **Phase 3 progress (4 October 2026, branch `phase-3-card`, local copy only):** steps 1 to 3 are built and pass every automated test (69 unit, 25 end to end at iPhone size, 258 database), nothing applied to the live project yet.
+  - Step 1: design tokens; the wording module and `briefing.ts` (the design's sample day comes out word for word); the wording sample sheet (`npm run wording:sheet`); `checkins`, `usage_events`, `submit_checkin`, `log_usage` and `status_zones` (migration `20261005000000_checkins_usage_zones.sql`). Sabine's first wording change: the Ready headline is "Your readings are all normal" ("normal or better" when a reading was better than normal).
+  - Step 2: the check-in (first open of the day, Skip, Change), the readiness card with every state (waiting, readings in, sleep in progress, no sync yet, late, no sync by noon, 2 of 3 readings, not enough data, learning your normal), the rejected-sync notice and import progress (D64), and Settings as a stand-in (D63). The morning card fits 390 by 763 points, tested.
+  - Step 3: Why today (summary, three reading cards with four-week charts and the numbers, Also checked, how the status is decided with points and zones).
+  - Screens checked on made-up data: in the dev server against the local copy (`node scripts/local-card-demo.mjs <state>`), and as screenshots of every state (`SCREENS=1 npx playwright test e2e/screens.spec.ts`).
+- **Next action:** Sabine finishes the wording sheet review and looks at the screenshots; then, with her OK, apply the Phase 3 migration to the live project, check the screens on her iPhone through the preview (manual checks 1 to 4, with made-up nights on the test account for check 4), and run the Phase 3 code review. Read the locked-phone check around 10 October 2026.
 - **Where ticks live:** in both places: this file (`- [x]`) and the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe).
 - **Code reviews:** every phase ends with a code review of everything it changed (D41). Phases 1 and 2 are reviewed.
 - **Working with Sabine:** every action for her is written under "Step for you", with each terminal command in its own command box (Run and Copy buttons) at the end of the message, and a phone notification. The owner's scripts remember her sign-in in `private/` (typed once, in the Mac's Terminal app, because the Claude app's terminal panel showed a password at a hidden prompt).
@@ -229,7 +234,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 **Status:** In progress (planned and started 3 October 2026, on branch `phase-3-card`; decisions D62 to D64)
 
 ### Tasks
-- [ ] Add design tokens (colours, type, spacing, radius) from design.md as CSS variables
+- [x] Add design tokens (colours, type, spacing, radius) from design.md as CSS variables (4 October 2026)
 - [ ] Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests
 - [ ] Build the daily check-in screen (good, okay, off, Skip) and the check-in row on the card
 - [ ] Build the readiness card:
@@ -244,7 +249,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
   - "How today's status is decided" with the points table and zone boxes (zone numbers and the "last 42 nights" footnote come from the active score settings, version 2: 1.2 and 2.4; the design canvas still shows the placeholders 1, 2 and 28; users can't read the settings table, so a small database function gives the app a version's zone limits and normal window, never the weights, D62)
   - no "See your trends" button until the trend view exists (Phase 5, D63)
   - missing and building states
-- [ ] Log card views and Why today opens
+- [x] Log card views and Why today opens (4 October 2026: `usage_events` through `log_usage`, never health values; skipped check-ins too)
 - [ ] Check safe areas and the one-screen fit on 390-point iPhones
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests
 
