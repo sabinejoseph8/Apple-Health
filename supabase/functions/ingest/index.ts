@@ -10,6 +10,8 @@ Deno.serve(async (req) => {
   try {
     return await handleIngest(req, {
       now: () => new Date(),
+      // Sizes and counts only (IngestLogEntry), to measure posts.
+      log: (entry) => console.log(JSON.stringify({ event: 'ingest', ...entry })),
       store: async (tokenHash, upload, rejection) => {
         const { data, error } = await admin.rpc('ingest_upload', {
           p_token_hash: tokenHash,

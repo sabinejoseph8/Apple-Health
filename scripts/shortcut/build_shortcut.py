@@ -17,19 +17,64 @@ What the Shortcut does, each run:
    today's date (the second "already synced" check).
 3. Sends a ping. Stops if the reply says today is already complete, or shows
    the reply's message if Clarivi refused it.
-4. Reads last night's readings (heart rate, HRV, breathing rate and sleep
-   stages from 6pm yesterday, resting heart rate from yesterday) and posts
-   them as one daily post.
+4. Reads yesterday's and today's readings (heart rate, HRV, breathing rate,
+   resting heart rate and sleep stages) and posts them as one daily post,
+   one list per column. Health searches in Shortcuts only work in whole days,
+   so the server keeps heart rate from 6pm to noon (D18). Building one line
+   per reading took over 14 minutes for a day of heart rate on an iPhone;
+   columns take about a second (Phase 1b spike, 3 October 2026).
 5. Saves today's date to last-sync.txt once the night is complete, and shows
    Clarivi's message when run by hand.
 
-The Shortcut tests the reply's JSON text for "already_complete_today":true,
-"night_complete":true and "error", which the ingest function's tests pin
-down (supabase/functions/ingest/handler.test.ts).
+Run by hand, it first asks: sync this morning, or import the last 12 months
+(R12). The import sends this month and the 11 before it, newest first (so an
+interrupted import already has the recent months a baseline needs), one post
+per month ("backfill" with its month_id), using whole-month searches.
+Month steps use hours only: Adjust Date ignored a step of whole months on
+Sabine's iPhone (1c, 3 October 2026), so the Shortcut moves 40 days on or 15
+days back in hours and snaps to the 1st of that month.
+
+Within a month, heart rate is read one day at a time and the days are
+gathered into the month's single post: iOS stopped the Shortcut when one step
+handled about 3,900 heart rate readings, while about 2,000 worked (1c size
+checks). A day is normally 600 to 1,000 readings. On a heavy day (1,000 or
+more, usually a workout), the Shortcut takes the day's first 1,000 and last
+1,000 readings by time, which keeps the night on either side and drops only
+the middle of the day, which the server sets aside anyway (D43). The other
+readings are small and are read a month at a time.
+
+A month is sent in parts: first the small readings (sleep, HRV, breathing
+rate, resting heart rate) on their own, then heart rate, as one backfill post
+whenever the gathered days reach about 250,000 characters or the month's last
+day is reached. iOS timed out a 682 KB post before it left the phone, while
+385 KB went through in 12 seconds (1c send checks). Posts sent before or
+inside the day-by-day loop worked, but a post made just after the loop ended
+failed every time, whatever its size, so nothing is sent after the loop: the
+last part goes inside it, on the month's last day. Only after that is the
+month written to import-done.txt. In the import, heart
+rate goes without its end time (always its start) and unit (always count/min),
+which the server fills in.
+After each month it adds the month to Clarivi/import-done.txt and shows
+Clarivi's progress message; months already in that file are skipped, so an
+interrupted import carries on where it stopped. Progress is kept on the phone
+so the upload token stays write-only (decided 3 October 2026).
+
+Every word the Shortcut shows itself (the menu, the "finished" line) comes
+from the shortcut section of supabase/functions/_shared/wording.ts.
+
+The Shortcut tests the reply's JSON text for "accepted": (a post counts as
+stored only if Clarivi says what it accepted, so a gateway error page is a
+failure, not a success), "already_complete_today":true and
+"night_complete":true, which the ingest function's tests pin down
+(supabase/functions/ingest/handler.test.ts). The month's last import post
+says "month_complete":true, so the server's progress count only includes
+finished months. Quotes and backslashes in source (device) names become
+apostrophes, since the post is built as text.
 """
 
 import json
 import plistlib
+import re
 import subprocess
 import sys
 import uuid
@@ -39,16 +84,55 @@ INGEST_URL = 'https://vuynnnrijdbvamwfauog.supabase.co/functions/v1/ingest'
 TOKEN_PLACEHOLDER = 'Paste your upload token here'
 MARKER_FOLDER = 'Clarivi/'
 MARKER_FILE = 'last-sync.txt'
+IMPORT_FILE = 'import-done.txt'
+IMPORT_MONTHS = 12
+WORDING = Path(__file__).resolve().parents[2] / 'supabase' / 'functions' / '_shared' / 'wording.ts'
 OBJ = '￼'  # where a variable sits inside a text field
 
-# Health types: Find Health Samples picker label, Clarivi type, window.
+# Health types: Find Health Samples picker label, Clarivi type.
 HEALTH_TYPES = [
-    ('Heart Rate', 'heart_rate', 'evening'),
-    ('Heart Rate Variability', 'hrv_sdnn', 'evening'),
-    ('Respiratory Rate', 'respiratory_rate', 'evening'),
-    ('Resting Heart Rate', 'resting_hr', 'yesterday'),
-    ('Sleep', 'sleep_stage', 'evening'),
+    ('Heart Rate', 'heart_rate'),
+    ('Heart Rate Variability', 'hrv_sdnn'),
+    ('Respiratory Rate', 'respiratory_rate'),
+    ('Resting Heart Rate', 'resting_hr'),
+    ('Sleep', 'sleep_stage'),
 ]
+
+# Columns sent for each type, and the Health sample detail each comes from.
+COLUMNS = [('start', 'Start Date'), ('end', 'End Date'), ('value', 'Value'), ('unit', 'Unit'), ('source', 'Source')]
+
+# Joins a column's entries into the inside of a JSON list of text: a","b","c.
+COLUMN_SEPARATOR = '","'
+
+# Characters a device name could contain that would break the JSON text.
+SOURCE_UNSAFE = '["\\\\]'
+
+# "Start Date is in the last 1 day": yesterday and today. Finer date filters
+# (after a time, between two times, in the last N hours) don't work on Health
+# samples in Shortcuts (Phase 1b spike, 3 October 2026).
+LAST_DAY = {'Operator': 1001, 'Values': {'Number': '1', 'Unit': 16}}
+
+
+STRING = r"""(?:'([^'\\]*)'|"([^"\\]*)")"""
+
+
+def wording_section(name):
+    """The plain strings (no functions) in one section of wording.ts."""
+    source = WORDING.read_text()
+    block = re.search(r'\n  ' + name + r': \{\n(.*?)\n  \},', source, re.S)
+    if not block:
+        raise SystemExit(f'wording.ts has no {name} section')
+    return {key: a or b for key, a, b in re.findall(r'^\s+(\w+): ' + STRING + r',$', block.group(1), re.M)}
+
+
+def shortcut_wording():
+    """The words the Shortcut shows itself: its own section of wording.ts,
+    plus the app's name (notification titles) and the sync failure line."""
+    source = WORDING.read_text()
+    words = wording_section('shortcut')
+    words['appName'] = re.search(r"^  appName: '([^']*)',$", source, re.M).group(1)
+    words['failed'] = wording_section('sync')['failed']
+    return words
 
 ISO_TIME = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
 
@@ -127,9 +211,10 @@ class Out:
 
 
 class Builder:
-    def __init__(self):
+    def __init__(self, words=None):
         self.actions = []
         self.questions = []
+        self.words = words or shortcut_wording()
 
     def add(self, identifier, params):
         self.actions.append({'WFWorkflowActionIdentifier': f'is.workflow.actions.{identifier}',
@@ -147,9 +232,6 @@ class Builder:
 
     def set_variable(self, name, out):
         self.add('setvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
-
-    def append_variable(self, name, out):
-        self.add('appendvariable', {'WFVariableName': name, 'WFInput': attachment(out.ref())})
 
     def number(self, out):
         action_id = new_id()
@@ -173,19 +255,11 @@ class Builder:
     def end_if(self, group):
         self.add('conditional', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
 
-    def repeat_each(self, out):
-        group = new_id()
-        self.add('repeat.each', {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFInput': attachment(out.ref())})
-        return group
-
-    def end_repeat(self, group):
-        self.add('repeat.each', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
-
     def stop(self):
         self.add('exit', {})
 
     def notify(self, *parts):
-        self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens('Clarivi'),
+        self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens(self.words['appName']),
                                   'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
 
     def date_from(self, *parts):
@@ -193,17 +267,39 @@ class Builder:
         self.add('date', {'UUID': action_id, 'WFDateActionMode': 'Specified Date', 'WFDateActionDate': tokens(*parts)})
         return Out(action_id, 'Date')
 
-    def subtract(self, date, magnitude, unit):
+    def adjust(self, date_ref, operation, magnitude, unit):
+        """Add or Subtract a fixed amount. The source date goes in as text with
+        a variable, the only form that worked in the 1b spike."""
         action_id = new_id()
         self.add('adjustdate', {
             'UUID': action_id,
-            'WFDate': tokens(date.ref()),
-            'WFAdjustOperation': 'Subtract',
+            'WFDate': tokens(date_ref),
+            'WFAdjustOperation': operation,
             'WFDuration': {'Value': {'Magnitude': str(magnitude), 'Unit': unit}, 'WFSerializationType': 'WFQuantityFieldValue'},
         })
         return Out(action_id, 'Adjusted Date')
 
-    def find_health(self, label, since):
+    def menu(self, prompt, items):
+        group = new_id()
+        self.add('choosefrommenu', {'GroupingIdentifier': group, 'WFControlFlowMode': 0,
+                                    'WFMenuPrompt': prompt, 'WFMenuItems': list(items)})
+        return group
+
+    def menu_case(self, group, title):
+        self.add('choosefrommenu', {'GroupingIdentifier': group, 'WFControlFlowMode': 1, 'WFMenuItemTitle': title})
+
+    def end_menu(self, group):
+        self.add('choosefrommenu', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
+    def repeat_count(self, count):
+        group = new_id()
+        self.add('repeat.count', {'GroupingIdentifier': group, 'WFControlFlowMode': 0, 'WFRepeatCount': count})
+        return group
+
+    def end_repeat(self, group):
+        self.add('repeat.count', {'UUID': new_id(), 'GroupingIdentifier': group, 'WFControlFlowMode': 2})
+
+    def find_health(self, label, date_row=LAST_DAY, order='Oldest First', limit=None):
         action_id = new_id()
         self.add('filter.health.quantity', {
             'UUID': action_id,
@@ -214,17 +310,30 @@ class Builder:
                     'WFActionParameterFilterTemplates': [
                         {'Bounded': True, 'Operator': 4, 'Property': 'Type', 'Removable': False,
                          'Values': {'Enumeration': {'Value': label, 'WFSerializationType': 'WFStringSubstitutableState'}}},
-                        {'Bounded': True, 'Operator': 2, 'Property': 'Start Date', 'Removable': True,
-                         'Values': {'Date': attachment(since.ref())}},
+                        dict({'Bounded': True, 'Property': 'Start Date', 'Removable': True}, **date_row),
                     ],
                 },
                 'WFSerializationType': 'WFContentPredicateTableTemplate',
             },
             'WFContentItemSortProperty': 'Start Date',
-            'WFContentItemSortOrder': 'Oldest First',
-            'WFContentItemLimitEnabled': False,
+            'WFContentItemSortOrder': order,
+            'WFContentItemLimitEnabled': limit is not None,
+            **({'WFContentItemLimitNumber': limit} if limit is not None else {}),
         })
         return Out(action_id, 'Health Samples')
+
+    def count(self, ref):
+        action_id = new_id()
+        self.add('count', {'UUID': action_id, 'WFCountType': 'Items', 'Input': attachment(ref), 'WFInput': attachment(ref)})
+        return Out(action_id, 'Count')
+
+    def replace(self, out, pattern, replacement):
+        """Replace Text with a regular expression."""
+        action_id = new_id()
+        self.add('text.replace', {'UUID': action_id, 'WFInput': tokens(out.ref()), 'WFReplaceTextFind': pattern,
+                                  'WFReplaceTextReplace': replacement, 'WFReplaceTextRegularExpression': True,
+                                  'WFReplaceTextCaseSensitive': True})
+        return Out(action_id, 'Updated Text')
 
     def combine(self, ref, separator):
         action_id = new_id()
@@ -254,50 +363,188 @@ class Builder:
         })
         return Out(action_id, 'Contents of URL')
 
-    def dictionary_value(self, out, key):
+    def dictionary_value(self, source, key):
+        """source: an action's Out, or a reference such as variable('LastReply')."""
         action_id = new_id()
+        ref = source.ref() if isinstance(source, Out) else source
         self.add('getvalueforkey', {'UUID': action_id, 'WFGetDictionaryValueType': 'Value',
-                                    'WFDictionaryKey': key, 'WFInput': attachment(out.ref())})
+                                    'WFDictionaryKey': key, 'WFInput': attachment(ref)})
         return Out(action_id, 'Dictionary Value')
 
-    def get_marker(self):
+    def get_file(self, name):
         action_id = new_id()
-        self.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': MARKER_FOLDER + MARKER_FILE,
+        self.add('documentpicker.open', {'UUID': action_id, 'WFGetFilePath': MARKER_FOLDER + name,
                                          'WFFileErrorIfNotFound': False, 'WFShowFilePicker': False})
         return Out(action_id, 'File')
 
-    def save_marker(self):
-        today = self.text(variable('Today'))
+    def save_file(self, name, ref):
+        """Saves text to iCloud Drive/Shortcuts/Clarivi/<name>, replacing it."""
+        text = self.text(ref)
         named_id = new_id()
-        self.add('setitemname', {'UUID': named_id, 'WFInput': attachment(today.ref()), 'WFName': MARKER_FILE})
+        self.add('setitemname', {'UUID': named_id, 'WFInput': attachment(text.ref()), 'WFName': name})
         self.add('documentpicker.save', {'UUID': new_id(), 'WFInput': attachment(output(named_id, 'Renamed Item')),
                                          'WFAskWhereToSave': False, 'WFFileDestinationPath': MARKER_FOLDER,
                                          'WFSaveFileOverwrite': True})
 
+    def get_marker(self):
+        return self.get_file(MARKER_FILE)
+
+    def save_marker(self):
+        self.save_file(MARKER_FILE, variable('Today'))
+
     def stop_if_refused(self, reply):
-        group = self.if_(reply.ref(as_text()), 99, string='"error"')
+        """Stops unless Clarivi's reply says what it accepted. A refusal shows
+        Clarivi's message; anything else (a gateway error page, a timeout
+        reply) shows the general failure line."""
+        group = self.if_(reply.ref(as_text()), 999, string='"accepted":')
         message = self.dictionary_value(reply, 'message')
+        has_message = self.if_(message.ref(), 100)
         self.notify(message.ref())
+        self.otherwise(has_message)
+        self.notify(self.words['failed'])
+        self.end_if(has_message)
         self.stop()
         self.end_if(group)
 
 
-def sample_line(clarivi_type):
-    item = 'Repeat Item'
-    start = variable(item, prop('Start Date'), date_format(ISO_TIME))
-    end = variable(item, prop('End Date'), date_format(ISO_TIME))
-    value = variable(item, prop('Value'))
-    source = variable(item, prop('Source'))
-    if clarivi_type == 'sleep_stage':
-        return ('{"type":"sleep_stage","start":"', start, '","end":"', end,
-                '","stage":"', value, '","source":"', source, '"}')
-    unit = variable(item, prop('Unit'))
-    return ('{"type":"' + clarivi_type + '","start":"', start, '","end":"', end, '","value":"', value,
-            '","unit":"', unit, '","source":"', source, '"}')
+def series_text(b, clarivi_type, samples, columns=COLUMNS):
+    """One reading type as columns: {"type":..,"start":[..],"end":[..],...}."""
+    parts = ['{"type":"' + clarivi_type + '"']
+    for key, detail in columns:
+        aggr = [prop(detail)] + ([date_format(ISO_TIME)] if detail.endswith('Date') else [])
+        column = b.combine(samples.ref(*aggr), COLUMN_SEPARATOR)
+        if key == 'source':
+            column = b.replace(column, SOURCE_UNSAFE, "'")
+        parts += [',"' + key + '":["', column.ref(), '"]']
+    parts.append('}')
+    return b.text(*parts)
+
+
+# Moving between months in hours: from noon on the 1st, 40 days on is always
+# inside the next month and 15 days back inside the one before.
+HOURS_TO_NEXT_MONTH = 40 * 24
+HOURS_TO_PREVIOUS_MONTH = 15 * 24
+
+# Heart rate in the import: one day per search, at most this many readings
+# per search (a second search, newest first, only on a heavy day).
+DAY_LIMIT = 1000
+MAX_DAYS_IN_MONTH = 31
+
+# A part of a month goes once the gathered heart rate days reach this size.
+PART_CHARACTERS = 250_000
+
+# Heart rate columns in the import (the server fills in end and unit).
+LEAN_COLUMNS = [c for c in COLUMNS if c[0] in ('start', 'value', 'source')]
+
+# The first item of a part's series list: an empty heart rate series, so the
+# gathered days (each starting with a comma) can follow it.
+EMPTY_HEART_RATE = '{"type":"heart_rate","start":[""]}'
+
+
+def heart_rate_by_day(b, month_id, notify_each_day=False, send_part=None):
+    """Gathers the month's heart rate, one day per search, into HeartRateDays
+    as ',{series},{series}...' (empty if there's none). With send_part, the
+    gathered days are sent as a part of the month whenever they reach
+    PART_CHARACTERS and on the month's last day, and HeartRateDays starts
+    again; send_part returns the reply, kept in LastReply. notify_each_day is
+    for the Clarivi Import Check diagnostic only."""
+    label = next(label for label, clarivi_type in HEALTH_TYPES if clarivi_type == 'heart_rate')
+    b.set_variable('Day', b.date_from(variable('Month', date_format('yyyy-MM-dd'))))
+    b.set_variable('HeartRateDays', b.text(''))
+    days = b.repeat_count(MAX_DAYS_IN_MONTH)
+    # Noon on this day plus 24 hours is always the next day (DST moves it an hour at most).
+    later = b.adjust(variable('Day'), 'Add', 24, 'hr')
+    next_day = b.date_from(later.ref(date_format('yyyy-MM-dd')))
+    in_month = b.if_(variable('Day', date_format('yyyy-MM')), 4, string=tokens(month_id.ref()))
+    one_day = {'Operator': 1003, 'Values': {'Date': attachment(variable('Day')),
+                                            'AnotherDate': attachment(next_day.ref())}}
+    early = b.find_health(label, one_day, 'Oldest First', DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',',
+                                           series_text(b, 'heart_rate', early, LEAN_COLUMNS).ref()))
+    early_count = b.count(early.ref())
+    if notify_each_day:
+        b.notify(variable('Day', date_format('MMM d')), ': ', early_count.ref(), ' readings at ',
+                 current_date(date_format('HH:mm:ss')))
+    heavy = b.if_(early_count.ref(), 3, number=DAY_LIMIT)
+    late = b.find_health(label, one_day, 'Latest First', DAY_LIMIT)
+    b.set_variable('HeartRateDays', b.text(variable('HeartRateDays'), ',',
+                                           series_text(b, 'heart_rate', late, LEAN_COLUMNS).ref()))
+    if notify_each_day:
+        b.notify(variable('Day', date_format('MMM d')), ': heavy day, second search done at ',
+                 current_date(date_format('HH:mm:ss')))
+    b.end_if(heavy)
+    if send_part:
+        # Send when the part is full, or on the month's last day (the next day
+        # is in another month), which also marks the post as the month's last.
+        b.set_variable('SendNow', b.text('no'))
+        b.set_variable('MonthComplete', b.text('false'))
+        size_id = new_id()
+        b.add('count', {'UUID': size_id, 'WFCountType': 'Characters', 'Input': attachment(variable('HeartRateDays')),
+                        'WFInput': attachment(variable('HeartRateDays'))})
+        full = b.if_(output(size_id, 'Count'), 3, number=PART_CHARACTERS)
+        b.set_variable('SendNow', b.text('yes'))
+        b.end_if(full)
+        last_day = b.if_(next_day.ref(date_format('yyyy-MM')), 5, string=tokens(month_id.ref()))
+        b.set_variable('SendNow', b.text('yes'))
+        b.set_variable('MonthComplete', b.text('true'))
+        b.end_if(last_day)
+        sending = b.if_(variable('SendNow'), 4, string='yes')
+        b.set_variable('LastReply', send_part())
+        b.set_variable('HeartRateDays', b.text(''))
+        b.end_if(sending)
+    b.end_if(in_month)
+    b.set_variable('Day', next_day)
+    b.end_repeat(days)
+
+
+def import_history(b, url, words):
+    """The one-year import: this month and the 11 before it, one post each."""
+    b.comment('Import the last 12 months, newest first, one month per post. Months already listed in '
+              'Clarivi/import-done.txt are skipped, so an interrupted import carries on where it stopped.')
+    # "yyyy-MM-01" becomes noon on the 1st, which is fine: Health searches
+    # only work in whole days.
+    b.set_variable('Month', b.date_from(current_date(date_format('yyyy-MM-01'))))
+    b.set_variable('Done', b.text(b.get_file(IMPORT_FILE).ref(as_text())))
+    loop = b.repeat_count(IMPORT_MONTHS)
+    month_id = b.text(variable('Month', date_format('yyyy-MM')))
+    later = b.adjust(variable('Month'), 'Add', HOURS_TO_NEXT_MONTH, 'hr')
+    next_month = b.date_from(later.ref(date_format('yyyy-MM-01')))
+    to_do = b.if_(variable('Done'), 999, string=tokens(month_id.ref()))
+    whole_month = {'Operator': 1003, 'Values': {'Date': attachment(variable('Month')),
+                                                'AnotherDate': attachment(next_month.ref())}}
+    def send(*series, complete=None):
+        """Posts one backfill part of this month and stops if Clarivi refuses it."""
+        marker = [] if complete is None else [',"month_complete":', complete]
+        body = b.text('{"schema_version":1,"kind":"backfill","month_id":"', month_id.ref(), '","device_tz_offset_min":"',
+                      variable('Offset'), '","trigger":"manual"', *marker, ',"series":[', *series, ']}')
+        reply = b.post(body, url)
+        b.stop_if_refused(reply)
+        return reply
+
+    small = [series_text(b, clarivi_type, b.find_health(label, whole_month))
+             for label, clarivi_type in HEALTH_TYPES if clarivi_type != 'heart_rate']
+    joined = []
+    for i, text in enumerate(small):
+        joined += ([','] if i else []) + [text.ref()]
+    send(*joined)
+
+    heart_rate_by_day(b, month_id, send_part=lambda: send(EMPTY_HEART_RATE, variable('HeartRateDays'),
+                                                          complete=variable('MonthComplete')))
+    # The month's last part was sent inside the loop; its reply is in LastReply.
+    b.set_variable('Done', b.text(variable('Done'), ' ', month_id.ref()))
+    b.save_file(IMPORT_FILE, variable('Done'))
+    b.notify(b.dictionary_value(variable('LastReply'), 'message').ref())
+    b.end_if(to_do)
+    earlier = b.adjust(variable('Month'), 'Subtract', HOURS_TO_PREVIOUS_MONTH, 'hr')
+    b.set_variable('Month', b.date_from(earlier.ref(date_format('yyyy-MM-01'))))
+    b.end_repeat(loop)
+    b.notify(words['importFinished'])
+    b.stop()
 
 
 def build(url=INGEST_URL):
-    b = Builder()
+    words = shortcut_wording()
+    b = Builder(words)
     b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from two automations '
               '(charger unplugged, and an app you open each morning) and can be run by hand.')
 
@@ -314,6 +561,22 @@ def build(url=INGEST_URL):
     b.set_variable('Trigger', b.text('manual'))
     b.end_if(group)
 
+    b.set_variable('Today', b.text(current_date(date_format('yyyy-MM-dd'))))
+    b.set_variable('Offset', b.text(current_date(date_format('XXXXX'))))
+
+    b.comment('Run by hand, choose between this morning\'s sync and the one-year import.')
+    b.set_variable('Mode', b.text('sync'))
+    by_hand = b.if_(variable('Trigger'), 4, string='manual')
+    menu = b.menu(words['menuPrompt'], [words['syncNow'], words['importHistory']])
+    b.menu_case(menu, words['syncNow'])
+    b.menu_case(menu, words['importHistory'])
+    b.set_variable('Mode', b.text('import'))
+    b.end_menu(menu)
+    b.end_if(by_hand)
+    importing = b.if_(variable('Mode'), 4, string='import')
+    import_history(b, url, words)
+    b.end_if(importing)
+
     b.comment('Automations only act between 4am and noon.')
     hour = b.number(b.text(current_date(date_format('H'))))
     automatic = b.if_(variable('Trigger'), 5, string='manual')
@@ -324,9 +587,6 @@ def build(url=INGEST_URL):
     b.stop()
     b.end_if(late)
     b.end_if(automatic)
-
-    b.set_variable('Today', b.text(current_date(date_format('yyyy-MM-dd'))))
-    b.set_variable('Offset', b.text(current_date(date_format('XXXXX'))))
 
     b.comment('Stop if this phone already finished today\'s sync.')
     marker = b.get_marker()
@@ -344,19 +604,18 @@ def build(url=INGEST_URL):
     b.stop()
     b.end_if(already)
 
-    b.comment('Read last night\'s readings from 6pm yesterday, and resting heart rate from yesterday.')
-    start_of_today = b.date_from(current_date(date_format('yyyy-MM-dd')))
-    since = {'evening': b.subtract(start_of_today, 6, 'hr'), 'yesterday': b.subtract(start_of_today, 1, 'days')}
-    for label, clarivi_type, window in HEALTH_TYPES:
-        samples = b.find_health(label, since[window])
-        loop = b.repeat_each(samples)
-        b.append_variable('Samples', b.text(*sample_line(clarivi_type)))
-        b.end_repeat(loop)
+    b.comment('Read yesterday\'s and today\'s readings, one list per column. Clarivi keeps heart rate '
+              'from 6pm to noon.')
+    series = []
+    for label, clarivi_type in HEALTH_TYPES:
+        series.append(series_text(b, clarivi_type, b.find_health(label)))
 
     b.comment('Send the readings.')
-    joined = b.combine(variable('Samples'), ',')
+    joined = []
+    for i, text in enumerate(series):
+        joined += ([','] if i else []) + [text.ref()]
     body = b.text('{"schema_version":1,"kind":"daily","device_tz_offset_min":"', variable('Offset'),
-                  '","trigger":"', variable('Trigger'), '","samples":[', joined.ref(), ']}')
+                  '","trigger":"', variable('Trigger'), '","series":[', *joined, ']}')
     reply = b.post(body, url)
     b.stop_if_refused(reply)
     complete = b.if_(reply.ref(as_text()), 99, string='"night_complete":true')

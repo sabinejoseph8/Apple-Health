@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 October 2026 (Phase 1a built and live, recorded in sections 3 to 10; Playwright tests and end-of-phase code reviews added to section 8)
+**Last updated:** 3 October 2026 (Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -43,6 +43,7 @@ iPhone Shortcut ──POST readings──▶ Ingest function ──▶ Raw readi
    - Runs from a queue every minute, so an upload never waits for it.
 5. **Schedulers** (inside the database)
    - Run the analysis queue every minute.
+   - Trim the job log daily (built in Phase 2: `trim-cron-log`, keeps 7 days).
    - Plan the 11:30 reminders and 8pm follow-ups every 5 minutes, using each user's local time.
    - Build weekly digests once a week.
 6. **Push sender function**
@@ -92,14 +93,21 @@ The first-login password change is tracked by a flag in the login system's admin
 Built in Phase 1a (3 October 2026):
 - A trigger creates each `profiles` row when an account is created, and copies the owner flag from admin-only metadata (`is_owner`) whenever it changes.
 - `push_subscriptions.endpoint` is unique. A phone belongs to whoever signed in on it last: signing in as another account moves the phone's notifications to that account, so a shared phone never shows the wrong person's notifications (decided by Sabine, 3 October 2026; product-spec.md).
-- Signed-in users can only read their own rows. Direct inserts, updates and deletes are revoked; rows change only through the trigger and named functions such as `register_push`.
+- Signed-in users can only read their own rows. Direct inserts, updates and deletes are revoked; rows change only through the trigger and named functions such as `register_push`. Since the Phase 1 code review, signed-in users have only SELECT on every table (TRUNCATE, TRIGGER and REFERENCES were also revoked from the 1a tables, as TRUNCATE ignores row-level security).
+- Signing out first unsubscribes this phone from notifications, so a signed-out person's status never appears on its lock screen (Phase 1 code review).
 
 **Raw data (never changed after arrival)**
 | Table | Holds | Key fields |
 |---|---|---|
-| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `sample_count`, `duplicate_count`, `status`, `error` |
+| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `set_aside_count`, `set_aside_note`, `status` (accepted, rejected), `error` |
 | `samples` | Every reading | `id`, `user_id`, `upload_id`, `type` (heart_rate, hrv_sdnn, sleep_stage, resting_hr, respiratory_rate), `start_at`, `end_at`, `tz_offset_min`, `value`, `unit`, `stage`, `source_name`, `source_device`, `sample_hash` (unique per user) |
-| `workouts` | Owner only, for the Signal check | `id`, `user_id`, `activity`, `start_at`, `end_at`, `duration_min`, `avg_hr` |
+| `workouts` | Owner only, for the Signal check | `id`, `user_id`, `activity`, `start_at`, `end_at`, `tz_offset_min`, `duration_min`, `avg_hr`, `source_name` |
+
+Built in Phase 1b (3 October 2026):
+- `upload_tokens`: at most one working token per user (a unique index on unrevoked tokens). The app can read when its token was made and last used, but never the hash (column-level grants).
+- `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?".
+- `samples.sample_hash` is a SHA-256 of the type, start, end, value, stage and source. The time zone isn't part of it, so the same moment posted from another time zone is the same reading. Heart rate is stored only from 6pm to noon, by each reading's own local time (D43). Sleep readings arrive with no source: Shortcuts doesn't report one for sleep (Phase 1b), so Watch sleep is recognised by its stages (core, deep, REM, awake) for D10.
+- All writes go through two database functions callable only with the secret key: `ingest_upload(token_hash, upload, error)` and `issue_upload_token(user, token_hash)`.
 
 **Results (always rebuildable from raw data)**
 | Table | Holds | Key fields |
@@ -110,20 +118,45 @@ Built in Phase 1a (3 October 2026):
 | `insights` | The shared module output | `date`, `module`, `metric`, `value`, `baseline`, `deviation`, `severity`, `explanation_code`, `payload` |
 | `digests` | Weekly summaries | `week_start`, `facts`, `text`, `created_at` |
 
+Built in Phase 2a (3 October 2026):
+- `nights` follows the D48, D49 and D50 rules: time asleep is the time covered by an asleep stage (core, deep, REM) and by no awake stage, each moment counted once, so overlapping records (a second app's stages, or the same stretch recorded as asleep and awake) are never counted twice (D49); a night is all the time asleep in stretches starting from 6pm the evening before to noon, by the local time of the stage each stretch starts in, dated by that morning, however long the breaks (D50); it needs at least 2 hours asleep; stretches starting from noon to 6pm are naps; sleeping heart rate is the median of the readings taken while asleep and needs at least 10 (D48). Also kept: `tz_offset_min` (of the night's last stretch asleep), `sleeping_hr_count` and `resp_count`. `finished` means the sleep ended at least 10 minutes before the user's last accepted upload. `coverage` is the share of the asleep time, in 15-minute blocks, that has a heart rate reading; `confidence` is high from 0.7, medium from 0.4, otherwise low. HRV and breathing rate are medians of the readings overlapping the sleep window (first to last moment asleep, which can include long awake spells); `resting_hr_prev_day` is Apple's value for the local day before waking.
+- `baselines` has one row per night and metric (`sleeping_hr`, `hrv`, `sleep`, `resp_rate`, `resting_hr`), from the nights in the 28 days before it (D11).
+- Signed-in users can read their own `nights` and `baselines`; nobody writes to them directly. `analysis_queue` is internal (row-level security on, no policy).
+- One function rebuilds everything: `recompute(user, from, to)` rebuilds the nights in the range, then the normals up to 28 days further on (a night's normal depends on the 28 before it). Callable only with the secret key. Running it twice gives the same result.
+- `ingest_upload` queues work for every daily post, and for every import post that stored something new, covering the dates of its readings. `run_analysis_queue()` runs every minute (pg_cron), merges each user's pending work into one date range and recomputes once. While an import is arriving (an import post in the last 2 minutes), that user's work waits, so an import is recomputed once at the end. Only daily work is marked to notify (`send_push`); the outbox arrives in Phase 4.
+- Sleep records can overlap in a real year (Sabine's: 18 of 239 nights, found on the first live build), and sleep has no source to tell them apart by, so the Watch-only rule for sleep (D10) can't be enforced by source; D49 handles overlaps instead. Time asleep is worked out with Postgres multiranges (`range_agg`, then the asleep ranges minus the awake ranges).
+- Each night's readings are looked up on their own through the (user, type, end time) index. A first version joined all nights' readings in one query, and the database repeated that work for every night: 23 seconds for a made-up year. Now a year takes about 0.2 seconds on the local copy, whether or not the database's statistics are up to date.
+
+Built in Phase 2b (3 October 2026):
+- `score_settings`: versioned; exactly one version is `active` (a unique index); a `frozen` version can't be updated or deleted (a trigger). Version 1 holds the starting numbers: weights HRV 0.40, sleeping heart rate 0.35, sleep 0.25; Ease off from 1, Rest from 2; normals from 28 nights with 21 valid; `per_metric_overrides` for a reading's own window, minimum and (HRV) `min_count`, the fewest readings in a night for it to count (1 until Phase 2c); `min_spread` per reading (D51); the illness check's 1 spread and 3 markers (D53); `partial_cap` null (no cap). Internal only: row-level security on with no policy, so users never see the weights (R40).
+- `rebuild_baselines` reads its window, minimum and smallest spread from the active settings, so Phase 2c can change them with a new version and a recompute.
+- `daily_status`: one row per day with a night or a morning sync. `points` holds, per score reading, the value, normal, range, verdict (below, above, in_range, missing, building), spreads worse than normal, points and whether it was counted, never the weights. `total` is the sum of the counted readings' points, each reading's weight shared out over the readings counted (D35). No status (`none`) with `night_unfinished`, `learning` (two or more normals building, D36) or `not_enough_data` (two or more readings missing or building, or no night). `nudge` follows D52; `reason_codes` lists the counted readings that earned points, most first, as `<reading>_outside_range` or `<reading>_worse_than_normal`; `composite_fired` is null when the illness check couldn't run, and `composite_inputs` lists the markers it had (D53). `waiting`, `no_sync` and `is_late` are kept for the card and notifications (Phases 3 and 4), which know the clock and sync times.
+- `insights`: per day, each of the five readings against its normal (`readiness` for the score readings, `also_checked` for breathing rate and resting heart rate) with a signed `deviation` in spreads, and the illness check (`illness_check`, metric `pattern`: fired, clear or not_run, with the markers it had and the ones that moved). Users read their own; nobody writes directly.
+- `recompute(user, from, to)` now rebuilds nights, then normals and the status up to the longest normal window further on, and returns the three counts. The every-minute queue is unchanged.
+- Statistics: right after a large import, or a reset of the local copy, the database has no counts for samples and can choose very slow plans. Each night's stages and each day's readings now go into small indexed temporary tables first; a made-up year recomputes in about 0.2 seconds either way.
+
+Built in Phase 2c (3 October 2026):
+- `events` (one row per day: illness, major_event or travel, a short note, source manual or detected) and `workouts` (owner only; unique on user, activity and start). Users read their own rows; nobody writes directly. The owner replaces hers with `replace_my_events(list)` and `replace_my_workouts(list)`, which work out the user from the session and refuse anyone who isn't the owner, so loading needs no secret key.
+- `scripts/reference/owner_data.py` turns the Health app export into `private/workouts.csv` (D54) and loads `private/events.csv` and the workouts, signed in as the owner (email and password typed at the prompt, never stored). `private/live.env` holds the live address and publishable key for these scripts.
+- Final score numbers (D59): `score_settings` version 2 is active and frozen (normals from 42 nights with 21 valid; Ease off from 1.2, Rest from 2.4; everything else as version 1, which is kept, frozen and inactive). A frozen version's numbers can't change, but which version is active can, so a later version could still replace it before the test.
+- Phase 2 code review (3 October 2026): a day with a morning sync but no night yet is `night_unfinished` on the user's current local day (from `profiles.latest_tz_offset_min`) and `not_enough_data` on earlier days; the card turns the first into "not enough data" after noon (Phase 3). `analysis_queue.attempts`: failed work goes back to pending and is tried up to 3 times before `failed`. `score_settings` must give every reading a positive `min_spread`. A second pg_cron job, `trim-cron-log`, deletes job log rows older than 7 days at 3:17am UTC. `baselines.median_28` and `mad_scaled` keep their names; column comments say they hold the window's median and the floored spread. Known limit (D50, kept): a stretch of sleep that starts just before 6pm and runs on without a wake-up counts as a nap. Planned for Phase 4 (D61): saving what each person was shown each morning.
+- Watch readings only (D56, D57): `rebuild_nights` works out the user's Watches as the sources with heart rate readings and uses HRV, breathing rate and resting heart rate only from them (or with no source); yesterday's resting heart rate is the median of the Watches' readings for that day. Found by the first reference check on Sabine's year (two watches and the Athlytic app).
+- The owner's scripts remember her sign-in in `private/session-live.json` (a renewable session token, readable only by her Mac account), so the password is typed once, in the Mac's Terminal app; the Claude app's terminal panel showed a password typed at a hidden prompt (3 October 2026). `owner_data.py change-password` sets a new password the same way until the app's own screen arrives (Phase 5).
+
 **User answers and logs**
 | Table | Holds | Key fields |
 |---|---|---|
-| `checkins` | Daily check-in, every change kept | `date`, `answer`, `answered_at`, `status_seen_before`, `is_first` |
+| `checkins` | Daily check-in, every change kept (built in Phase 3) | `date`, `answer`, `answered_at`, `status_seen_before`, `is_first` |
 | `followthrough` | Nudge answers, every change kept | `date`, `answer`, `answered_at`, `channel` (push, card, next_morning) |
 | `notifications` | Outbox and delivery log | `user_id`, `date`, `kind` (morning, reminder, followup), `status` (pending, sent, failed), `payload`, `sent_at`, `tapped_at`, `error`; unique on (`user_id`, `date`, `kind`) |
-| `usage_events` | Card views, Why today and trend opens, digest opens, sign-ins | `event`, `at`, `meta` (never health values) |
+| `usage_events` | Card views, Why today and trend opens, digest opens, sign-ins (built in Phase 3 with card views, Why today opens and skipped check-ins; later phases add their events) | `event`, `at`, `meta` (never health values) |
 
 **Owner and research**
 | Table | Holds | Key fields |
 |---|---|---|
 | `events` | Illness, major events, travel | `date`, `type`, `note`, `source` (manual, detected) |
 | `experiments` | Future register for the causal layer (empty in v1) | `hypothesis`, `outcome_metric`, `baseline_window`, `test_window`, `status`, timestamps |
-| `score_settings` | Weights, zone limits, windows, versioned | `version`, `weights`, `ease_off_at`, `rest_at`, `window_nights`, `min_valid_nights`, `per_metric_overrides`, `frozen`, `active` |
+| `score_settings` | Weights, zone limits, windows, versioned | `version`, `weights`, `ease_off_at`, `rest_at`, `window_nights`, `min_valid_nights`, `per_metric_overrides`, `min_spread`, `illness_spreads`, `illness_min_markers`, `partial_cap`, `frozen`, `active`, `note` |
 | `analysis_queue` | Work waiting for the analysis | `user_id`, `from_date`, `to_date`, `reason`, `send_push`, `status` |
 
 ---
@@ -137,22 +170,36 @@ Built in Phase 1a (3 October 2026):
   - `kind` (daily, backfill or ping)
   - `month_id` (backfill only)
   - `device_tz_offset_min`
-  - `samples`: a list, each with `type`, `start`, `end`, `value`, `unit`, optional `stage`, `source` and `device`
+  - `trigger` (charger, app or manual), which automation ran the Shortcut
+  - readings in either of two shapes, which become the same rows:
+    - `series` (what the Shortcut sends, D42): one object per reading type with lists `start`, `end`, `value`, `unit`, `source` (and optional `device`, `stage`). A type with no readings arrives as `[""]`. If an extra column (unit, source, device) has a different length, it's set aside rather than rejecting the post.
+    - `samples`: a list, each with `type`, `start`, `end`, `value`, `unit`, optional `stage`, `source` and `device`
+  - Times are ISO 8601 with their offset (`2026-10-03T01:17:06-05:00`); the offset is kept per reading. `device_tz_offset_min` may be minutes or an offset such as `-05:00`. Values may be numbers or text (a decimal comma is accepted). Sleep stages are accepted as Shortcuts and HealthKit name them (Core, Deep, REM, Awake, In Bed, Asleep, or 0 to 5), in `stage` or `value`.
 - **Reply:**
   - `accepted` and `duplicates`
-  - `night_complete`: true when this post completed last night
-  - `already_complete_today`
+  - `night_complete`: true when this post completed last night. Starting rule for Phase 1b: last night's sleep has arrived and its last asleep reading (core, deep, REM or unspecified) ended between midnight and noon local time, at least 10 minutes before the post (decided 3 October 2026; Phase 2 builds the full rule).
+  - `already_complete_today`: an earlier post today already completed the night
+  - `months_imported` (backfill only, Phase 1c): how many months of the import window (this month and the 11 before it, by the phone's local date) have arrived in full, for the message "Your history: 5 of 12 months imported." A month counts once its last part arrives: the Shortcut marks that post `"month_complete": true` (Phase 1 code review). A month count, not health data
+  - `message`: a sentence from the wording module for the Shortcut to show (for example "Last night's readings are in.")
+  - on refusal: `error` (`invalid_token`, `token_revoked`, `rate_limited`, `invalid_body` with a `detail` that never repeats a value, or `too_large`) and a `message`; status 401, 429, 400 or 413
 - **No health data in the reply.** The token stays write-only.
-- **"Already synced today":** the Shortcut sends a small `ping` first. If `already_complete_today` is true, it stops. After a post with `night_complete` true, it also saves today's date to a file in iCloud Drive as a second check. A partial night never counts as synced.
+- **The Shortcut reads replies as text** and looks for `"accepted":`, `"already_complete_today":true` and `"night_complete":true`, so their spelling is fixed by tests. A post counts as stored only if the reply contains `"accepted":` (Phase 1 code review): a gateway error page or timeout has no `"error"` key, so checking for failure would have let a failed import part mark its month done. Device names in the source column have quotes and backslashes turned into apostrophes, since the post is built as text.
+- **"Already synced today":** the Shortcut sends a small `ping` first. If `already_complete_today` is true, it stops. After a post with `night_complete` true, it also saves today's date to `iCloud Drive/Shortcuts/Clarivi/last-sync.txt` as a second check, and stops at the start of later runs that day. A partial night never counts as synced. Automations only act between 4am and noon; a run by hand always acts.
+- **The one-year import** (Phase 1c, R12): run by hand, the Shortcut asks "Sync this morning" or "Import my last 12 months" (words from the wording module's `shortcut` section, which the Shortcut generator reads). The import sends this month and the 11 before it, newest first (an interrupted import already has the recent months a baseline needs), one `backfill` post per month with whole-month searches ("between the 1st and the 1st of the next month"). Month steps are made in hours (40 days on, 15 days back, then the 1st of that month): Adjust Date ignored steps of whole months on Sabine's iPhone (1c, 3 October 2026). Heart rate is read one day at a time and gathered into the month's post: iOS stopped the Shortcut when one step handled about 3,900 readings, while about 2,000 worked (1c size checks, 3 October 2026). On a heavy day (1,000 readings or more, usually a workout) it takes the day's first 1,000 and last 1,000 by time, keeping the night on either side and dropping only the middle of the day, which the server sets aside anyway (D43; agreed by Sabine, 3 October 2026). The other reading types are small and are read a month at a time. Each month is sent in parts: first the small readings on their own, then heart rate as one backfill post whenever the gathered days reach about 250,000 characters or the month's last day is reached. iOS timed out a 682 KB post before it left the phone while 385 KB went through in 12 seconds (1c send checks). Posts sent before or inside the day-by-day loop worked, but a post made just after the loop ended failed every time, whatever its size, so the last part is sent inside the loop on the month's last day. Only after the last post is the month written to `import-done.txt`. In the import, heart rate goes without its end time and unit (the server sets end to the start and leaves unit empty). After each accepted month it adds the month to `iCloud Drive/Shortcuts/Clarivi/import-done.txt` and shows the reply's message; months already listed are skipped, so an interrupted import carries on (D45). Local load test (`npm run check:local:import`): a month of about 31,700 readings (2.6 MB) is stored in about 1.2 seconds; a heavy one of 46,700 (3.8 MB) in 1.6 seconds, close to the 50,000-reading limit.
+- **Size log:** each post writes one line to the function's log (`event: ingest`, kind, month, bytes, readings, result), never readings, to measure posts.
+- **What the Shortcut fetches** (Phase 1b spike, 3 October 2026): Health searches in Shortcuts only work in whole days, so it fetches heart rate, HRV, breathing rate, resting heart rate and sleep stages for yesterday and today ("in the last 1 day"), and the server applies the heart-rate window (D43). Building one line per reading took over 14 minutes for a day of heart rate; one list per column takes about a second (D42).
 
 ### Web app to database
 The app uses the Supabase client with the public (publishable) key and the user's session. Row-level security applies to every call.
 - **Reads:** views such as `v_today`, `v_why_today`, `v_trends` and `v_digest_latest`, each built from the results tables.
 - **Writes:** database functions only:
-  - `submit_checkin(answer)`
+  - `submit_checkin(date, answer, status_seen)` (built in Phase 3: the phone's local date, which must be today somewhere on Earth; every answer is kept, with whether it was the first of the day and whether the status had been seen, from the app or from a logged card view showing a status; at most 50 a day)
   - `submit_followthrough(date, answer)` (accepted only from 8pm on change days, and until the next morning)
   - `register_push(subscription)`
-  - `log_usage(event)`
+  - `log_usage(event, meta)` (built in Phase 3: events `card_view`, `why_today_open`, `checkin_skipped`; the meta may hold only `date`, `status_shown` and `state`, the kind of card, never a status or a reading; past 500 events in a day it stops logging quietly)
+- **Zone numbers (D62, built in Phase 3):** `status_zones(version)` returns a settings version's Ease off and Rest limits, its normal window and minimum valid nights (overall and per reading) and the readings in order of weight, never the weights; with no version it gives the active one. Signed-in users only.
+
+- **Built in Phase 3, how the app reads (4 October 2026):** straight from the tables under row-level security rather than views, since each screen needs only a few small queries. The card (`src/lib/today.ts`) reads today's `daily_status`, the last three days of `uploads` and the newest accepted sync, import months, today's `baselines` and `nights`, today's check-in and whether it was skipped; `src/lib/card-state.ts` then picks the card from the phone's clock: the sync that completed the night sets the time shown, 11:30 marks it late, and a first sync after noon gives no status (R25 to R32). Why today (`src/lib/why.ts`) adds 28 nights, today's normals, today's `insights` and `status_zones` for the day's settings version. Screens: `#/` (the card), `#/why` and `#/settings`, in the address so a notification's link can reach them later. While a sync is awaited the card checks again each minute, and on every return to the app.
 
 ### Web app to server functions
 Each call carries the user's session.
@@ -163,7 +210,8 @@ Each call carries the user's session.
 - **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values.
 
 ### Schedulers
-- **Every minute:** `run_analysis_queue()` processes queued work, then writes morning notifications to the outbox.
+- **Every minute:** `run_analysis_queue()` processes queued work (built in Phase 2: it merges each user's pending work, waits while an import is still arriving, and retries failed work up to 3 times), then writes morning notifications to the outbox (Phase 4).
+- **Daily, 3:17am UTC:** `trim-cron-log` deletes job log rows older than 7 days (Phase 2 code review).
 - **Every minute:** calls `send-push`, which sends pending outbox rows.
 - **Every 5 minutes:** `plan_notifications()` adds 11:30 reminders and 8pm follow-ups for users whose local time has reached them.
 - **Weekly (Monday, 5am local, Default):** `build_digests()`.
@@ -175,6 +223,7 @@ Each call carries the user's session.
 
 ### Wording
 - One shared wording module, `supabase/functions/_shared/wording.ts`, holds every sentence the app and notifications use: briefings, verdicts, nudges, notification text and state messages. It is plain TypeScript, so the web app and the server functions import the same file.
+- Built in Phase 3: `supabase/functions/_shared/briefing.ts` puts the words together from a `daily_status` row (the card's headline and briefing, the morning notification's reason, Why today's summary and "Also checked", and last night's values while learning). The briefing says what was off (outside the range, or at least one spread worse inside it: "a little"), what it means, then what was normal, better, missing or still being learned, with the illness check's words only when it ran. `npm run wording:sheet` prints a sample sheet of every state's words on made-up days, for review.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
 ---
@@ -226,7 +275,7 @@ Each call carries the user's session.
 - `owner-status` checks the flag and returns only operational information (sync times, counts, delivery status), never another user's readings.
 
 **Upload tokens**
-- Each token is 32 random bytes, shown once and stored only as a SHA-256 hash.
+- Each token is 32 random bytes, written as `clv_` plus 43 URL-safe characters, shown once and stored only as a SHA-256 hash.
 - Tokens can write but never read, and can be revoked.
 - `last_used_at` is tracked.
 - The Shortcut is shared as a blank template that asks for the token when it's installed. A configured Shortcut is never shared.
@@ -239,12 +288,13 @@ Each call carries the user's session.
 
 **Input validation**
 - Every ingest body is checked against the shared schema.
-- Rejected: unknown types, unknown schema versions, timestamps in the future or outside the expected window, and values outside sensible ranges (Default: heart rate 25 to 250 bpm, HRV 1 to 300 ms, breathing rate 4 to 60 per minute).
+- Rejected: unknown types, unknown schema versions, timestamps in the future or outside the expected window, and values outside sensible ranges (Default: heart rate 25 to 250 bpm, HRV 1 to 300 ms, breathing rate 4 to 60 per minute). A reading longer than a day is rejected, except resting heart rate, which may span up to a week (seen in the 1c import).
+- A reading that fails a check is set aside and the rest of the post is stored; the upload row records how many were set aside (`set_aside_count`) and the first few reasons (`set_aside_note`), never the values. A post that is malformed as a whole (not JSON, an unknown schema version or kind, a bad month) is refused (agreed by Sabine, 3 October 2026, after one resting heart rate reading blocked a month of the import).
 - Limits: 5 MB per request and 50,000 readings per request (Default). One month of history is expected to be a few hundred kilobytes.
 - Database functions check their own inputs (for example, a follow-through answer only on change days, from 8pm).
 
 **Rate limits**
-- Ingest: 60 requests an hour per token (Default). An import needs about 12 plus retries.
+- Ingest, per token, each counted separately: 60 an hour for daily posts and rejected posts, 200 an hour for import (backfill) posts, and 200 an hour for pings (agreed by Sabine, 3 October 2026; D47 for pings). A one-year import sends each month in parts, about 60 posts in about half an hour.
 - Sign-in: Supabase's built-in limits.
 - Notifications: at most three a day per user (morning, reminder, follow-up), enforced by the unique key.
 
@@ -305,7 +355,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - score settings in `score_settings`
   - schedules defined in migrations
 - **Shortcut:**
-  - one versioned template per release
+  - one versioned template per release, generated by `scripts/shortcut/build_shortcut.py` and signed with Apple's `shortcuts sign` on Sabine's Mac. The signature carries the signer's Apple account email, so signed files live only in `private/shortcut/` (never committed); only the generator is in the repository. `scripts/shortcut/build_check_shortcut.py` builds "Clarivi Check", a diagnostic that shows what the phone finds in Health without sending anything.
   - the upload address and the token entered at install
 
 ---
@@ -316,19 +366,27 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - Cross-user tests on every table, for reading and writing.
   - The upload path: one user's token can't write another user's rows, and a token can never read.
   - The missing-reading and learning-your-normal rules, the one-notification-per-day key, and night dates across a time-zone change.
-- **Server function tests (Deno):** ingest validation, duplicates, the reply flags, rate limits, password re-checks and delete-my-data.
-- **Reference check (pandas):** the owner's year is recalculated outside the database, stage by stage (nights, sleeping heart rate, baselines, status). It must match the SQL before any tester sees a status, and is rerun after any change to the SQL.
-- **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules.
+- **Server function tests (Deno):** ingest validation, duplicates, the reply flags, rate limits, password re-checks and delete-my-data. Run with `npm run test:functions` (Deno comes from npm, so nothing extra to install). Built in 1b: the post schema (both shapes, the heart-rate window, time zones, ranges), the ingest handler (token hashing, size limit, replies and the exact text the Shortcut looks for) and token generation.
+- **Shortcut checks (Python):** `python3 scripts/shortcut/test_build_shortcut.py` checks the generated Shortcut is well formed (every variable wired to an earlier action, blocks closed, valid JSON, token asked for at install, no loops, whole-day searches). Runs on every push.
+- **Reference check (pandas):** the owner's year is recalculated outside the database, stage by stage (nights, sleeping heart rate, baselines, status). It must match the SQL before any tester sees a status, and is rerun after any change to the SQL. Built in Phase 2c (`scripts/reference/`, in a project-only Python environment, `.venv`, with pandas):
+  - `reference.py` re-implements the rules from the decisions (D10, D11, D35, D36, D48 to D53), not from the SQL, and keeps its own copy of each score settings version.
+  - `check.py --live` signs in as the owner, reads her readings and results through the web interface (row-level security limits it to her rows), and compares nights, normals and statuses value by value; `check.py --local-synthetic` does the same on the local copy with a seeded made-up history (long awake spells, overlapping records, naps, a trip 8 hours ahead, missing readings, an unfinished night), on every push.
+  - `today.py` prints a day's status in plain words for the owner's self-test (end of Phase 2).
+  - `measure.py --live` reports the Signal on her year for the current settings and a few alternatives, tried in pandas only. Disrupted mornings follow D55 and D60 (workouts judged by day, Watch workouts only).
+  - Unit tests (`python -m unittest discover -s scripts/reference`) hold the reference to the same agreed examples as the database tests, on every push. Nothing these scripts read is saved.
+- **Front-end tests (Vitest):** state selection (which card state shows when) and the wording module rules. Built in Phase 3: `src/lib/card-state.test.ts` (every card situation from the clock and the day's data: waiting, readings in, sleep in progress, no sync yet, late, after noon, not enough data, learning, rejected sync, import months), `src/briefing.test.ts` (the design's sample day word for word, and the wording rules over 1,944 made-up days covering every mix of readings, statuses and illness-check results), `src/lib/why.test.ts` (the numbers panel's words).
 - **End-to-end tests (Playwright, iPhone screen size):** set up on 3 October 2026 (`npm run test:e2e`, tests in `e2e/`). They run in WebKit, Safari's engine, on an iPhone 14-sized screen (390 points wide), locally and on GitHub with every push. The first tests cover the sign-in screen: its form and contact line, no sideways scrolling, 44-point tap targets, and the manifest, icon and service worker. Still to come:
-  - every card state, Why today and the numbers toggles
+  - every card state, Why today and the numbers toggles (built in Phase 3: `e2e/card.spec.ts` and `e2e/why-today.spec.ts`)
   - follow-through timing, with the clock set to before and after 8pm
-  - the check that the morning card fits in 390 by 763 points
+  - the check that the morning card fits in 390 by 763 points (built in Phase 3)
+  - Phase 3's screen tests sign in a made-up tester and answer every database request with made-up rows (`e2e/fixtures/mock-app.ts`), with the clock fixed at the design's sample morning in a UTC-5 time zone. The service worker is blocked in these tests: once it controls the page, requests skip Playwright's interception and reach the real server (found in Phase 3, when it made the tests flaky). `SCREENS=1 npx playwright test e2e/screens.spec.ts` saves a screenshot of every state for review.
 - **Manual checks on real iPhones:**
   - install, sign in and Keychain autofill
   - notification taps
   - both Shortcut triggers, with the phone locked and unlocked
   - import timing, and an interrupted import resuming
 - **Local end-to-end check** (`npm run check:local`, Phase 1a): with the local copy and functions running, it signs in made-up accounts, runs the password change, sends a test push to a fake device that decrypts it, and checks a second account sees nothing of the first.
+- **Local sync check** (`npm run check:local:sync`, Phase 1b): with the local copy and functions running, it creates a token with a password check, posts the way the Shortcut does (ping, daily post in rows and in columns, a repeat, readings set aside), reissues the token, and checks a second account sees nothing. Since the Phase 1 code review it runs on every push, with the import load check (`npm run check:local:import`), in the "Local end to end" GitHub job, which starts the local copy and the functions.
 - **Build secret check:** see pattern 12.
 - **Code review at the end of each phase:** everything the phase changed is reviewed for bugs and security problems, findings are fixed, and the phase's automated tests are re-run before the phase is called done (added 3 October 2026).
 - **Every push runs all automated tests.** A failure blocks the release.
@@ -344,15 +402,15 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Shortcut can't read Health data while the phone is locked | The unplug trigger would rarely work and syncs would arrive late | Measure how often the catch-up trigger does the work; keep both triggers; move to a HealthKit app only if both fail often | 1 |
 | Shortcut may not return Watch sleep stages | The sleep window and the "night finished" check depend on them | Check first in the sync spike; if only "asleep" arrives, keep the window rule; if stages are missing, change the night rule before building analysis | 1 |
 | A year's import through Shortcuts is too slow or fails | No baselines on day one | Import in monthly parts that resume; time it on two phones; narrow the heart rate window first if needed | 1 |
-| Past readings may lose the time zone they were recorded in | Travel days in the owner's year can't be detected from offsets, and nights could be misdated | Test with a known trip; if lost, take trips from the calendar or detect them from shifts in sleep timing | 1 |
+| Past readings may lose the time zone they were recorded in | Travel days in the owner's year can't be detected from offsets, and nights could be misdated | Test with a known trip; if lost, take trips from the calendar or detect them from shifts in sleep timing. Phase 1b (3 October 2026): confirmed lost (Shortcuts stamps every reading with the phone's current zone), so Phase 2 takes trips from the calendar or the user. Phase 1 code review: the 6pm-to-noon heart rate window then sees imported trip nights at the wrong clock time and drops part of them; accepted for v1 (D46) | 1 |
 | Web push on the iPhone fails silently, or a tap opens a signed-out app | No morning nudge means no Value evidence | Push spike on real phones; log delivery; re-register each time the app opens; show notification health on the card. 1a spike: a test push reached Sabine's iPhone and a tap opened the app signed in; the app re-registers on every open | 1 |
 | The Deno push library doesn't work in Edge Functions | No notifications | Try it in the push spike; fall back to `npm:web-push`. Resolved in 1a: it works, no fallback needed | 1 |
 | Upload path bypasses row-level security | One tester's data could land in another's account | Work out the user from the token hash only; cross-user upload tests in CI | 1 |
 | A table ships without row-level security | Data exposed to other users | A CI check fails the build when any table lacks row-level security (proven in 1a); the live project also switches it on for new tables automatically | 1 |
-| SQL statistics subtly wrong | Confident wrong nudges | Stage-by-stage pandas check on the owner's year before testers start | 2 |
-| HRV readings too sparse at night | The heaviest-weighted reading is often missing, or its baseline never finishes building | Count nights with HRV at the import; adjust the weights, the minimum (14 nights) or the window (42 nights) before freezing the settings | 2 |
-| Score settings unproven | Too many or too few Ease off days | Set from the owner's year against disrupted days and the "1 day in 7" limit; then freeze | 2 |
-| Heavy recompute times out | Imports stall | Queue work, process one month at a time, never inside the upload request | 2 |
+| SQL statistics subtly wrong | Confident wrong nudges | Stage-by-stage pandas check on the owner's year before testers start. Phase 2c (3 October 2026): the reference (`scripts/reference/`) matches the database on every night, normal and status of the owner's year, and on a made-up history on every push; its first run found two watches and an app in her readings (D56, D57) | 2 |
+| HRV readings too sparse at night | The heaviest-weighted reading is often missing, or its baseline never finishes building | Count nights with HRV at the import; adjust the weights, the minimum (14 nights) or the window (42 nights) before freezing the settings. Phase 1c (3 October 2026): 239 of Sabine's 240 tracked nights (99.6%) have HRV during sleep, median 3 readings a night | 2 |
+| Score settings unproven | Too many or too few Ease off days | Set from the owner's year against disrupted days and the "1 day in 7" limit; then freeze. Phase 2c (3 October 2026): version 2 frozen (D59), about 1 day in 7.5 on her year; the disrupted-day target was not met on thin evidence, so the testers' check-ins carry the Signal; a short night can still be Ready, watched in the self-test | 2 |
+| Heavy recompute times out | Imports stall | Queue work, process one month at a time, never inside the upload request. Phase 2a (3 October 2026): work is queued and merged, and a made-up year (275,000 heart rate readings) recomputes in about 0.2 seconds on the local copy | 2 |
 | Previews and changes touching real testers' data (one project) | A bad preview or database change could damage the test data | Build and test every database change on a local copy first; apply changes only at release and backward-compatibly; check previews as the owner or a test account; back up before every change during the test | 1 |
 | Free plan during the test: no automatic backups, and the project can pause | Lost testers' data would end the test; a paused project stops syncs | Daily syncs keep the project active; manual backups at least weekly and before every change; practise one restore in phase 6; check the project is active each morning on the owner page; move to Pro after the test | 6 |
 | The inactivity timeout needs Pro | Sessions don't expire through inactivity during the test | Accepted for the test; "Sign out everywhere" is available; switch the timeout on after the move to Pro | 6 |
@@ -380,13 +438,15 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Region (2 Oct 2026) | US East; the project was recreated there while still empty |
 | Vercel and Supabase (2 Oct 2026) | Connected through Vercel's official Supabase integration; the secret values it copies into Vercel are never read by the app |
 | Push library (3 Oct 2026) | `@negrel/webpush` 0.5.0, proven with Apple's push service in the Phase 1a spike |
+| Analysis in the database (3 Oct 2026) | Nights, normals, status and insights are rebuilt by `recompute()` from raw readings, queued by uploads and run every minute by pg_cron; checked against an independent pandas reference |
+| Watch readings (3 Oct 2026) | A Watch is any source that records heart rate (D56); sleep has no source, so overlapping sleep records count once with awake winning (D49) |
 
 ### Open questions (each with a recommended default)
 1. **Region.** Settled 2 October 2026: US East (see Decisions).
 2. **Retention after the test.** Default: delete testers' data 90 days after it ends unless they agree otherwise.
 3. **Push library.** Settled 3 October 2026: `@negrel/webpush` 0.5.0 works in Supabase's function runtime and with Apple's push service (Phase 1a spike), so the fallback isn't needed.
 4. **Limits.**
-   - **Default:** 5 MB and 50,000 readings per upload; 60 uploads an hour per token.
+   - **Default:** 5 MB and 50,000 readings per upload. **Agreed (3 October 2026):** 60 uploads an hour per token, plus 200 import uploads and 200 pings an hour, each counted separately (D47).
    - **Default:** value ranges as in section 6.
 5. **Weekly digest timing.** Default: Monday at 5am local time.
-6. **Open spike results.** Phase 1a's results are in progress.md ("Spike results"). Still open: sleep stages, time zones of past readings, HRV coverage and the "already synced" check (Phases 1b and 1c). The plan above assumes they work, with the fallbacks listed in section 9.
+6. **Open spike results.** Phase 1's results are in progress.md ("Spike results"). Settled: Watch sleep stages arrive by name; past readings lose their time zone (trips come from the calendar instead); Shortcuts can only search Health by whole days (D43); readings travel as columns (D42); a year imports through the Shortcut in monthly parts (1c); HRV is present on nearly every tracked night (1c). Still open: the locked-phone rate (until about 10 October 2026).

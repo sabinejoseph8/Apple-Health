@@ -87,13 +87,22 @@ Deno.test('only POST is accepted', async () => {
 
 Deno.test('a bad body is logged with its reason and rejected', async () => {
   const { deps, calls } = fakeStore({ error: 'invalid_body' })
-  const res = await handleIngest(post({ ...body, samples: [{ ...body.samples[0], type: 'steps' }] }), deps)
+  const res = await handleIngest(post({ ...body, schema_version: 2 }), deps)
   assertEquals(res.status, 400)
   const reply = await res.json()
   assertEquals(reply.message, wording.sync.notReadable)
-  assertEquals(reply.detail, 'sample 1: unknown type')
+  assertEquals(reply.detail, 'unknown schema_version')
   assertEquals(calls[0].upload, null)
-  assertEquals(calls[0].rejection, 'sample 1: unknown type')
+  assertEquals(calls[0].rejection, 'unknown schema_version')
+})
+
+Deno.test('a bad reading is set aside and the rest of the post is stored', async () => {
+  const { deps, calls } = fakeStore(stored)
+  const res = await handleIngest(post({ ...body, samples: [body.samples[0], { ...body.samples[0], type: 'steps' }] }), deps)
+  assertEquals(res.status, 200)
+  assertEquals(calls[0].upload?.samples.length, 1)
+  assertEquals(calls[0].upload?.set_aside, 1)
+  assertEquals(calls[0].upload?.set_aside_note, 'sample 2: unknown type')
 })
 
 Deno.test('text that is not JSON is rejected', async () => {
@@ -148,5 +157,35 @@ Deno.test('replies contain the exact text the Shortcut looks for', async () => {
   const refused = fakeStore({ error: 'token_revoked' })
   assert((await (await handleIngest(post(body), refused.deps)).text()).includes('"error"'))
   const fine = fakeStore(stored)
-  assert(!(await (await handleIngest(post(body), fine.deps)).text()).includes('"error"'))
+  const fineText = await (await handleIngest(post(body), fine.deps)).text()
+  assert(!fineText.includes('"error"'))
+  // The Shortcut counts a post as stored only if the reply says what it
+  // accepted (review fix), so every success has it and no refusal does.
+  assert(fineText.includes('"accepted":'), fineText)
+  for (const answer of [{ error: 'invalid_token' }, { error: 'token_revoked' }, { error: 'rate_limited' }, { error: 'invalid_body' }] as StoreReply[]) {
+    const { deps } = fakeStore(answer)
+    assert(!(await (await handleIngest(post(body), deps)).text()).includes('"accepted":'))
+  }
+  const ping = fakeStore({ accepted: 0, duplicates: 0, night_complete: false, already_complete_today: false })
+  const pingText = await (await handleIngest(post({ schema_version: 1, kind: 'ping', device_tz_offset_min: -240 }), ping.deps)).text()
+  assert(pingText.includes('"accepted":0'), pingText)
+})
+
+Deno.test('a month of history replies with the import progress', async () => {
+  const { deps } = fakeStore({ accepted: 3, duplicates: 0, night_complete: false, already_complete_today: false, months_imported: 5 })
+  const month = { schema_version: 1, kind: 'backfill', month_id: '2026-03', device_tz_offset_min: -240, samples: [{ ...body.samples[0], start: '2026-03-15T03:10:00-04:00', end: '2026-03-15T03:10:00-04:00' }] }
+  const reply = await (await handleIngest(post(month), deps)).json()
+  assertEquals(reply.months_imported, 5)
+  assertEquals(reply.message, wording.sync.importProgress(5))
+  assertEquals(reply.message, 'Your history: 5 of 12 months imported.')
+})
+
+Deno.test('each post is logged with its size and counts, never its readings', async () => {
+  const entries: unknown[] = []
+  const { deps } = fakeStore(stored)
+  deps.log = (entry) => entries.push(entry)
+  const text = JSON.stringify(body)
+  await handleIngest(post(body), deps)
+  assertEquals(entries, [{ kind: 'daily', month_id: null, bytes: new TextEncoder().encode(text).byteLength, readings: 1, set_aside: 0, result: 'accepted' }])
+  assert(!JSON.stringify(entries).includes('52'), 'no reading value in the log')
 })

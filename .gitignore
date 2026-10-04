@@ -56,3 +56,6 @@ __pycache__/
 !.vscode/extensions.json
 .idea/
 *.swp
+
+# Playwright MCP browser output (local screenshots and snapshots)
+.playwright-mcp/

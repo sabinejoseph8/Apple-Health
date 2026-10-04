@@ -4,7 +4,25 @@
 // Reasons never include a reading's value, so no health data goes back to
 // the Shortcut or into the error log.
 //
-// A later HealthKit app can post the same format (tech-spec pattern 9).
+// Readings come in either of two shapes, and both become the same rows:
+// - samples: one object per reading ({type, start, end, value, unit, ...}).
+// - series: one object per reading type, holding a list per column
+//   ({type, start: [...], end: [...], value: [...], unit: [...], source: [...]}).
+//   The Shortcut sends this shape: building one line per reading took over
+//   14 minutes for a day of heart rate on an iPhone, columns about a second
+//   (Phase 1b spike, 3 October 2026).
+//
+// Heart rate is kept only from 6pm to noon, by each reading's own local time
+// (D18). The Shortcut can only fetch whole days, so the window is applied here.
+//
+// A reading that fails a check (an unknown type, an impossible time, a value
+// out of range) is set aside and the rest of the post is stored; the post's
+// upload row records how many were set aside and why, never the values
+// (agreed by Sabine, 3 October 2026, after one resting heart rate reading
+// blocked a month of the import). A post that is malformed as a whole (not
+// JSON, an unknown schema version or kind, a bad month) is still refused.
+//
+// A later HealthKit app can post either shape (tech-spec pattern 9).
 
 export const SCHEMA_VERSION = 1
 export const MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -59,6 +77,11 @@ const FUTURE_SLACK = 10 * MINUTE
 const DAILY_LOOKBACK = 4 * DAY
 const BACKFILL_MONTHS = 13
 const MAX_SAMPLE_LENGTH = DAY
+// Resting heart rate is one reading per day that can run past a day (1c).
+const MAX_LENGTH: Partial<Record<SampleType, number>> = { resting_hr: 7 * DAY }
+// Heart rate window (D18): from 6pm to noon, local time.
+const HR_WINDOW_START = 18 * 60
+const HR_WINDOW_END = 12 * 60
 
 export interface CleanSample {
   type: SampleType
@@ -79,7 +102,14 @@ export interface CleanUpload {
   device_tz_offset_min: number
   trigger: Trigger | null
   samples: CleanSample[]
+  // Backfill only: this post is the month's last part (import progress, R12).
+  month_complete: boolean
+  // Readings that failed a check and were left out, and the first few reasons.
+  set_aside: number
+  set_aside_note: string | null
 }
+
+const SET_ASIDE_REASONS_KEPT = 3
 
 export type ParseResult = { ok: true; upload: CleanUpload } | { ok: false; error: string }
 
@@ -110,7 +140,9 @@ const ISO_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:[.,]\d+)
 
 // An ISO 8601 time with its offset, as the Shortcut formats it. The offset is
 // required: it's how a reading keeps its local time.
-function parseTime(value: unknown): { ms: number; offset: number; local: { y: number; m: number; d: number } } | null {
+function parseTime(
+  value: unknown,
+): { ms: number; offset: number; local: { y: number; m: number; d: number; minutes: number } } | null {
   if (typeof value !== 'string') return null
   const m = ISO_TIME.exec(value.trim())
   if (!m) return null
@@ -122,7 +154,7 @@ function parseTime(value: unknown): { ms: number; offset: number; local: { y: nu
       wall.getUTCHours() !== h || wall.getUTCMinutes() !== mi || wall.getUTCSeconds() !== s) {
     return null
   }
-  return { ms: wall.getTime() - offset * MINUTE, offset, local: { y, m: mo, d } }
+  return { ms: wall.getTime() - offset * MINUTE, offset, local: { y, m: mo, d, minutes: h * 60 + mi } }
 }
 
 function parseNumber(value: unknown): number | null {
@@ -149,7 +181,8 @@ function monthIndex(year: number, month: number): number {
   return year * 12 + (month - 1)
 }
 
-function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | null, nowMs: number): CleanSample {
+// A checked reading, or null for heart rate outside the 6pm-to-noon window.
+function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | null, nowMs: number): CleanSample | null {
   const where = `sample ${index + 1}`
   if (!isRecord(raw)) reject(`${where}: not an object`)
   const type = raw.type
@@ -163,7 +196,8 @@ function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | 
   if (!start) reject(`${label}: start must be an ISO 8601 time with its offset`)
   if (!end) reject(`${label}: end must be an ISO 8601 time with its offset`)
   if (end.ms < start.ms) reject(`${label}: ends before it starts`)
-  if (end.ms - start.ms > MAX_SAMPLE_LENGTH) reject(`${label}: lasts more than a day`)
+  const maxLength = MAX_LENGTH[type as SampleType] ?? MAX_SAMPLE_LENGTH
+  if (end.ms - start.ms > maxLength) reject(`${label}: lasts too long`)
   if (start.ms > nowMs + FUTURE_SLACK || end.ms > nowMs + FUTURE_SLACK) reject(`${label}: is in the future`)
 
   if (kind === 'backfill' && monthId) {
@@ -174,6 +208,10 @@ function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | 
     if (localStart < first || localStart >= last) reject(`${label}: is outside month ${monthId}`)
   } else if (start.ms < nowMs - DAILY_LOOKBACK) {
     reject(`${label}: is too old for a daily sync`)
+  }
+
+  if (type === 'heart_rate' && start.local.minutes >= HR_WINDOW_END && start.local.minutes < HR_WINDOW_START) {
+    return null
   }
 
   let value: number | null = null
@@ -199,6 +237,38 @@ function parseSample(raw: unknown, index: number, kind: Kind, monthId: string | 
     source_name: optionalText(raw.source, 200, `${label}: source`),
     source_device: optionalText(raw.device, 200, `${label}: device`),
   }
+}
+
+const SERIES_COLUMNS = ['start', 'end', 'value', 'unit', 'source', 'device', 'stage'] as const
+// Extra details: if one of these is a different length from start, it's set
+// aside rather than losing the whole post over it.
+const EXTRA_COLUMNS = new Set(['unit', 'source', 'device'])
+
+// Lines up one series' columns into one object per reading. A column the
+// Shortcut built from no readings arrives as [""], which means none.
+function rowsFromSeries(raw: unknown, index: number): Record<string, unknown>[] {
+  const where = `series ${index + 1}`
+  if (!isRecord(raw)) reject(`${where}: not an object`)
+  const columns: Partial<Record<(typeof SERIES_COLUMNS)[number], unknown[]>> = {}
+  for (const name of SERIES_COLUMNS) {
+    const column = raw[name]
+    if (column === undefined || column === null) continue
+    if (!Array.isArray(column)) reject(`${where}: ${name} must be a list`)
+    columns[name] = column
+  }
+  const start = columns.start
+  if (!start) reject(`${where}: start is missing`)
+  if (start.length === 1 && start[0] === '') return []
+  for (const [name, column] of Object.entries(columns)) {
+    if (column.length === start.length) continue
+    if (EXTRA_COLUMNS.has(name)) delete columns[name as keyof typeof columns]
+    else reject(`${where}: ${name} has a different number of entries from start`)
+  }
+  return start.map((_, i) => {
+    const row: Record<string, unknown> = { type: raw.type }
+    for (const [name, column] of Object.entries(columns)) row[name] = column[i]
+    return row
+  })
 }
 
 export function parseUpload(body: unknown, now: Date): ParseResult {
@@ -232,21 +302,46 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
     } else if (body.month_id !== undefined && body.month_id !== null && body.month_id !== '') {
       reject('month_id is only for a backfill')
     }
+    if (body.month_complete !== undefined && typeof body.month_complete !== 'boolean') {
+      reject('month_complete must be true or false')
+    }
+    const monthComplete = kind === 'backfill' && body.month_complete === true
 
+    // Which automation ran the Shortcut. A word the automation's Text box
+    // doesn't spell exactly (for example the app's name instead of "app") is
+    // recorded as unknown rather than costing the morning's readings.
     let trigger: Trigger | null = null
-    if (body.trigger !== undefined && body.trigger !== null && body.trigger !== '') {
-      const t = typeof body.trigger === 'string' ? body.trigger.trim().toLowerCase() : ''
-      if (!(TRIGGERS as readonly string[]).includes(t)) reject('unknown trigger')
-      trigger = t as Trigger
+    if (typeof body.trigger === 'string') {
+      const t = body.trigger.trim().toLowerCase()
+      if ((TRIGGERS as readonly string[]).includes(t)) trigger = t as Trigger
     }
 
     const rawSamples = body.samples ?? []
     if (!Array.isArray(rawSamples)) reject('samples must be a list')
-    if (kind === 'ping' && rawSamples.length > 0) reject('a ping carries no samples')
-    if (rawSamples.length > MAX_SAMPLES) reject(`more than ${MAX_SAMPLES} samples`)
+    const rawSeries = body.series ?? []
+    if (!Array.isArray(rawSeries)) reject('series must be a list')
+    const rows = [...rawSamples]
+    rawSeries.forEach((series, i) => {
+      for (const row of rowsFromSeries(series, i)) {
+        rows.push(row)
+        if (rows.length > MAX_SAMPLES) reject(`more than ${MAX_SAMPLES} samples`)
+      }
+    })
+    if (kind === 'ping' && rows.length > 0) reject('a ping carries no samples')
+    if (rows.length > MAX_SAMPLES) reject(`more than ${MAX_SAMPLES} samples`)
 
     const nowMs = now.getTime()
-    const samples = rawSamples.map((s, i) => parseSample(s, i, kind as Kind, monthId, nowMs))
+    const samples: CleanSample[] = []
+    const reasons: string[] = []
+    rows.forEach((row, i) => {
+      try {
+        const sample = parseSample(row, i, kind as Kind, monthId, nowMs)
+        if (sample) samples.push(sample)
+      } catch (e) {
+        if (!(e instanceof Rejected)) throw e
+        reasons.push(e.message)
+      }
+    })
 
     return {
       ok: true,
@@ -257,6 +352,9 @@ export function parseUpload(body: unknown, now: Date): ParseResult {
         device_tz_offset_min: deviceOffset,
         trigger,
         samples,
+        month_complete: monthComplete,
+        set_aside: reasons.length,
+        set_aside_note: reasons.length ? reasons.slice(0, SET_ASIDE_REASONS_KEPT).join('; ').slice(0, 300) : null,
       },
     }
   } catch (e) {

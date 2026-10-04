@@ -14,12 +14,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      # The pandas reference check needs a Python that allows installs.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:functions
       - name: The iPhone Shortcut is well formed
         run: python3 scripts/shortcut/test_build_shortcut.py
+      - name: The pandas reference follows the agreed rules
+        run: |
+          python3 -m pip install --quiet -r scripts/reference/requirements.txt
+          python3 -m unittest discover -s scripts/reference
       # The build ends with scripts/check-build-secrets.mjs, which fails if
       # anything secret reached the files sent to browsers.
       - run: npm run build
@@ -60,3 +68,34 @@ jobs:
       - run: npm ci
       - run: npx supabase db start
       - run: npx supabase test db
+
+  local-e2e:
+    name: Local end to end (tokens, sync and import against local Supabase)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      # The pandas reference check needs a Python that allows installs.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npx supabase start
+      - name: Start the server functions
+        run: |
+          nohup npx supabase functions serve < /dev/null > functions.log 2>&1 &
+          for i in $(seq 1 90); do grep -q "Serving functions" functions.log && exit 0; sleep 2; done
+          cat functions.log
+          exit 1
+      - run: npm run check:local:sync
+      - run: npm run check:local:import
+      - name: The database matches the pandas reference on a made-up history
+        run: |
+          python3 -m pip install --quiet -r scripts/reference/requirements.txt
+          python3 scripts/reference/check.py --local-synthetic
+      - name: Function log
+        if: failure()
+        run: cat functions.log

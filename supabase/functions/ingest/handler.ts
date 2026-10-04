@@ -12,13 +12,31 @@ import { wording } from '../_shared/wording.ts'
 export type StoreError = 'invalid_token' | 'token_revoked' | 'rate_limited' | 'invalid_body'
 
 export type StoreReply =
-  | { accepted: number; duplicates: number; night_complete: boolean; already_complete_today: boolean }
+  | {
+    accepted: number
+    duplicates: number
+    night_complete: boolean
+    already_complete_today: boolean
+    // Backfill only: months of the import window that have arrived (R12).
+    months_imported?: number
+  }
   | { error: StoreError }
+
+// One line per post for the server log: sizes and counts, never readings.
+export interface IngestLogEntry {
+  kind: string | null
+  month_id: string | null
+  bytes: number
+  readings: number
+  set_aside: number
+  result: string
+}
 
 export interface IngestDeps {
   // Calls ingest_upload(): an upload to store, or the reason it was rejected.
   store(tokenHash: string, upload: CleanUpload | null, rejection: string | null): Promise<StoreReply>
   now(): Date
+  log?(entry: IngestLogEntry): void
 }
 
 const w = wording.sync
@@ -95,11 +113,20 @@ export async function handleIngest(req: Request, deps: IngestDeps): Promise<Resp
   }
 
   const result = await deps.store(tokenHash, upload, rejection)
+  deps.log?.({
+    kind: upload?.kind ?? null,
+    month_id: upload?.month_id ?? null,
+    bytes: raw === null ? declared : new TextEncoder().encode(raw).byteLength,
+    readings: upload?.samples.length ?? 0,
+    set_aside: upload?.set_aside ?? 0,
+    result: 'error' in result ? result.error : 'accepted',
+  })
   if ('error' in result) return rejected(result.error, rejection, raw === null)
 
   let message: string
-  if (upload?.kind === 'backfill') message = w.monthIn
-  else if (result.already_complete_today) message = w.alreadyIn
+  if (upload?.kind === 'backfill') {
+    message = result.months_imported === undefined ? w.monthIn : w.importProgress(result.months_imported)
+  } else if (result.already_complete_today) message = w.alreadyIn
   else if (upload?.kind === 'ping') message = w.notYet
   else message = result.night_complete ? w.nightIn : w.nightNotFinished
 
@@ -109,6 +136,7 @@ export async function handleIngest(req: Request, deps: IngestDeps): Promise<Resp
       duplicates: result.duplicates,
       night_complete: result.night_complete,
       already_complete_today: result.already_complete_today,
+      ...(result.months_imported === undefined ? {} : { months_imported: result.months_imported }),
       message,
     },
     200,

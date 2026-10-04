@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { supabase } from '../lib/supabase'
+import NavBar from '../components/NavBar'
 import UploadToken from './UploadToken'
-import { currentPushSupport, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
+import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
 const w = wording.notifications
 const TEST_DELAY_SECONDS = 15
 
-export default function Home({ session }: { session: Session }) {
+// A stand-in for Settings until Phase 5 (D63): the account, notifications,
+// upload token and sign out, as on the temporary home screen of Phase 1.
+export default function Settings({ session }: { session: Session }) {
   const [isOwner, setIsOwner] = useState(false)
   const [devices, setDevices] = useState<number | null>(null)
   const [support, setSupport] = useState(currentPushSupport)
@@ -47,6 +50,15 @@ export default function Home({ session }: { session: Session }) {
     setBusy(false)
   }
 
+  async function signOut() {
+    try {
+      await forgetThisDevice()
+    } catch {
+      // Sign out anyway; the phone may already have no subscription.
+    }
+    await supabase.auth.signOut({ scope: 'local' })
+  }
+
   async function onTest() {
     setBusy(true)
     setMessage(null)
@@ -61,7 +73,7 @@ export default function Home({ session }: { session: Session }) {
 
   return (
     <main className="page">
-      <h1 className="large-title">{wording.appName}</h1>
+      <NavBar title={wording.day.settings} />
 
       <section className="card">
         <p className="caption">{wording.home.signedInAs}</p>
@@ -93,7 +105,7 @@ export default function Home({ session }: { session: Session }) {
 
       <UploadToken />
 
-      <button className="text-button" type="button" onClick={() => supabase.auth.signOut({ scope: 'local' })}>
+      <button className="text-button" type="button" onClick={signOut}>
         {wording.home.signOut}
       </button>
     </main>
