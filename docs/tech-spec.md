@@ -206,13 +206,13 @@ Each call carries the user's session.
 - **`account-token`:** checks the password, then creates or reissues the upload token. The token is returned once.
 - **`account-delete-data`:** checks the password, then deletes the user's readings, results, answers, tokens and subscriptions. The account itself stays.
 - **`account-first-login`:** takes the new password, refuses one under 12 characters or the temporary password itself, then saves it and clears the change-password flag in one step. Saving a password ends every session, so the app signs straight back in with the new one.
-- **`send-push`:** in Phase 1a, sends a test notification to the signed-in user's own devices after an optional delay (up to 30 seconds), replying at once and sending in the background. Phase 4 extends it to send outbox rows on a schedule.
+- **`send-push`:** in Phase 1a, sends a test notification to the signed-in user's own devices after an optional delay (up to 30 seconds), replying at once and sending in the background. Phase 4 (built on the local copy, 4 October 2026) adds `{"kind": "due"}`, accepted only with the cron key in the `x-clarivi-cron` header (D66): it claims due outbox rows (`claim_due_notifications`, so no row is sent twice and anything past its time expires), writes each message from the wording module (`send-push/outbox.ts`: the morning status and reason, or the reminder or 8pm question with no health detail; a tap opens `/?n=<id>`), sends it to each of the person's phones, retires phones the push service says are gone, records the morning's shown status (D61) and marks the row sent, skipped (no status any more, or no phone) or failed.
 - **`owner-status`:** owner only. Returns per-user sync, reminder, delivery and import status, with no health values.
 
 ### Schedulers
 - **Every minute:** `run_analysis_queue()` processes queued work (built in Phase 2: it merges each user's pending work, waits while an import is still arriving, and retries failed work up to 3 times), then writes morning notifications to the outbox (Phase 4).
 - **Daily, 3:17am UTC:** `trim-cron-log` deletes job log rows older than 7 days (Phase 2 code review).
-- **Every minute:** calls `send-push`, which sends pending outbox rows.
+- **Every minute:** calls `send-push`, which sends pending outbox rows. Built in Phase 4: `send_due_notifications()` calls it through pg_net only when something is due, reading the cron key and the functions' address from Vault (`clarivi_cron_key`, `clarivi_functions_url`), which are set at release and never in a migration (D66).
 - **Every 5 minutes:** `plan_notifications()` adds 11:30 reminders and 8pm follow-ups for users whose local time has reached them.
 - **Weekly (Monday, 5am local, Default):** `build_digests()`.
 
@@ -385,6 +385,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
   - notification taps
   - both Shortcut triggers, with the phone locked and unlocked
   - import timing, and an interrupted import resuming
+- **Local notification check** (`npm run check:local:notify`, Phase 4): with the local copy and the functions running with the local settings (`supabase/functions/.env`, never committed, holds local test push keys and a local cron key), it puts the local cron key and address into the local Vault, gives a made-up person a fake phone and an Ease off morning, and checks that the database's every-minute call reaches the sender, the phone decrypts "Ease off today: HRV well below your usual, sleep short", the outbox and the shown status are recorded, a wrong key is refused, and a tap is logged. Local only, like the Phase 1a check, as GitHub's checks have no push keys.
 - **Local end-to-end check** (`npm run check:local`, Phase 1a): with the local copy and functions running, it signs in made-up accounts, runs the password change, sends a test push to a fake device that decrypts it, and checks a second account sees nothing of the first.
 - **Local sync check** (`npm run check:local:sync`, Phase 1b): with the local copy and functions running, it creates a token with a password check, posts the way the Shortcut does (ping, daily post in rows and in columns, a repeat, readings set aside), reissues the token, and checks a second account sees nothing. Since the Phase 1 code review it runs on every push, with the import load check (`npm run check:local:import`), in the "Local end to end" GitHub job, which starts the local copy and the functions.
 - **Build secret check:** see pattern 12.
