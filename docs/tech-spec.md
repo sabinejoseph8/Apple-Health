@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 4 October 2026 (Phases 3 to 5 built, reviewed and live, including the Phase 5 fix that makes "Sign out everywhere" also stop notifications to every device; earlier: Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
+**Last updated:** 4 October 2026, late (Phase 6: the security headers, the privacy check from the outside and its catalog check, backups as built and the restore steps, the consents table and its functions, `account-withdraw-consent`, the consent checks in `account-token` and `ingest`, the key helper ready for D81, and the data protection research; earlier the same day: Phases 3 to 5 built, reviewed and live, including the Phase 5 fix that makes "Sign out everywhere" also stop notifications to every device; earlier: Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -287,7 +287,7 @@ Each call carries the user's session.
 - The Shortcut is shared as a blank template that asks for the token when it's installed. A configured Shortcut is never shared.
 
 **Secrets**
-- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026).
+- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026). Changed by D81 (4 October 2026, not yet done): the Vercel connection comes out, the public values are typed into Vercel by hand, and the secret key, the database password and the signing secret are replaced (moving to Supabase's newer signing keys), so the full-access values live only in Supabase. The functions already accept a replaced secret key whatever its name (`pickKey` in `_shared/http.ts`). Every client already uses the new-style publishable key except, possibly, the live app's build through the Vercel connection, which the change replaces.
 - The web app holds only the public key and the push public key. The build reads exactly three values by name (the project address, the publishable key and the push public key), so nothing else can reach the browser.
 - The live push signing keys were created on 3 October 2026 and sent straight to Supabase's secret store; the private key isn't stored anywhere else. Local development uses separate local-only test keys in `supabase/functions/.env`, which is never committed.
 - The repository holds no secrets. CI needs none so far; if it ever does, it uses GitHub's encrypted secrets.
@@ -345,6 +345,7 @@ Each call carries the user's session.
 5. Server functions are deployed at the same time as their matching database change.
 6. Merging to `main` publishes the web app to production.
 7. Releases are tagged and listed in a changelog. During the test, score logic and settings are frozen.
+8. **If personal data is ever exposed** (from the data protection check, 4 October 2026): within 5 days, tell the people affected and the Cayman Ombudsman; also the Commission d'accès à l'information for a Quebec tester (when there's a risk of serious injury), the Privacy Commissioner of Canada for an Ontario tester (if PIPEDA applies and there's a real risk of significant harm), and a DC tester as fast as possible. Say what happened, what it means, what was done, and what the person can do. Keep a register of every incident, even small ones.
 
 How a release reaches the live project: sign the Supabase command-line tool in once on the laptop (`npx supabase login`, approved in the browser with a verification code), link the folder to the project, then `supabase db push` for migrations (no database password needed), `supabase functions deploy` for functions and `supabase secrets set` for function settings.
 
@@ -428,7 +429,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Lock-screen text shows health detail | Privacy concern for testers | Status and reason only in the morning; nothing in reminders and follow-ups; consent and the "When Unlocked" guide | 4 |
 | Wording drifts into medical claims | Health-adjacent responsibility | One wording module with forbidden-term tests | 3 |
 | iOS or Shortcuts updates change behaviour mid-test | Syncs break for everyone at once | Freeze phone updates where testers agree; owner page flags missed syncs the same day | 7 |
-| Health data stored outside the Cayman Islands | Data-protection rules may apply to sensitive data and transfers abroad | Check the Cayman Data Protection Act before the test; consent covers storage in the US; not legal advice | 6 |
+| Health data stored outside the Cayman Islands | Data-protection rules may apply to sensitive data and transfers abroad | Checked 4 October 2026 for Cayman, Ontario, Quebec and DC (`docs/cayman-data-protection.md`; not legal advice): build to Quebec's rules; separate consent to the US storage (D79); the privacy impact assessment (`docs/privacy-impact-assessment.md`); a breach plan reaching every regulator within 5 days | 6 |
 
 ---
 

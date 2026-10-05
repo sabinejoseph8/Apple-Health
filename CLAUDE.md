@@ -12,6 +12,7 @@ The agreed plan is in `docs/`. Read the files a task needs before starting it.
 - `docs/design-screens.html`: a copy of the Clarivi Screens canvas (open it in a browser): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open, all on the sample day of Tuesday 29 September. Use it for exact layout, wording and sample values.
 - `docs/clarivi-flow.html`: the daily morning loop step by step, the six views it needs and every state each view can be in.
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
+- `docs/cayman-data-protection.md`, `docs/consent-draft.md` and `docs/privacy-impact-assessment.md`: the data protection research for every place testers may live (not legal advice), the approved consent text (in the app as `wording.consent`) and the assessment of storing testers' data in the US.
 - `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 onwards) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.

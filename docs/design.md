@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 4 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page)
+**Last updated:** 4 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
