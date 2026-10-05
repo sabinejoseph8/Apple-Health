@@ -23,8 +23,10 @@ if [ "${1:-}" = "--local" ]; then
   mkdir -p "$DEST"
 else
   SOURCE=--linked
-  # Only into the encrypted image, opened from its usual place.
-  if ! hdiutil info | grep -q "image-path *: *$IMAGE"; then
+  # Only into the encrypted image, opened from its usual place. (Read the
+  # list first: grep -q stopping early would fail the pipe.)
+  open_images=$(hdiutil info)
+  if ! grep -q "image-path *: *$IMAGE$" <<< "$open_images"; then
     echo "Open the encrypted backup image first: hdiutil attach ~/ClariviBackups.sparsebundle"
     exit 1
   fi
