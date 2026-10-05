@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { wording } from '../supabase/functions/_shared/wording'
+import { useRoute } from './lib/route'
 import { configured, supabase } from './lib/supabase'
 import { screenFor } from './lib/screens'
+import Guide from './screens/Guide'
 import SignIn from './screens/SignIn'
 import SetPassword from './screens/SetPassword'
 import SignedIn from './screens/SignedIn'
@@ -10,6 +12,7 @@ import SignedIn from './screens/SignedIn'
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [ready, setReady] = useState(false)
+  const route = useRoute()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,6 +31,8 @@ export default function App() {
       </main>
     )
   }
+  // The setup guide is for before signing in too (D78).
+  if (route === 'guide') return <Guide />
   if (!ready) return <main className="page" aria-busy="true" />
 
   switch (screenFor(session)) {

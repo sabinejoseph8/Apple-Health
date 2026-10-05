@@ -626,3 +626,26 @@ button:focus-visible, a:focus-visible {
 .person { gap: var(--space-6); }
 .person-name { overflow-wrap: anywhere; }
 .body.warn { color: var(--ease-text); font-weight: 600; }
+
+/* Phase 6: the setup guide (D78) and its links */
+.text-link.center {
+  align-self: center;
+}
+
+.guide-steps {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.button-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}

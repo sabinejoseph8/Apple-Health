@@ -15,6 +15,7 @@ export const wording = {
     // R2: one general message that doesn't say which part was wrong.
     wrongDetails: "That email and password don't match an account. Check them and try again.",
     forgot: 'Forgot your password? Contact Sabine.',
+    guide: 'How to set up Clarivi',
   },
 
   setPassword: {
@@ -99,6 +100,8 @@ export const wording = {
     wrongPassword: "That password isn't right. Try again.",
     showOnce: "Copy this token now and paste it into the Clarivi Shortcut. It's shown only once.",
     copy: 'Copy token',
+    getShortcut: 'Get the Clarivi Shortcut',
+    guide: 'Setup guide',
     copied: 'Copied',
     done: 'Done',
   },
@@ -545,6 +548,86 @@ export const wording = {
     todayAt: (time: string) => `today at ${time}`,
     yesterdayAt: (time: string) => `yesterday at ${time}`,
     dayAt: (day: string, time: string) => `${day} at ${time}`,
+  },
+
+  // The one-page setup guide (Phase 6, D78; R10, R62): a public page,
+  // readable before installing, linked from sign-in and Settings.
+  guide: {
+    title: 'Set up Clarivi',
+    intro:
+      'Setting up takes about 30 minutes, most of it a one-time import that runs by itself. You need your iPhone, your Apple Watch and the temporary password Sabine gave you.',
+    address: (host: string) => `Open ${host} in Safari on your iPhone.`,
+    sections: [
+      {
+        title: 'Before you start',
+        steps: [
+          'Check that your Watch records your sleep: on your iPhone, open Health, tap Browse, then Sleep. You should see past nights. Clarivi needs at least three weeks of them to learn your normal.',
+          'Wear your Watch to bed every night with sleep tracking on: in the Watch app on your iPhone, tap Sleep and turn on Track Sleep with Apple Watch.',
+          'If another app also records your sleep in Health, or you went on a long trip in the past year, tell Sabine.',
+        ],
+      },
+      {
+        // The page shows its own address as the first step.
+        title: 'Add Clarivi to your Home Screen',
+        withAddress: true,
+        steps: [
+          'Tap the Share button, then Add to Home Screen, then Add.',
+          'From now on, open Clarivi from its icon on your Home Screen, not from Safari.',
+        ],
+      },
+      {
+        title: 'Sign in',
+        steps: [
+          'Sign in with your email and the temporary password from Sabine.',
+          'Choose your own password, at least 12 characters, and let your iPhone save it.',
+          'Read how Clarivi uses your data, and agree if you are happy to take part.',
+        ],
+      },
+      {
+        title: 'Turn on notifications',
+        steps: [
+          'In Clarivi, tap the gear, then Turn on notifications, and tap Allow.',
+          "Your morning notification shows your status and its reason on the lock screen. To keep it private until you unlock: open your iPhone's Settings, tap Notifications, then Clarivi, then Show Previews, and choose When Unlocked.",
+        ],
+      },
+      {
+        // The page adds the "Get the Clarivi Shortcut" link after these steps.
+        title: 'Install the Clarivi Shortcut',
+        withShortcutLink: true,
+        steps: [
+          "Open your iPhone's Settings, tap Apps, then Shortcuts, then Advanced, and turn on Allow Sharing Large Amounts of Data.",
+          'In Clarivi, tap the gear. Under Upload token, tap Create token, enter your password, then tap Copy token.',
+          'Tap Get the Clarivi Shortcut, then Add Shortcut. When it asks for your token, paste it. The Shortcut is called Clarivi Sync template.',
+          "In the Shortcuts app, tap Clarivi Sync template, choose Sync this morning, and allow everything it asks for: your Health readings and its file in iCloud Drive. The morning automations can't ask, so this first run matters.",
+        ],
+      },
+      {
+        title: 'Import your last 12 months',
+        steps: [
+          'Run Clarivi Sync template again and choose Import my last 12 months.',
+          'Keep your iPhone unlocked with Shortcuts open. It takes about 15 minutes.',
+          'If it stops part way, run it again: it carries on from the last finished month.',
+        ],
+      },
+      {
+        title: 'Set up the two morning automations',
+        steps: [
+          'In the Shortcuts app, tap Automation, then the + button.',
+          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync template and set its input to the Text.',
+          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync template and the Text as input.',
+          'Both act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
+        ],
+      },
+      {
+        title: 'Each morning',
+        steps: [
+          'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
+          "Open Clarivi, say how you feel, then read your status. If no sync has arrived by 11:30, Clarivi reminds you.",
+        ],
+      },
+    ],
+    contact: 'Stuck on a step? Contact Sabine.',
+    back: 'Back',
   },
 
   general: {
