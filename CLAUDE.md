@@ -75,6 +75,6 @@ Update this file whenever there is a significant new feature, a major bug resolv
 ## Safety rules
 
 - The GitHub repository is public. Never commit secrets, `.env` files, health data, Apple Health exports or database backups.
-- The Supabase secret key and the VAPID private key live only in Supabase's secret store. The one exception: Vercel's Supabase integration also copies the secret key, database password and token-signing secret into Vercel's encrypted settings (accepted 2 October 2026). The app must never read them. The build reads exactly three values by name (project address, publishable key, VAPID public key), so only those reach the browser.
+- The Supabase secret key and the VAPID private key live only in Supabase's secret store, with no exceptions: since 5 October 2026 (D81) Vercel has no Supabase connection and holds only the three public values, set by hand. The build reads exactly three values by name (project address, publishable key, VAPID public key), so only those reach the browser. Never reconnect Vercel's Supabase integration: it copies the secret values into Vercel.
 - No third-party scripts, analytics or tracking.
 - No screen or notification names a medical condition or suggests a diagnosis (R61). All user-facing wording lives in one wording module with tests.
