@@ -306,7 +306,7 @@
 | Name (30 Sep 2026) | The product is called Clarivi (previously the working name Morning Readiness) |
 | Password minimum (3 Oct 2026) | 12 characters (R3) |
 | Shared phones (3 Oct 2026) | A phone's notifications go to whoever signed in on it last (R9) |
-| What counts as a night (3 Oct 2026) | All the time asleep from 6pm to noon, dated by that morning; afternoon sleep is a nap; overlapping sleep records count once, with awake winning |
+| What counts as a night (3 Oct 2026) | All the time asleep from 6pm to noon, dated by that morning; afternoon sleep is a nap; overlapping sleep records count once, with awake winning. Kept for the four-week test (5 Oct 2026): naps between noon and 6pm don't count toward the status; counting Watch-recorded afternoon naps is a future feature |
 | Points (3 Oct 2026) | Each reading earns its weight times how far it was worse than normal, measured in spreads; nothing when normal or better (R40) |
 | Nudge choice (3 Oct 2026) | Ready: train as planned. Rest: rest. Ease off: prioritise sleep when sleep earns the most points, otherwise train easy (R22) |
 | Illness check (3 Oct 2026) | The pattern note shows when at least 3 of 4 overnight readings each move at least 1 spread the wrong way; it never changes the status or the nudge (R33) |
