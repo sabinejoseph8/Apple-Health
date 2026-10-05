@@ -329,6 +329,7 @@
 | Consent (4 Oct 2026) | Each person agrees in the app once, right after their first sign-in, before anything else; the agreement is recorded with the text's version and time; nothing is uploaded before it; a new version asks again; Settings shows when they agreed |
 | Setup guide (4 Oct 2026) | A public page in the app, readable before installing, linked from the sign-in screen and Settings (R10, R62) |
 | App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
+| Sync now (5 Oct 2026) | While last night isn't in yet, before noon, the card offers Sync now, which runs the Shortcut in one tap; testers name their Shortcut Clarivi Sync during setup |
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
 | Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 

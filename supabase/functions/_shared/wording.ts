@@ -198,6 +198,9 @@ export const wording = {
     // "at 6:42am" this morning, or "yesterday at 9:15pm".
     synced: (when: string) => `Updated from your Watch ${when}`,
     late: 'Late',
+    // D84: on the card while last night isn't in yet, before noon.
+    syncNow: 'Sync now',
+    syncNowHint: "Opens the Shortcuts app to send last night's readings. Come back here when it's done.",
     partial: 'Based on 2 of 3 readings',
     nudgeLabel: "Today's nudge",
     nudges: {
@@ -333,7 +336,7 @@ export const wording = {
     missed: {
       pill: 'No sync yet',
       headline: 'No sync yet this morning',
-      detail: "Open the Shortcuts app and run Clarivi Sync before noon to get today's nudge.",
+      detail: "Tap Sync now, or run Clarivi Sync in the Shortcuts app, before noon to get today's nudge.",
     },
     noSync: {
       pill: 'No sync',
@@ -684,14 +687,14 @@ export const wording = {
         steps: [
           "Open your iPhone's Settings, tap Apps, then Shortcuts, then Advanced, and turn on Allow Sharing Large Amounts of Data.",
           'In Clarivi, tap the gear. Under Upload token, tap Create token, enter your password, then tap Copy token.',
-          'Tap Get the Clarivi Shortcut, then Add Shortcut. When it asks for your token, paste it. The Shortcut is called Clarivi Sync template.',
-          "In the Shortcuts app, tap Clarivi Sync template, choose Sync this morning, and allow everything it asks for: your Health readings and its file in iCloud Drive. The morning automations can't ask, so this first run matters.",
+          "Tap Get the Clarivi Shortcut, then Add Shortcut. When it asks for your token, paste it. It's added as Clarivi Sync template: press and hold it, tap Rename, and call it Clarivi Sync, so Clarivi's Sync now button can find it.",
+          "In the Shortcuts app, tap Clarivi Sync, choose Sync this morning, and allow everything it asks for: your Health readings and its file in iCloud Drive. The morning automations can't ask, so this first run matters.",
         ],
       },
       {
         title: 'Import your last 12 months',
         steps: [
-          'Run Clarivi Sync template again and choose Import my last 12 months.',
+          'Run Clarivi Sync again and choose Import my last 12 months.',
           'Keep your iPhone unlocked with Shortcuts open. It takes about 15 minutes.',
           'If it stops part way, run it again: it carries on from the last finished month.',
         ],
@@ -700,8 +703,8 @@ export const wording = {
         title: 'Set up the two morning automations',
         steps: [
           'In the Shortcuts app, tap Automation, then the + button.',
-          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync template and set its input to the Text.',
-          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync template and the Text as input.',
+          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text.',
+          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync and the Text as input.',
           'Both act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
         ],
       },
@@ -709,7 +712,7 @@ export const wording = {
         title: 'Each morning',
         steps: [
           'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
-          "Open Clarivi, say how you feel, then read your status. If no sync has arrived by 11:30, Clarivi reminds you.",
+          "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",
         ],
       },
     ],

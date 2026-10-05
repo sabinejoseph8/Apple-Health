@@ -68,7 +68,9 @@ const STAGES: Record<string, Stage> = {
 const KINDS = ['daily', 'backfill', 'ping'] as const
 type Kind = (typeof KINDS)[number]
 
-const TRIGGERS = ['charger', 'app', 'manual'] as const
+// Which automation ran the Shortcut, "manual" by hand, or "button" from the
+// card's Sync now button (D84).
+const TRIGGERS = ['charger', 'app', 'manual', 'button'] as const
 type Trigger = (typeof TRIGGERS)[number]
 
 const MINUTE = 60_000
