@@ -434,6 +434,9 @@ verify_jwt = false
 [functions.account-delete-data]
 verify_jwt = false
 
+[functions.account-withdraw-consent]
+verify_jwt = false
+
 [functions.owner-reset-password]
 verify_jwt = false
 

@@ -4,10 +4,11 @@ import { wording } from '../supabase/functions/_shared/wording'
 import { useRoute } from './lib/route'
 import { configured, supabase } from './lib/supabase'
 import { screenFor } from './lib/screens'
+import ConsentGate from './screens/ConsentGate'
 import Guide from './screens/Guide'
+import Privacy from './screens/Privacy'
 import SignIn from './screens/SignIn'
 import SetPassword from './screens/SetPassword'
-import SignedIn from './screens/SignedIn'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -31,8 +32,9 @@ export default function App() {
       </main>
     )
   }
-  // The setup guide is for before signing in too (D78).
+  // The setup guide and "Your data" are for before signing in too (D78, D79).
   if (route === 'guide') return <Guide />
+  if (route === 'privacy') return <Privacy />
   if (!ready) return <main className="page" aria-busy="true" />
 
   switch (screenFor(session)) {
@@ -41,6 +43,7 @@ export default function App() {
     case 'set-password':
       return <SetPassword session={session!} />
     case 'home':
-      return <SignedIn key={session!.user.id} session={session!} />
+      // Consent comes before anything else (D79).
+      return <ConsentGate key={session!.user.id} session={session!} />
   }
 }

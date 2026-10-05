@@ -55,6 +55,7 @@ SERVER_ONLY = [
     ('cron_key_ok', {'p_key': 'not-the-key'}),
     ('delete_my_data', {'p_user': NOBODY}),
     ('followthrough_open', {'p_user': NOBODY, 'p_date': OLD_DAY}),
+    ('has_consent', {'p_user': NOBODY}),
     ('ingest_upload', {'p_token_hash': '0' * 64, 'p_upload': None, 'p_error': 'privacy check'}),
     ('issue_upload_token', {'p_user': NOBODY, 'p_token_hash': '0' * 64}),
     ('local_moment', {'p_user': NOBODY, 'p_date': OLD_DAY, 'p_time': '12:00'}),
@@ -65,6 +66,7 @@ SERVER_ONLY = [
     ('rebuild_status', {'p_user': NOBODY, 'p_from': '2000-01-01', 'p_to': '2000-01-02'}),
     ('recompute', {'p_user': NOBODY, 'p_from': '2000-01-01', 'p_to': '2000-01-02'}),
     ('shown_change_nudge', {'p_user': NOBODY, 'p_date': OLD_DAY}),
+    ('withdraw_consent', {'p_user': NOBODY}),
 ]
 # Server-only functions that take no person (build_due_digests,
 # claim_due_notifications, plan_notifications, run_analysis_queue,
@@ -80,7 +82,9 @@ OWNER_ONLY = [
 
 # Functions for signed-in people; signed out, each must refuse.
 SIGNED_IN_ONLY = [
+    ('consent_version', {}),
     ('forget_all_devices', {}),
+    ('give_consent', {'p_version': 1, 'p_use': True, 'p_us_storage': True}),
     ('log_notification_tap', {'p_id': 0}),
     ('log_usage', {'p_event': 'card_view', 'p_meta': {}}),
     ('record_shown', {'p_date': OLD_DAY}),
@@ -225,6 +229,10 @@ def local(prove: bool) -> Report:
                 raise SystemExit(f'Could not make a local account ({status}).')
             made.append(body['id'])
             people[who] = (email, password)
+        # Both agree to the consent text (D79), as real people do first.
+        for who in people:
+            session_, _ = sign_in(url, key, *people[who])
+            api.call(f'{url}/rest/v1/rpc/give_consent', session_, 'POST', {'p_version': 1, 'p_use': True, 'p_us_storage': True})
         # Someone else uses the app a little, so there are rows to hide.
         other, _ = sign_in(url, key, *people['someone-else'])
         api.call(f'{url}/rest/v1/rpc/submit_checkin', other, 'POST', {'p_date': '2026-10-04', 'p_answer': 'okay'})

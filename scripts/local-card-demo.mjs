@@ -34,6 +34,9 @@ if (!user) {
   user = data.user
 }
 const uid = user.id
+// The demo account has agreed to the consent text (D79), so the card opens.
+await admin.from('consents').delete().eq('user_id', uid)
+await admin.from('consents').insert({ user_id: uid, version: 1, agreed_use: true, agreed_us_storage: true })
 
 const pad = (n) => String(n).padStart(2, '0')
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`

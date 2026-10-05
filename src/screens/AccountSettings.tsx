@@ -163,9 +163,38 @@ function SignOutEverywhere({ onCancel }: { onCancel: () => void }) {
   )
 }
 
-// Asks for the password, then deletes (R8, R59). The red button is the
-// confirmation step; nothing is deleted before it.
+// Asks for the password, then deletes (R8, R59).
 function DeleteData({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  return (
+    <PasswordConfirm
+      fn="account-delete-data"
+      title={w.deleteData}
+      note={w.deleteNote}
+      working={w.deleting}
+      onDone={onDone}
+      onCancel={onCancel}
+    />
+  )
+}
+
+// A step that can't be undone: what it does, the password, then the red
+// button, which is the confirmation; nothing happens before it. Used by
+// Delete my data and Withdraw consent (D80).
+export function PasswordConfirm({
+  fn,
+  title,
+  note,
+  working,
+  onDone,
+  onCancel,
+}: {
+  fn: string
+  title: string
+  note: string
+  working: string
+  onDone: () => void
+  onCancel: () => void
+}) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -174,25 +203,25 @@ function DeleteData({ onDone, onCancel }: { onDone: () => void; onCancel: () => 
     const password = String(new FormData(e.currentTarget).get('password') ?? '')
     setBusy(true)
     setError(null)
-    const result = await callFunction('account-delete-data', { password })
+    const result = await callFunction(fn, { password })
     setBusy(false)
     if (!result.ok) return setError(result.code === 'wrong_password' ? w.wrongPassword : wording.general.offline)
     onDone()
   }
 
   return (
-    <form className="card form" onSubmit={onSubmit} noValidate aria-labelledby="delete-h">
-      <h2 id="delete-h" className="card-headline">
-        {w.deleteData}
+    <form className="card form" onSubmit={onSubmit} noValidate aria-labelledby={`${fn}-h`}>
+      <h2 id={`${fn}-h`} className="card-headline">
+        {title}
       </h2>
-      <p className="body">{w.deleteNote}</p>
+      <p className="body">{note}</p>
       <p className="body">{w.passwordPrompt}</p>
       <label className="field">
         <span>{w.password}</span>
         <input name="password" type="password" autoComplete="current-password" required />
       </label>
       <button className="primary destructive" type="submit" disabled={busy}>
-        {busy ? w.deleting : w.deleteData}
+        {busy ? working : title}
       </button>
       {error && (
         <p className="form-error" role="alert">

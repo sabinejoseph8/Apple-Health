@@ -7,6 +7,7 @@ import { ChevronRightIcon } from '../components/Icons'
 import NavBar from '../components/NavBar'
 import { go } from '../lib/route'
 import AccountSettings from './AccountSettings'
+import ConsentSettings from './ConsentSettings'
 import UploadToken from './UploadToken'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
@@ -131,6 +132,8 @@ export default function Settings({ session }: { session: Session }) {
       </section>
 
       <UploadToken key={refreshes} />
+
+      <ConsentSettings />
 
       <AccountSettings
         email={session.user.email ?? ''}

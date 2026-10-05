@@ -1,6 +1,6 @@
 # Privacy impact assessment: storing testers' data in the United States
 
-**Status:** draft, 4 October 2026, for Sabine's review. Written for Quebec's rule that personal information may leave Quebec only after an assessment of how it will be protected (Act respecting the protection of personal information in the private sector, section 17, as amended by Law 25), and useful for every tester (`docs/cayman-data-protection.md`). Not legal advice. Review again before any change in where the data goes, or before Clarivi is offered more widely.
+**Status:** approved by Sabine on 4 October 2026. Written for Quebec's rule that personal information may leave Quebec only after an assessment of how it will be protected (Act respecting the protection of personal information in the private sector, section 17, as amended by Law 25), and useful for every tester (`docs/cayman-data-protection.md`). Not legal advice. Review again before any change in where the data goes, or before Clarivi is offered more widely.
 
 ## 1. What is sent, and why
 
@@ -50,4 +50,4 @@ Sabine's encrypted backups stay on her Mac, outside iCloud (D77).
 
 Given the small scale, the testers' informed and separate consent to US storage, the processor's contract and the technical protections above, storing testers' data with Supabase in the United States is proportionate for the four-week test. The written agreement with the processor is Supabase's Data Processing Addendum, read together with this assessment.
 
-Assessed by [Sabine's full name], person in charge of protecting personal information, [date].
+Assessed by Sabine Joseph, person in charge of protecting personal information, 4 October 2026.

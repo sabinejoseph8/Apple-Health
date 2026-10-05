@@ -48,6 +48,21 @@ test('the setup guide works under the policy', async ({ page }) => {
   expect(problems).toEqual([])
 })
 
+test('"Your data" works under the policy', async ({ page }) => {
+  const problems = await watch(page)
+  await page.goto('/#/privacy')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  expect(problems).toEqual([])
+})
+
+test('the consent screen works under the policy', async ({ page }) => {
+  const problems = await watch(page)
+  await openApp(page, { at: MORNING, tables: { ...tables, consents: [] } })
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  expect(problems).toEqual([])
+})
+
 test('sign-in works under the policy', async ({ page }) => {
   const problems = await watch(page)
   await page.goto('/')

@@ -22,6 +22,13 @@ const { data: made } = await admin.auth.admin.createUser({ email, password: firs
 const uid = made.user.id
 const app = client()
 await app.auth.signInWithPassword({ email, password: first })
+const noConsentYet = await (async () => {
+  const { data: { session } } = await app.auth.getSession()
+  const r = await fetch(`${URL_}/functions/v1/account-token`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, apikey: PUB, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: first }) })
+  return { status: r.status, body: await r.json().catch(() => null) }
+})()
+ok(noConsentYet.status === 403 && noConsentYet.body.error === 'no_consent', 'no upload token before agreeing to the consent text (D79)')
+await app.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
 const call = async (who, name, body) => {
   const { data: { session } } = await who.auth.getSession()
   const r = await fetch(`${URL_}/functions/v1/${name}`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, apikey: PUB, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -59,6 +66,18 @@ ok(r.status === 401 && rowsFor() >= 4, 'a wrong password deletes nothing (R8)')
 r = await call(again, 'account-delete-data', { password: second })
 ok(r.status === 200 && rowsFor() === 0, 'with the password, all of it is deleted (R59)')
 ok(!(await client().auth.signInWithPassword({ email, password: second })).error, 'and the account still signs in')
+ok(sql(`select count(*) from public.consents where user_id = '${uid}' and ended_at is null`) === '1', 'and keeps its agreement to the consent text')
+
+// Withdraw consent (D80): deletes everything, ends the agreement, asks again.
+await again.rpc('submit_checkin', { p_date: new Date().toISOString().slice(0, 10), p_answer: 'good' })
+r = await call(again, 'account-withdraw-consent', { password: 'not-my-password' })
+ok(r.status === 401 && sql(`select count(*) from public.checkins where user_id = '${uid}'`) !== '0', 'a wrong password withdraws nothing')
+r = await call(again, 'account-withdraw-consent', { password: second })
+ok(r.status === 200 && sql(`select count(*) from public.checkins where user_id = '${uid}'`) === '0', 'with the password, withdrawing deletes the data')
+ok(sql(`select ended_why from public.consents where user_id = '${uid}'`) === 'withdrawn', 'and keeps the agreement, marked withdrawn')
+r = await call(again, 'account-token', { password: second })
+ok(r.status === 403 && r.body.error === 'no_consent', 'and no upload token until the person agrees again')
+await again.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
 
 // Sign out everywhere (R7): one device ends every session.
 const phone = client(), laptop = client()

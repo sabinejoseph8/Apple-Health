@@ -9,7 +9,7 @@ import { type CleanUpload, MAX_BODY_BYTES, parseUpload } from '../_shared/ingest
 import { hashToken, looksLikeUploadToken } from '../_shared/tokens.ts'
 import { wording } from '../_shared/wording.ts'
 
-export type StoreError = 'invalid_token' | 'token_revoked' | 'rate_limited' | 'invalid_body'
+export type StoreError = 'invalid_token' | 'token_revoked' | 'rate_limited' | 'invalid_body' | 'no_consent'
 
 export type StoreReply =
   | {
@@ -78,6 +78,9 @@ function rejected(error: StoreError, detail: string | null, tooLarge: boolean): 
       return reply({ error, message: w.tokenReplaced }, 401)
     case 'rate_limited':
       return reply({ error, message: w.tooMany }, 429)
+    // No readings from someone who hasn't agreed to the consent text (D79).
+    case 'no_consent':
+      return reply({ error, message: w.noConsent }, 403)
     case 'invalid_body':
       if (tooLarge) return reply({ error: 'too_large', message: w.tooLarge }, 413)
       return reply({ error, message: w.notReadable, detail }, 400)
