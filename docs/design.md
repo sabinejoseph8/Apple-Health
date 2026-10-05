@@ -228,9 +228,9 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - **Test notification (Phase 1a):** title "Clarivi", body "Test notification. Tap to open Clarivi." No health detail.
 
 **App icon (Default)**
-- A placeholder: a white open ring, like a "C", on Link blue (`#0A60D8`). iOS rounds the corners itself.
+- Was a placeholder until Phase 6: a white open ring, like a "C", on Link blue (`#0A60D8`). iOS rounds the corners itself.
 - Drawn by `scripts/make-icons.py` at 180, 192 and 512 pixels. Replace it with a designed icon before testers install the app.
-- **Chosen 4 October 2026 (D76):** the same open ring with a white dot in its opening, on Link blue, picked by Sabine from four drawn options (sunrise, three readings, a night inside the normal band, and this one). Built in Phase 6.
+- **Chosen 4 October 2026 (D76):** the same open ring with a white dot in its opening, on Link blue, picked by Sabine from four drawn options (sunrise, three readings, a night inside the normal band, and this one). Built in Phase 6 (4 October 2026) by `scripts/make-icons.py`: the ring's middle at 28% of the width, 11% thick, open 40 degrees either side of level on the right, with rounded ends; the dot 13% across, centred at 79% from the left. Everything sits within 36% of the centre, inside the 40% safe zone of the maskable icon. A phone already showing the placeholder keeps it until the app is added to the home screen again.
 
 ---
 
