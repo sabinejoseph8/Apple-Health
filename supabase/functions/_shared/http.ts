@@ -18,19 +18,28 @@ export function json(body: unknown, status = 200): Response {
   })
 }
 
-function keyFromEnv(jsonName: string, legacyName: string): string {
-  const raw = Deno.env.get(jsonName)
-  if (raw) {
+// Supabase gives functions a project's keys as a list by name, such as
+// {"default": "sb_secret_..."}. The one named "default" is used. Once a key
+// has been replaced (D81), the list may hold only the new one, under the name
+// it was given, so any listed key will do. The older single-key setting is
+// the last resort.
+export function pickKey(listed: string | undefined, legacy: string | undefined, what: string): string {
+  if (listed) {
     try {
-      const keys = JSON.parse(raw)
+      const keys: Record<string, unknown> = JSON.parse(listed)
       if (typeof keys.default === 'string') return keys.default
+      const named = Object.values(keys).find((k): k is string => typeof k === 'string' && k !== '')
+      if (named) return named
     } catch {
       // fall through to the older single-key setting
     }
   }
-  const legacy = Deno.env.get(legacyName)
-  if (!legacy) throw new Error(`missing ${jsonName} / ${legacyName}`)
+  if (!legacy) throw new Error(`missing ${what}`)
   return legacy
+}
+
+function keyFromEnv(jsonName: string, legacyName: string): string {
+  return pickKey(Deno.env.get(jsonName), Deno.env.get(legacyName), `${jsonName} / ${legacyName}`)
 }
 
 export function supabaseUrl(): string {
