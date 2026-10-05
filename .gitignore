@@ -17,10 +17,13 @@ export.xml
 export_cda.xml
 apple_health_export/
 
-# Database backups (keep them in the encrypted laptop folder, never here)
+# Database backups (only in the encrypted disk image, D77, never here)
 backups/
 *.dump
 *.backup
+*.sparsebundle
+*.dmg
+counts.txt
 
 # Node and Vite
 node_modules/
