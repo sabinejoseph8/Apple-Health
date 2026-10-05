@@ -55,7 +55,11 @@ It can be, if the screen and the button are built for it.
 
 The Act sets no registration or fee for data controllers (none found in the text).
 
-## 6. What this suggests for the build (for Sabine to decide)
+## 6. Testers outside the Cayman Islands
+
+Some testers will live outside the Cayman Islands (Sabine, 4 October 2026). The Act still applies in full: it follows the controller, and Sabine is established in the Islands. But each tester's own country, or for the US their state, may add its own rules for health data, for example the EU and UK GDPR, or state health-data laws in the US such as Washington's My Health My Data Act. This summary doesn't cover those yet; they are checked once Sabine says where the testers live.
+
+## 7. What this suggests for the build (for Sabine to decide)
 
 1. **Consent screen wording:** an explicit "I agree" statement in words, a separate sentence agreeing to US storage, and the controller (Sabine) and purposes named. The text is drafted in the wording module for Sabine's review.
 2. **Withdrawing consent:** the text should say how to withdraw. Simplest: "Delete my data" in Settings removes everything, and telling Sabine closes the account. Or a "Withdraw consent" row in Settings that leads there. Either way, nothing more is collected afterwards.

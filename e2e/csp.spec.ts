@@ -41,6 +41,13 @@ test('the app is served with the strict policy', async ({ request }) => {
   expect(res.headers()['referrer-policy']).toBe('no-referrer')
 })
 
+test('the setup guide works under the policy', async ({ page }) => {
+  const problems = await watch(page)
+  await page.goto('/#/guide')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  expect(problems).toEqual([])
+})
+
 test('sign-in works under the policy', async ({ page }) => {
   const problems = await watch(page)
   await page.goto('/')

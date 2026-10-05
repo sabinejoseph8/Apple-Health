@@ -1,6 +1,9 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
+import { ChevronRightIcon } from '../components/Icons'
 import { callFunction } from '../lib/functions'
+import { SHORTCUT_URL } from '../lib/links'
+import { go } from '../lib/route'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 
@@ -9,8 +12,8 @@ const w = wording.uploadToken
 type Current = { created_at: string; last_used_at: string | null } | null
 
 // Creates or reissues the token the iPhone Shortcut uses (R8, R10, R11).
-// Asks for the password first, then shows the new token once. Part of
-// Settings.
+// Asks for the password first, then shows the new token once, alongside the
+// Shortcut's link and the setup guide (R10, D78). Part of Settings.
 export default function UploadToken() {
   // undefined while loading, null when there is no working token.
   const [current, setCurrent] = useState<Current | undefined>(undefined)
@@ -118,6 +121,22 @@ export default function UploadToken() {
           </button>
         </>
       )}
+
+      <a className="link-row" href={SHORTCUT_URL} target="_blank" rel="noopener noreferrer">
+        <span>{w.getShortcut}</span>
+        <ChevronRightIcon className="chevron" />
+      </a>
+      <a
+        className="link-row"
+        href="#/guide"
+        onClick={(e) => {
+          e.preventDefault()
+          go('guide')
+        }}
+      >
+        <span>{w.guide}</span>
+        <ChevronRightIcon className="chevron" />
+      </a>
     </section>
   )
 }

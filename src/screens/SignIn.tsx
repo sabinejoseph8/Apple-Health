@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
+import { go } from '../lib/route'
 import { supabase } from '../lib/supabase'
 
 const w = wording.signIn
@@ -40,6 +41,16 @@ export default function SignIn() {
         {error && <p className="form-error" role="alert">{error}</p>}
       </form>
       <p className="footnote">{w.forgot}</p>
+      <a
+        className="text-link center"
+        href="#/guide"
+        onClick={(e) => {
+          e.preventDefault()
+          go('guide')
+        }}
+      >
+        {w.guide}
+      </a>
     </main>
   )
 }
