@@ -1,7 +1,7 @@
 # Tech Spec: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 4 October 2026 (Phases 3 to 5 built, reviewed and live, including the Phase 5 fix that makes "Sign out everywhere" also stop notifications to every device; earlier: Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
+**Last updated:** 4 October 2026, late (Phase 6: the security headers, the privacy check from the outside and its catalog check, backups as built and the restore steps, the consents table and its functions, `account-withdraw-consent`, the consent checks in `account-token` and `ingest`, the key helper ready for D81, and the data protection research; earlier the same day: Phases 3 to 5 built, reviewed and live, including the Phase 5 fix that makes "Sign out everywhere" also stop notifications to every device; earlier: Phase 1a built and live; Phase 1b upload path built and live, with the column post format (D42) and the server-side heart-rate window (D43), recorded in sections 3 to 10; Phase 2a nights, normals and the analysis queue built, with the night rules of D48, D49 and D50; Phase 2b score settings, daily status and insights built, with D51 to D53; Phase 2c events, workouts and the reference check built, and the final score numbers set (version 2, frozen), with D54 to D60; Phase 2 code review fixes and D61; Phase 3 step 1: check-ins, usage log, zone numbers (D62) and the briefing builder; Phase 3 steps 2 and 3: the card, check-in and Why today, how the app reads, and the screen tests)
 **Builds on:** product-spec.md (Agreed, v1.0), design.md (Agreed, v1.0), mvp.md
 **Builder:** Claude Code, into a repository Sabine owns
 
@@ -105,6 +105,7 @@ Built in Phase 1a (3 October 2026):
 
 Built in Phase 1b (3 October 2026):
 - `upload_tokens`: at most one working token per user (a unique index on unrevoked tokens). The app can read when its token was made and last used, but never the hash (column-level grants).
+- `uploads.run_trigger` is `charger`, `app`, `manual` or, from 5 October 2026, `button`: the card's Sync now link (`shortcuts://run-shortcut?name=Clarivi%20Sync&input=text&text=button`, D84) passes "button" as the Shortcut's input, which skips its sync-or-import question (migration `20261013000000_sync_button.sql`; `TRIGGERS` in `_shared/ingest-schema.ts`).
 - `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?". A run blocked by a locked phone at its first step (reading the "synced today" file) never reaches the server, so the locked-phone count adds the owner's notes (D75, 4 October 2026).
 - `samples.sample_hash` is a SHA-256 of the type, start, end, value, stage and source. The time zone isn't part of it, so the same moment posted from another time zone is the same reading. Heart rate is stored only from 6pm to noon, by each reading's own local time (D43). Sleep readings arrive with no source: Shortcuts doesn't report one for sleep (Phase 1b), so Watch sleep is recognised by its stages (core, deep, REM, awake) for D10.
 - All writes go through two database functions callable only with the secret key: `ingest_upload(token_hash, upload, error)` and `issue_upload_token(user, token_hash)`.
@@ -144,6 +145,8 @@ Built in Phase 2c (3 October 2026):
 - The owner's scripts remember her sign-in in `private/session-live.json` (a renewable session token, readable only by her Mac account), so the password is typed once, in the Mac's Terminal app; the Claude app's terminal panel showed a password typed at a hidden prompt (3 October 2026). `owner_data.py change-password` sets a new password the same way until the app's own screen arrives (Phase 5).
 
 **User answers and logs**
+- **`consents`** (Phase 6, D79, D80; migration `20261012000000_consents.sql`): one row per agreement: `user_id`, `version` of the consent text, `agreed_use` and `agreed_us_storage` (both must be true), `agreed_at`, and `ended_at` with `ended_why` (`withdrawn`, or `new_version` when a newer text was agreed). At most one in force per person. Row-level security: people read their own; nobody writes directly. `consent_version()` gives the version everyone must have agreed to (1; the app's `wording.consent.version`); `has_consent(user)` (server only) says whether an agreement to it is in force; `give_consent(version, use, us_storage)` (signed in) records both statements, unchanged if already agreed; `withdraw_consent(user)` (server only) runs `delete_my_data` and ends the agreement. `delete_my_data` keeps `consents` as well as `profiles`. `ingest_upload` refuses posts from anyone without consent, logged as rejected with `no_consent`.
+
 | Table | Holds | Key fields |
 |---|---|---|
 | `checkins` | Daily check-in, every change kept (built in Phase 3) | `date`, `answer`, `answered_at`, `status_seen_before`, `is_first` |
@@ -205,6 +208,7 @@ The app uses the Supabase client with the public (publishable) key and the user'
 ### Web app to server functions
 Each call carries the user's session.
 - **`account-token`:** checks the password, then creates or reissues the upload token. The token is returned once.
+- **`account-withdraw-consent`** (Phase 6, D80): checks the password, then calls `withdraw_consent(user)`: everything is deleted as Delete my data does, the agreement ends and its record stays; the app then asks for consent again. `account-token` refuses (`no_consent`, 403) until the person has agreed, and `ingest` answers `no_consent` (403) with a message telling the person to open Clarivi and agree.
 - **`account-delete-data`:** checks the password, then deletes the user's readings, results, answers, tokens and subscriptions. The account itself stays. Built in Phase 5 (local copy, 4 October 2026): it calls `delete_my_data(user)` (service role only), which finds every public table with a `user_id` column except `profiles` and deletes that person's rows, so a table added later is covered without changing it; it also clears the profile's time zone.
 - **`account-change-password`** (built in Phase 5, R4): checks the current password, refuses a new one under 12 or over 72 characters or the same as the current one, then saves it. Saving a password ends every session, so the app signs straight back in. The password re-check is now one shared helper (`passwordMatches` in `_shared/http.ts`), used by `account-token` too.
 - **`account-first-login`:** takes the new password, refuses one under 12 characters or the temporary password itself, then saves it and clears the change-password flag in one step. Saving a password ends every session, so the app signs straight back in with the new one.
@@ -284,7 +288,7 @@ Each call carries the user's session.
 - The Shortcut is shared as a blank template that asks for the token when it's installed. A configured Shortcut is never shared.
 
 **Secrets**
-- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026).
+- The secret key and the push signing key (VAPID private key) are kept only in Supabase's secret store, with one exception: Vercel's Supabase integration (D21) copies the secret key, the database password and connection addresses, and the token-signing secret into Vercel's encrypted settings. The app never reads them (decided 2 October 2026). Changed by D81 (4 October 2026, not yet done): the Vercel connection comes out, the public values are typed into Vercel by hand, and the secret key, the database password and the signing secret are replaced (moving to Supabase's newer signing keys), so the full-access values live only in Supabase. The functions already accept a replaced secret key whatever its name (`pickKey` in `_shared/http.ts`). Every client already uses the new-style publishable key except, possibly, the live app's build through the Vercel connection, which the change replaces.
 - The web app holds only the public key and the push public key. The build reads exactly three values by name (the project address, the publishable key and the push public key), so nothing else can reach the browser.
 - The live push signing keys were created on 3 October 2026 and sent straight to Supabase's secret store; the private key isn't stored anywhere else. Local development uses separate local-only test keys in `supabase/functions/.env`, which is never committed.
 - The repository holds no secrets. CI needs none so far; if it ever does, it uses GitHub's encrypted secrets.
@@ -342,6 +346,7 @@ Each call carries the user's session.
 5. Server functions are deployed at the same time as their matching database change.
 6. Merging to `main` publishes the web app to production.
 7. Releases are tagged and listed in a changelog. During the test, score logic and settings are frozen.
+8. **If personal data is ever exposed** (from the data protection check, 4 October 2026): within 5 days, tell the people affected and the Cayman Ombudsman; also the Commission d'accès à l'information for a Quebec tester (when there's a risk of serious injury), the Privacy Commissioner of Canada for an Ontario tester (if PIPEDA applies and there's a real risk of significant harm), and a DC tester as fast as possible. Say what happened, what it means, what was done, and what the person can do. Keep a register of every incident, even small ones.
 
 How a release reaches the live project: sign the Supabase command-line tool in once on the laptop (`npx supabase login`, approved in the browser with a verification code), link the folder to the project, then `supabase db push` for migrations (no database password needed), `supabase functions deploy` for functions and `supabase secrets set` for function settings.
 
@@ -425,7 +430,7 @@ The riskiest items sit in the earliest phases. Phase names are proposals for pro
 | Lock-screen text shows health detail | Privacy concern for testers | Status and reason only in the morning; nothing in reminders and follow-ups; consent and the "When Unlocked" guide | 4 |
 | Wording drifts into medical claims | Health-adjacent responsibility | One wording module with forbidden-term tests | 3 |
 | iOS or Shortcuts updates change behaviour mid-test | Syncs break for everyone at once | Freeze phone updates where testers agree; owner page flags missed syncs the same day | 7 |
-| Health data stored outside the Cayman Islands | Data-protection rules may apply to sensitive data and transfers abroad | Check the Cayman Data Protection Act before the test; consent covers storage in the US; not legal advice | 6 |
+| Health data stored outside the Cayman Islands | Data-protection rules may apply to sensitive data and transfers abroad | Checked 4 October 2026 for Cayman, Ontario, Quebec and DC (`docs/cayman-data-protection.md`; not legal advice): build to Quebec's rules; separate consent to the US storage (D79); the privacy impact assessment (`docs/privacy-impact-assessment.md`); a breach plan reaching every regulator within 5 days | 6 |
 
 ---
 

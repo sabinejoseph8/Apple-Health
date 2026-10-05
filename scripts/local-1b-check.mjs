@@ -19,6 +19,8 @@ async function account(label) {
   if (error) throw error
   const app = createClient(URL_, PUB, { auth: { persistSession: false } })
   await app.auth.signInWithPassword({ email, password })
+  // Uploads need consent (D79), as for every real tester.
+  await app.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
   return { id: data.user.id, app }
 }
 const a = await account('a')

@@ -122,3 +122,16 @@ test('15-settings', async ({ page }) => {
   await page.waitForTimeout(500)
   await page.screenshot({ path: 'screenshots/15-settings.png', fullPage: true })
 })
+
+// Phase 6: consent (D79, D80) and the public "Your data" page.
+test('30-consent', async ({ page }) => {
+  await openApp(page, { at: MORNING, tables: { daily_status: [row], uploads: synced, consents: [] } })
+  await page.getByRole('heading', { level: 1 }).waitFor()
+  await page.screenshot({ path: 'screenshots/30-consent.png', fullPage: true })
+})
+
+test('31-settings-consent', async ({ page }) => {
+  await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced }, path: '/#/settings' })
+  await page.getByRole('heading', { name: 'Your consent' }).waitFor()
+  await page.screenshot({ path: 'screenshots/31-settings-consent.png', fullPage: true })
+})

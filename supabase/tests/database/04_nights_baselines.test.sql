@@ -8,6 +8,11 @@ insert into auth.users (id, email) values
   ('44444444-4444-4444-4444-444444444444', 'user-d@example.test'),
   ('55555555-5555-5555-5555-555555555555', 'user-e@example.test'),
   ('66666666-6666-6666-6666-666666666666', 'user-f@example.test');
+-- Phase 6: uploads need consent (D79), so these made-up people have agreed.
+insert into public.consents (user_id, version, agreed_use, agreed_us_storage) values
+  ('44444444-4444-4444-4444-444444444444', 1, true, true),
+  ('55555555-5555-5555-5555-555555555555', 1, true, true),
+  ('66666666-6666-6666-6666-666666666666', 1, true, true);
 
 -- One accepted upload to hang readings on, received now.
 create table pg_temp.up as

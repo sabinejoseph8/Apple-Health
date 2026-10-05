@@ -1,13 +1,13 @@
 # Consent text: draft for Sabine's review
 
-**Status:** draft, 4 October 2026 (Phase 6, D79 and D80). Once Sabine approves it, these words move into the wording module (`wording.consent`) and become version 1. The consent screen shows them once, after a person's first sign-in and new password, before anything else. Written to meet the strictest of the rules where testers may live (Quebec's; see `docs/cayman-data-protection.md`, section 7). Square brackets mark what Sabine fills in.
+**Status:** approved by Sabine on 4 October 2026 (Phase 6, D79 and D80); version 1. These words move into the wording module (`wording.consent`), with one change for R61's word check: "doesn't diagnose anything" became "gives no medical advice". The consent screen shows them once, after a person's first sign-in and new password, before anything else. Written to meet the strictest of the rules where testers may live (Quebec's; see `docs/cayman-data-protection.md`, section 7). Square brackets show the screen's controls.
 
 ---
 
 ## How Clarivi uses your data
 
 **Who runs Clarivi**
-Clarivi is a small four-week test run by [Sabine's full name] in the Cayman Islands. Sabine is in charge of protecting your information. Questions, requests or complaints: notions_close_5p@icloud.com.
+Clarivi is a small four-week test run by Sabine Joseph in the Cayman Islands. Sabine is in charge of protecting your information. Questions, requests or complaints: notions_close_5p@icloud.com.
 
 **What Clarivi collects**
 - From Apple Health, through the Clarivi Shortcut on your iPhone: heart rate, heart rate variability, breathing rate, resting heart rate and sleep, from your Apple Watch. The last 12 months once, then each morning.
@@ -19,7 +19,7 @@ Clarivi is a small four-week test run by [Sabine's full name] in the Cayman Isla
 - To give you a status each morning and one suggestion for the day, based on your readings compared with your own normal.
 - To find out, at the end of the test, whether Clarivi helps. Results are reported without names.
 
-Clarivi is not a medical device and doesn't diagnose anything. For any health concern, talk to a doctor.
+Clarivi is not a medical device and gives no medical advice. For any health concern, talk to a doctor.
 
 **Where it's kept**
 Your data is stored and processed in the **United States**, by Supabase (a database service, on Amazon's servers in US East). The app itself is served by Vercel, also in the US, but your readings never pass through it. Data held in the US can be reached under US law, for example by US authorities with legal power to ask for it.
@@ -46,7 +46,7 @@ Both boxes start unticked, and "I agree" works only once both are ticked:
 
 **[ I agree ]**  ·  Sign out
 
-Version 1, [date approved].
+Version 1, 4 October 2026.
 
 ---
 

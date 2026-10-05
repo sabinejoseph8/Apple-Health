@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 4 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset)
+**Last updated:** 4 October 2026 (password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -306,7 +306,7 @@
 | Name (30 Sep 2026) | The product is called Clarivi (previously the working name Morning Readiness) |
 | Password minimum (3 Oct 2026) | 12 characters (R3) |
 | Shared phones (3 Oct 2026) | A phone's notifications go to whoever signed in on it last (R9) |
-| What counts as a night (3 Oct 2026) | All the time asleep from 6pm to noon, dated by that morning; afternoon sleep is a nap; overlapping sleep records count once, with awake winning |
+| What counts as a night (3 Oct 2026) | All the time asleep from 6pm to noon, dated by that morning; afternoon sleep is a nap; overlapping sleep records count once, with awake winning. Kept for the four-week test (5 Oct 2026): naps between noon and 6pm don't count toward the status; counting Watch-recorded afternoon naps is a future feature |
 | Points (3 Oct 2026) | Each reading earns its weight times how far it was worse than normal, measured in spreads; nothing when normal or better (R40) |
 | Nudge choice (3 Oct 2026) | Ready: train as planned. Rest: rest. Ease off: prioritise sleep when sleep earns the most points, otherwise train easy (R22) |
 | Illness check (3 Oct 2026) | The pattern note shows when at least 3 of 4 overnight readings each move at least 1 spread the wrong way; it never changes the status or the nudge (R33) |
@@ -329,6 +329,9 @@
 | Consent (4 Oct 2026) | Each person agrees in the app once, right after their first sign-in, before anything else; the agreement is recorded with the text's version and time; nothing is uploaded before it; a new version asks again; Settings shows when they agreed |
 | Setup guide (4 Oct 2026) | A public page in the app, readable before installing, linked from the sign-in screen and Settings (R10, R62) |
 | App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
+| Sync now (5 Oct 2026) | While last night isn't in yet, before noon, the card offers Sync now, which runs the Shortcut in one tap; testers name their Shortcut Clarivi Sync during setup |
+| Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
+| Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.

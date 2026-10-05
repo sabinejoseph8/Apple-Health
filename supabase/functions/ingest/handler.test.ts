@@ -131,11 +131,12 @@ Deno.test('a post over 5 MB without a declared length is refused too', async () 
   assertEquals((await handleIngest(req, deps)).status, 413)
 })
 
-Deno.test('unknown tokens, replaced tokens and too many posts get their own replies', async () => {
+Deno.test('unknown tokens, replaced tokens, too many posts and no consent get their own replies', async () => {
   const cases: [StoreReply, number, string][] = [
     [{ error: 'invalid_token' }, 401, wording.sync.unknownToken],
     [{ error: 'token_revoked' }, 401, wording.sync.tokenReplaced],
     [{ error: 'rate_limited' }, 429, wording.sync.tooMany],
+    [{ error: 'no_consent' }, 403, wording.sync.noConsent],
   ]
   for (const [answer, status, message] of cases) {
     const { deps } = fakeStore(answer)
@@ -162,7 +163,7 @@ Deno.test('replies contain the exact text the Shortcut looks for', async () => {
   // The Shortcut counts a post as stored only if the reply says what it
   // accepted (review fix), so every success has it and no refusal does.
   assert(fineText.includes('"accepted":'), fineText)
-  for (const answer of [{ error: 'invalid_token' }, { error: 'token_revoked' }, { error: 'rate_limited' }, { error: 'invalid_body' }] as StoreReply[]) {
+  for (const answer of [{ error: 'invalid_token' }, { error: 'token_revoked' }, { error: 'rate_limited' }, { error: 'invalid_body' }, { error: 'no_consent' }] as StoreReply[]) {
     const { deps } = fakeStore(answer)
     assert(!(await (await handleIngest(post(body), deps)).text()).includes('"accepted":'))
   }

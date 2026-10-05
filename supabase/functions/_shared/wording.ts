@@ -120,6 +120,7 @@ export const wording = {
     tooMany: 'Too many syncs in the last hour. Try again later.',
     notReadable: "Clarivi couldn't read this sync. Contact Sabine.",
     tooLarge: 'This sync is too large for Clarivi. Contact Sabine.',
+    noConsent: "Open Clarivi and agree to how it uses your data. Until then, Clarivi can't take your readings.",
     failed: "Clarivi couldn't save this sync. Try again later.",
   },
 
@@ -197,6 +198,9 @@ export const wording = {
     // "at 6:42am" this morning, or "yesterday at 9:15pm".
     synced: (when: string) => `Updated from your Watch ${when}`,
     late: 'Late',
+    // D84: on the card while last night isn't in yet, before noon.
+    syncNow: 'Sync now',
+    syncNowHint: "Opens the Shortcuts app to send last night's readings. Come back here when it's done.",
     partial: 'Based on 2 of 3 readings',
     nudgeLabel: "Today's nudge",
     nudges: {
@@ -332,7 +336,7 @@ export const wording = {
     missed: {
       pill: 'No sync yet',
       headline: 'No sync yet this morning',
-      detail: "Open the Shortcuts app and run Clarivi Sync before noon to get today's nudge.",
+      detail: "Tap Sync now, or run Clarivi Sync in the Shortcuts app, before noon to get today's nudge.",
     },
     noSync: {
       pill: 'No sync',
@@ -550,6 +554,90 @@ export const wording = {
     dayAt: (day: string, time: string) => `${day} at ${time}`,
   },
 
+  // The consent text (D79, D80), version 1, approved by Sabine on 4 October
+  // 2026 (docs/consent-draft.md). Shown once after the first sign-in, before
+  // anything else, and published as Clarivi's privacy policy at #/privacy.
+  // Changing these words means a new version, which asks everyone again
+  // (public.consent_version() in the database).
+  consent: {
+    version: 1,
+    versionLine: 'Version 1, 4 October 2026.',
+    title: 'How Clarivi uses your data',
+    sections: [
+      {
+        title: 'Who runs Clarivi',
+        paragraphs: [
+          'Clarivi is a small four-week test run by Sabine Joseph in the Cayman Islands. Sabine is in charge of protecting your information. Questions, requests or complaints: notions_close_5p@icloud.com.',
+        ],
+      },
+      {
+        title: 'What Clarivi collects',
+        bullets: [
+          'From Apple Health, through the Clarivi Shortcut on your iPhone: heart rate, heart rate variability, breathing rate, resting heart rate and sleep, from your Apple Watch. The last 12 months once, then each morning.',
+          'Your answers in the app: how you feel each morning, and whether you followed the day\'s suggestion.',
+          'How you use the app: which screens you open, and when notifications arrive and are tapped. This log never holds your readings.',
+          'Your email address, to sign you in.',
+        ],
+      },
+      {
+        title: 'Why',
+        bullets: [
+          'To give you a status each morning and one suggestion for the day, based on your readings compared with your own normal.',
+          'To find out, at the end of the test, whether Clarivi helps. Results are reported without names.',
+        ],
+        paragraphs: ['Clarivi is not a medical device and gives no medical advice. For any health concern, talk to a doctor.'],
+      },
+      {
+        title: "Where it's kept",
+        paragraphs: [
+          'Your data is stored and processed in the United States, by Supabase (a database service, on Amazon\'s servers in US East). The app itself is served by Vercel, also in the US, but your readings never pass through it. Data held in the US can be reached under US law, for example by US authorities with legal power to ask for it.',
+        ],
+      },
+      {
+        title: 'Who can see it',
+        paragraphs: [
+          'You, in the app. Sabine, who runs the test, can reach the database to run it and to help you. Nobody else. Your data is never sold or shared, and Clarivi has no ads or tracking.',
+        ],
+      },
+      {
+        title: 'On your lock screen',
+        paragraphs: [
+          'The morning notification shows your status and its reason on your lock screen. To hide it until you unlock, set notification previews to When Unlocked (the setup guide shows how).',
+        ],
+      },
+      {
+        title: "How long it's kept",
+        paragraphs: ["Until 90 days after the test ends, then it's deleted, unless you agree to something else."],
+      },
+      {
+        title: 'Your choices',
+        bullets: [
+          'See your readings and results in the app at any time, and ask Sabine for a copy of everything held about you.',
+          'Delete my data, in Settings, removes all of it and keeps your account.',
+          "Withdraw consent, in Settings, deletes everything and stops Clarivi collecting anything more. To use Clarivi again, you'd agree again.",
+          "If you're unhappy with how your data is handled, tell Sabine, or contact the regulator where you live: the Office of the Ombudsman (Cayman Islands), the Commission d'accès à l'information (Quebec) or the Office of the Privacy Commissioner of Canada.",
+        ],
+      },
+    ],
+    agreeTitle: 'Your agreement',
+    agreeUse: 'I agree to Clarivi collecting and using my Apple Watch readings, my answers and my use of the app, as described above.',
+    agreeUs: 'I agree to my data being stored and processed in the United States.',
+    agree: 'I agree',
+    agreeing: 'Saving…',
+    needBoth: 'Tick both boxes to agree, or sign out.',
+    signOut: 'Sign out',
+    // Settings and the public page.
+    settingsTitle: 'Your consent',
+    agreedOn: (when: string) => `You agreed on ${when}.`,
+    read: 'Read what you agreed to',
+    withdraw: 'Withdraw consent',
+    withdrawNote:
+      "Withdrawing deletes all your readings, results, answers, your upload token and your notification settings, and Clarivi stops collecting anything. Your account stays, and to use Clarivi again you'd agree again. It can't be undone.",
+    withdrawing: 'Withdrawing…',
+    pageTitle: 'Your data',
+    guideLink: 'Read how Clarivi uses your data',
+  },
+
   // The one-page setup guide (Phase 6, D78; R10, R62): a public page,
   // readable before installing, linked from sign-in and Settings.
   guide: {
@@ -576,7 +664,9 @@ export const wording = {
         ],
       },
       {
+        // The page adds the "Read how Clarivi uses your data" link after these steps.
         title: 'Sign in',
+        withPrivacyLink: true,
         steps: [
           'Sign in with your email and the temporary password from Sabine.',
           'Choose your own password, at least 12 characters, and let your iPhone save it.',
@@ -597,14 +687,14 @@ export const wording = {
         steps: [
           "Open your iPhone's Settings, tap Apps, then Shortcuts, then Advanced, and turn on Allow Sharing Large Amounts of Data.",
           'In Clarivi, tap the gear. Under Upload token, tap Create token, enter your password, then tap Copy token.',
-          'Tap Get the Clarivi Shortcut, then Add Shortcut. When it asks for your token, paste it. The Shortcut is called Clarivi Sync template.',
-          "In the Shortcuts app, tap Clarivi Sync template, choose Sync this morning, and allow everything it asks for: your Health readings and its file in iCloud Drive. The morning automations can't ask, so this first run matters.",
+          "Tap Get the Clarivi Shortcut, then Add Shortcut. When it asks for your token, paste it. It's added as Clarivi Sync template: press and hold it, tap Rename, and call it Clarivi Sync, so Clarivi's Sync now button can find it.",
+          "In the Shortcuts app, tap Clarivi Sync, choose Sync this morning, and allow everything it asks for: your Health readings and its file in iCloud Drive. The morning automations can't ask, so this first run matters.",
         ],
       },
       {
         title: 'Import your last 12 months',
         steps: [
-          'Run Clarivi Sync template again and choose Import my last 12 months.',
+          'Run Clarivi Sync again and choose Import my last 12 months.',
           'Keep your iPhone unlocked with Shortcuts open. It takes about 15 minutes.',
           'If it stops part way, run it again: it carries on from the last finished month.',
         ],
@@ -613,8 +703,8 @@ export const wording = {
         title: 'Set up the two morning automations',
         steps: [
           'In the Shortcuts app, tap Automation, then the + button.',
-          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync template and set its input to the Text.',
-          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync template and the Text as input.',
+          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text.',
+          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync and the Text as input.',
           'Both act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
         ],
       },
@@ -622,7 +712,7 @@ export const wording = {
         title: 'Each morning',
         steps: [
           'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
-          "Open Clarivi, say how you feel, then read your status. If no sync has arrived by 11:30, Clarivi reminds you.",
+          "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",
         ],
       },
     ],

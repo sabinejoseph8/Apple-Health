@@ -28,6 +28,9 @@ reset role;
 -- A morning sync whose night hasn't arrived yet: "night not finished" today,
 -- "not enough data" on an earlier day.
 insert into auth.users (id, email) values ('12121212-1212-1212-1212-121212121212', 'user-q@example.test');
+-- Phase 6: uploads need consent (D79), so these made-up people have agreed.
+insert into public.consents (user_id, version, agreed_use, agreed_us_storage) values
+  ('12121212-1212-1212-1212-121212121212', 1, true, true);
 update public.profiles set latest_tz_offset_min = -300 where user_id = '12121212-1212-1212-1212-121212121212';
 insert into public.uploads (user_id, schema_version, kind, device_tz_offset_min, local_date, status)
 values ('12121212-1212-1212-1212-121212121212', 1, 'daily', -300,

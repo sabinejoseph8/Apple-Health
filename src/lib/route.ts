@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 
 // The screens, kept in the address after "#" so the phone's back gesture and
 // a notification's link can reach them: "#/why", "#/settings". The setup
-// guide ("#/guide") also opens without signing in.
-export type Route = 'today' | 'why' | 'settings' | 'trends' | 'digest' | 'owner' | 'guide'
+// guide ("#/guide") and "Your data" ("#/privacy") also open without signing in.
+export type Route = 'today' | 'why' | 'settings' | 'trends' | 'digest' | 'owner' | 'guide' | 'privacy'
 
-const ROUTES: Route[] = ['why', 'settings', 'trends', 'digest', 'owner', 'guide']
+const ROUTES: Route[] = ['why', 'settings', 'trends', 'digest', 'owner', 'guide', 'privacy']
 
 export function routeFrom(hash: string): Route {
   const name = hash.replace(/^#\/?/, '')

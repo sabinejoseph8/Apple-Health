@@ -4,6 +4,7 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
+import { SYNC_NOW_URL } from '../lib/links'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
@@ -215,6 +216,7 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
           pill={s.waiting.pill}
           headline={s.waiting.headline}
           lines={[state.lastSync ? s.waiting.lastSync(formatWhen(state.lastSync.toISOString(), now)) : s.waiting.neverSynced]}
+          syncNow
         />
       )
     case 'analysing':
@@ -224,9 +226,9 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
         <NoStatus pill={s.analysing.pill} headline={s.analysing.headline} lines={[s.analysing.detail]} />
       )
     case 'night_unfinished':
-      return <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} />
+      return <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} syncNow />
     case 'missed':
-      return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} />
+      return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} syncNow />
     case 'no_sync':
       return <NoStatus pill={s.noSync.pill} headline={state.afterNoon ? s.noSync.afterNoon : s.noSync.headline} lines={[s.noSync.detail]} />
     case 'not_enough_data':
@@ -300,7 +302,9 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
 }
 
 // A card without a status: a neutral pill, a headline and a plain line (R25 to R32).
-function NoStatus({ pill, headline, lines }: { pill: string; headline: string; lines: string[] }) {
+// The no-status card. Before noon, while last night isn't in, it offers Sync
+// now (D84): one tap runs the Shortcut while the phone is unlocked.
+function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; headline: string; lines: string[]; syncNow?: boolean }) {
   return (
     <section className="card briefing" aria-labelledby="card-headline">
       <div className="status-row">
@@ -314,6 +318,14 @@ function NoStatus({ pill, headline, lines }: { pill: string; headline: string; l
           {line}
         </p>
       ))}
+      {syncNow && (
+        <>
+          <a className="primary button-link" href={SYNC_NOW_URL}>
+            {wording.card.syncNow}
+          </a>
+          <p className="caption">{wording.card.syncNowHint}</p>
+        </>
+      )}
     </section>
   )
 }

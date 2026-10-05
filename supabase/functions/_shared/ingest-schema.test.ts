@@ -161,6 +161,12 @@ Deno.test('an unrecognised trigger word is recorded as unknown, and the readings
   assertEquals(spaced.upload.trigger, 'charger')
 })
 
+Deno.test('a sync from the card\'s Sync now button is recorded as such (D84)', () => {
+  const r = parseUpload(daily([hr], { trigger: 'button' }), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.trigger, 'button')
+})
+
 Deno.test('a ping carries no readings', () => {
   const r = parseUpload({ schema_version: 1, kind: 'ping', device_tz_offset_min: -240 }, NOW)
   assert(r.ok)
