@@ -230,6 +230,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 **App icon (Default)**
 - A placeholder: a white open ring, like a "C", on Link blue (`#0A60D8`). iOS rounds the corners itself.
 - Drawn by `scripts/make-icons.py` at 180, 192 and 512 pixels. Replace it with a designed icon before testers install the app.
+- **Chosen 4 October 2026 (D76):** the same open ring with a white dot in its opening, on Link blue, picked by Sabine from four drawn options (sunrise, three readings, a night inside the normal band, and this one). Built in Phase 6.
 
 ---
 
