@@ -1,5 +1,6 @@
 """Draws Clarivi's app icon (D76): an open white ring with rounded ends and a
-white dot in its opening, on Link blue (the Phase 1a placeholder, finished).
+white dot in its opening, on deep violet (the Phase 1a placeholder, finished;
+the colour changed from Link blue at Sabine's choice, D76 refined).
 
 Writes plain PNGs with the standard library only, so no image tools are needed.
 Run: python3 scripts/make-icons.py
@@ -9,7 +10,7 @@ import struct
 import zlib
 from pathlib import Path
 
-BLUE = (0x0A, 0x60, 0xD8)
+VIOLET = (0x5B, 0x2A, 0x9E)  # deep violet, #5B2A9E
 WHITE = (0xFF, 0xFF, 0xFF)
 OUT = Path(__file__).resolve().parent.parent / "public" / "icons"
 SAMPLES = 4  # supersampling per axis, for smooth edges
@@ -45,7 +46,7 @@ def png(size: int) -> bytes:
                 for sy in range(SAMPLES)
             )
             a = hits / (SAMPLES * SAMPLES)
-            row += bytes(round(b * (1 - a) + w * a) for b, w in zip(BLUE, WHITE))
+            row += bytes(round(b * (1 - a) + w * a) for b, w in zip(VIOLET, WHITE))
         rows.append(bytes(row))
 
     def chunk(kind: bytes, data: bytes) -> bytes:

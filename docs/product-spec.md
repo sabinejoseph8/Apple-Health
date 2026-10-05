@@ -328,7 +328,7 @@
 | Password reset (4 Oct 2026) | The owner resets a password with a command that calls an owner-only server function (R63) |
 | Consent (4 Oct 2026) | Each person agrees in the app once, right after their first sign-in, before anything else; the agreement is recorded with the text's version and time; nothing is uploaded before it; a new version asks again; Settings shows when they agreed |
 | Setup guide (4 Oct 2026) | A public page in the app, readable before installing, linked from the sign-in screen and Settings (R10, R62) |
-| App icon (4 Oct 2026) | The open ring with a dot in its opening, white on Link blue |
+| App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
 
 ### Open questions (each with a recommended default)
 1. **Score numbers.** Settled 3 October 2026, from the owner's year, and frozen: heart rate variability 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1.2 points and Rest from 2.4.
