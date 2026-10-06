@@ -178,9 +178,10 @@ export const wording = {
   checkin: {
     question: 'How do you feel today?',
     hint: 'Your answer never changes your status.',
-    answers: { good: 'Good', okay: 'Okay', off: 'Off' },
+    // Sabine's wording review (6 October 2026): "Great" on screen; still saved as "good".
+    answers: { good: 'Great', okay: 'Okay', off: 'Off' },
     // The answer as it reads inside a sentence: "You said you feel okay today".
-    answerInline: { good: 'good', okay: 'okay', off: 'off' },
+    answerInline: { good: 'great', okay: 'okay', off: 'off' },
     skip: 'Skip for now',
     saidBefore: 'You said you feel',
     saidAfter: 'today',
