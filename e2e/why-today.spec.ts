@@ -44,7 +44,7 @@ test.describe('Why today on an iPhone', () => {
     await openApp(page, { at: '2026-09-29T06:50:00-05:00', tables, path: '/#/why' })
     const hrv = page.locator('.reading-hrv')
     await hrv.getByRole('button', { name: wording.why.showNumbers }).click()
-    await expect(hrv.locator('.numbers')).toContainText('Your normal range40 to 64 ms')
+    await expect(hrv.locator('.numbers')).toContainText('Your usual range40 to 64 ms')
     await expect(hrv.locator('.numbers')).toContainText('Last night vs normal14 ms lower')
     await expect(hrv.locator('.numbers')).toContainText('In the last 4 weeksYour lowest night')
     await hrv.getByRole('button', { name: wording.why.hideNumbers }).click()

@@ -250,11 +250,11 @@ export const wording = {
     flagged: (days: string) => `Ease off or Rest on ${days}.`,
     readingsHeading: 'Your readings',
     names: { hrv: 'Heart rate variability', sleep: 'Sleep', sleeping_hr: 'Sleeping heart rate' },
-    below: (name: string, k: number, n: number) => `${name} was below your normal range on ${k} of ${n} nights.`,
-    above: (name: string, k: number, n: number) => `${name} was above your normal range on ${k} of ${n} nights.`,
+    below: (name: string, k: number, n: number) => `${name} was below your usual range on ${k} of ${n} nights.`,
+    above: (name: string, k: number, n: number) => `${name} was above your usual range on ${k} of ${n} nights.`,
     both: (name: string, below: number, above: number, n: number) =>
-      `${name} was below your normal range on ${below} and above it on ${above} of ${n} nights.`,
-    inRange: (name: string, n: number) => (n === 1 ? `${name} was in your normal range on the one night it was counted.` : `${name} stayed in your normal range on all ${n} nights.`),
+      `${name} was below your usual range on ${below} and above it on ${above} of ${n} nights.`,
+    inRange: (name: string, n: number) => (n === 1 ? `${name} was in your usual range on the one night it was counted.` : `${name} stayed in your usual range on all ${n} nights.`),
     noReadings: (name: string) => `${name} had no readings that counted this week.`,
     pattern: (n: number) =>
       n === 1 ? 'Several overnight readings moved the wrong way together on one night.' : `Several overnight readings moved the wrong way together on ${n} nights.`,
@@ -294,7 +294,7 @@ export const wording = {
     period: 'The last 8 weeks',
     start: '8 weeks ago',
     end: 'Last night',
-    legend: 'Shaded: your normal range. Orange: outside it.',
+    legend: 'Shaded: your usual range. Orange: outside it.',
     hint: 'Tap a night to see its value.',
     night: (date: string, value: string) => `${date}: ${value}`,
     noReading: (date: string) => `${date}: no reading`,
@@ -391,11 +391,12 @@ export const wording = {
       },
       rest: 'Your body needs a rest today',
     },
-    // What was worse than normal, outside the normal range.
+    // What was worse than normal, outside the normal range. Sabine's wording
+    // review (6 October 2026): "your usual range", not "normal for you".
     worse: {
-      sleep: 'you slept much less than you normally do',
-      hrv: 'your heart rate variability was lower than normal for you',
-      sleeping_hr: 'your heart rate while you slept was higher than normal for you',
+      sleep: 'you slept much less than usual',
+      hrv: 'your heart rate variability was below your usual range',
+      sleeping_hr: 'your heart rate while you slept was above your usual range',
     },
     // Worse than normal, but still inside the normal range.
     slightlyWorse: {
@@ -405,9 +406,9 @@ export const wording = {
     },
     // Better than normal, outside the normal range.
     better: {
-      sleep: 'you slept more than you normally do',
-      hrv: 'your heart rate variability was higher than normal for you',
-      sleeping_hr: 'your heart rate while you slept was lower than normal for you',
+      sleep: 'you slept more than usual',
+      hrv: 'your heart rate variability was above your usual range',
+      sleeping_hr: 'your heart rate while you slept was below your usual range',
     },
     // Readings in their usual range: "Your heart rate while you slept was in your
     // usual range" (Sabine's wording review, 6 October 2026: not "normal").
@@ -454,17 +455,17 @@ export const wording = {
     counts: ['None', 'One', 'Two', 'Three'],
     countsLower: ['none', 'one', 'two', 'three'],
     summaryOff: (k: string, total: string, verb: string, dir: string) => `${k} of your ${total} recovery readings ${verb} ${dir} last night`,
-    summaryAllIn: { 3: 'All three of your recovery readings were in your normal range last night', 2: 'Both readings Clarivi could use were in your normal range last night' },
+    summaryAllIn: { 3: 'All three of your recovery readings were in your usual range last night', 2: 'Both readings Clarivi could use were in your usual range last night' },
     low: 'low',
     high: 'high',
-    outside: 'outside your normal range',
+    outside: 'outside your usual range',
     was: 'was',
     were: 'were',
     names: { hrv: 'heart rate variability', sleep: 'sleep', sleeping_hr: 'sleeping heart rate', resp_rate: 'breathing rate', resting_hr: 'resting heart rate' },
     // "was", "were both" or "were all", by how many readings are listed.
     verbFor: (count: number) => (count === 1 ? 'was' : count === 2 ? 'were both' : 'were all'),
-    groupBelow: (list: string, verb: string) => `Your ${list} ${verb} below your normal range.`,
-    groupAbove: (list: string, verb: string) => `Your ${list} ${verb} above your normal range.`,
+    groupBelow: (list: string, verb: string) => `Your ${list} ${verb} below your usual range.`,
+    groupAbove: (list: string, verb: string) => `Your ${list} ${verb} above your usual range.`,
     groupNormal: (list: string, verb: string) => `Your ${list} ${verb} in your usual range.`,
     groupMissing: (name: string) => `Your Watch didn't record your ${name} last night.`,
     groupBuilding: (name: string) => `Your normal for ${name} is still being learned.`,
@@ -480,17 +481,17 @@ export const wording = {
     duration: (h: number, m: number) => (h === 0 ? `${m}m` : `${h}h ${String(m).padStart(2, '0')}m`),
     normalForYou: 'Normal for you',
     verdicts: {
-      below: 'Below your normal range',
-      above: 'Above your normal range',
-      in_range: 'In your normal range',
+      below: 'Below your usual range',
+      above: 'Above your usual range',
+      in_range: 'In your usual range',
       missing: 'No reading last night',
     },
     building: (nights: number, needed: number) => `Still learning your normal: ${nights} of ${needed} nights`,
-    chart: { start: '4 weeks ago', band: 'Shaded: your normal range', end: 'Last night', label: (name: string) => `${name} over the last 4 weeks` },
+    chart: { start: '4 weeks ago', band: 'Shaded: your usual range', end: 'Last night', label: (name: string) => `${name} over the last 4 weeks` },
     showNumbers: 'Show the numbers',
     hideNumbers: 'Hide the numbers',
     numbers: {
-      range: 'Your normal range',
+      range: 'Your usual range',
       vsNormal: 'Last night vs normal',
       fourWeeks: 'In the last 4 weeks',
       rangeValue: (low: string, high: string, unit: string) => `${low} to ${high}${unit ? ` ${unit}` : ''}`,
@@ -514,8 +515,8 @@ export const wording = {
       bothNormalClear: (a: string, b: string) => `${a} and ${b} were both in your usual range, so there is no early sign of illness or heavy strain.`,
       bothNormal: (a: string, b: string) => `${a} and ${b} were both in your usual range.`,
       normal: (a: string) => `${a} was in your usual range.`,
-      higher: (a: string) => `${a} was higher than normal for you.`,
-      lower: (a: string) => `${a} was lower than normal for you.`,
+      higher: (a: string) => `${a} was above your usual range.`,
+      lower: (a: string) => `${a} was below your usual range.`,
       missingBreathing: 'There was no breathing rate reading last night.',
       missingResting: 'There was no resting heart rate reading for yesterday.',
       buildingBreathing: 'Your normal breathing rate is still being learned.',

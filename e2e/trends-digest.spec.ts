@@ -147,7 +147,7 @@ test.describe('the weekly digest (R57, R58)', () => {
     await expect(page.getByText('21 September to 27 September')).toBeVisible()
     await expect(page.getByText('Clarivi had readings from 6 of 7 nights, so this summary is based on those.')).toBeVisible()
     await expect(page.getByText('Ease off or Rest on Tuesday and Thursday.')).toBeVisible()
-    await expect(page.getByText('Heart rate variability was below your normal range on 2 of 5 nights.')).toBeVisible()
+    await expect(page.getByText('Heart rate variability was below your usual range on 2 of 5 nights.')).toBeVisible()
     await expect(page.getByText("The nudge asked for a change on 3 days: you followed it on 2 and didn't answer on 1.")).toBeVisible()
   })
 })

@@ -15,8 +15,8 @@ import {
 import { notCounted, reading, sampleDay } from './lib/sample-days'
 import { FORBIDDEN_TERMS } from './lib/forbidden-terms'
 
-// The design canvas's words, except "was normal" became "was in your usual
-// range" in Sabine's wording review (6 October 2026).
+// The design canvas's words, except where Sabine's wording review (6 October
+// 2026) replaced "normal for you" with "your usual range".
 describe('the design sample day (Tuesday 29 September)', () => {
   it('has the designed headline', () => {
     expect(headline(sampleDay)).toBe("A short night, and your body hasn't fully recovered")
@@ -24,7 +24,7 @@ describe('the design sample day (Tuesday 29 September)', () => {
 
   it('has the designed briefing, word for word', () => {
     expect(briefing(sampleDay).join(' ')).toBe(
-      'You slept much less than you normally do, and your heart rate variability was lower than normal for you. ' +
+      'You slept much less than usual, and your heart rate variability was below your usual range. ' +
         'Together, those usually mean your body is still recovering. ' +
         'Your heart rate while you slept was in your usual range, and there was no early sign of illness or heavy strain.',
     )
@@ -38,7 +38,7 @@ describe('the design sample day (Tuesday 29 September)', () => {
     expect(whySummary(sampleDay)).toEqual({
       headline: 'Two of your three recovery readings were low last night',
       body: [
-        'Your heart rate variability and sleep were both below your normal range.',
+        'Your heart rate variability and sleep were both below your usual range.',
         'Your sleeping heart rate was in your usual range.',
       ],
     })
@@ -61,7 +61,7 @@ describe("Why today's other words", () => {
 
   it('names a reading that was off, and one that is missing', () => {
     expect(alsoChecked({ value: 17.2, verdict: 'above' }, { value: null, verdict: 'missing' }, 'not_run')).toEqual([
-      'Your breathing rate while asleep (17.2 breaths a minute) was higher than normal for you.',
+      'Your breathing rate while asleep (17.2 breaths a minute) was above your usual range.',
       'There was no resting heart rate reading for yesterday.',
       "There weren't enough readings to check how they moved together.",
     ])
@@ -117,7 +117,7 @@ describe('other days', () => {
       'There was no early sign of illness or heavy strain.',
     ])
     expect(morningNotification(day)).toBe('Ready today: your readings are close to your normal')
-    expect(whySummary(day).headline).toBe('All three of your recovery readings were in your normal range last night')
+    expect(whySummary(day).headline).toBe('All three of your recovery readings were in your usual range last night')
   })
 
   it('leads with sleep when sleep earns the most points on a sleep-led day', () => {
@@ -155,7 +155,7 @@ describe('other days', () => {
     }
     expect(headline(day)).toBe('Your readings are normal or better')
     expect(briefing(day)[0]).toBe(
-      'Your heart rate variability was higher than normal for you, and your sleep and heart rate while you slept were both in your usual range.',
+      'Your heart rate variability was above your usual range, and your sleep and heart rate while you slept were both in your usual range.',
     )
   })
 

@@ -31,9 +31,9 @@ describe('the weekly digest (R57, R58)', () => {
         'Ease off or Rest on Tuesday, Wednesday and Thursday.',
       ],
       readings: [
-        'Heart rate variability was below your normal range on 2 of 5 nights.',
-        'Sleep stayed in your normal range on all 5 nights.',
-        'Sleeping heart rate was above your normal range on 1 of 5 nights.',
+        'Heart rate variability was below your usual range on 2 of 5 nights.',
+        'Sleep stayed in your usual range on all 5 nights.',
+        'Sleeping heart rate was above your usual range on 1 of 5 nights.',
         'Several overnight readings moved the wrong way together on one night.',
       ],
       nudges: "The nudge asked for a change on 3 days: you followed it on 1, didn't on 1 and didn't answer on 1.",
