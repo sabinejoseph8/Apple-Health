@@ -1,6 +1,6 @@
 # Clarivi: interview notes
 
-*My product story, kept up to date as I build. Last updated 4 October 2026, during Phase 3 (the morning screens).*
+*My product story, kept up to date as I build. Last updated 6 October 2026, during Phase 6 (hardening, before testers join).*
 
 ## Who it's for and why
 
@@ -69,6 +69,7 @@ The hardest scoping call was cutting the causal layer (guided self-experiments).
 - **My own email in a public repository.** The security review before testers join searched every version of every file for keys, passwords and personal details. The files were clean, but the commit records weren't: each time I clicked "Merge pull request" on GitHub, it stamped the merge with my personal email, because my account's email privacy setting was off. I turned the setting on and chose to rewrite the six merges to GitHub's private address, checking that every commit's files stayed identical. The lesson was that privacy lives in metadata too, and that a rewrite has limits: GitHub keeps its own copies inside the merge requests, which only its support team can remove.
 - **A code update stopped halfway by my cloud storage.** Updating my Mac's copy of the code failed partway, twice, with a timeout, leaving some files half-written. The cause was my Documents folder syncing to iCloud: macOS had kept some project files only in the cloud, and the update gave up waiting for them. Setting the folder to stay downloaded fixed it, and nothing was lost, because everything was already on GitHub. It also changed a decision: backups of testers' data now live in an encrypted disk image outside Documents, so they can never drift into iCloud.
 - **Previews that didn't know where the database was.** Vercel's integration only filled in settings for production, so preview builds of work in progress showed "isn't set up yet." I added the public values for previews by hand and documented them.
+- **New words on screen, old words in the notification.** After my wording review I released the new words at 1am, and the app showed them. The next morning, the notification on my lock screen still said my readings were "close to your normal", the exact word I'd just removed. The app and the server programs that write notifications each carry their own copy of the wording, and the release had only updated the app. Re-sending the two server programs fixed it in a minute, and I added a release rule: whenever the shared wording changes, the server programs go out too. My real-life test caught what the automated tests couldn't, because they check each copy on its own, not which copy is live.
 
 ## Significant improvements
 
