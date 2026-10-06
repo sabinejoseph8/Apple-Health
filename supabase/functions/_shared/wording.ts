@@ -389,7 +389,7 @@ export const wording = {
         sleeping_hr: 'Your heart rate stayed up overnight',
         small: 'A few readings were a little off',
       },
-      rest: 'Your body needs a rest today',
+      rest: 'Your body needs to rest today',
     },
     // What was worse than normal, outside the normal range. Sabine's wording
     // review (6 October 2026): "your usual range", not "normal for you".
