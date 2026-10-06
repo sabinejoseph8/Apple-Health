@@ -42,6 +42,7 @@ Go through the guide with them. Points that trip people up:
 - The **import** takes about 15 minutes with the phone unlocked; if it stops, run it again.
 - The **automations**: Run Immediately, a Text action with exactly `charger` or `app`, then Run Shortcut with that Text as input.
 - **Notification previews: When Unlocked**, if they'd rather keep their status off the lock screen.
+- **The first Sync now** asks "Allow Clarivi Sync to output 1 text item?": Always Allow (the item is only today's date; seen on Sabine's iPhone, 6 October 2026).
 
 At the end, check together: the card shows (or "Learning your normal"), Settings says they agreed, "Send a test notification" arrives.
 
