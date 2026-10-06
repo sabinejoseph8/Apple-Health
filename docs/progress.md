@@ -8,7 +8,7 @@
 
 ## Summary
 
-- **Current phase:** Phases 2 and 5 are done. Phase 3 waits only on Sabine's wording sheet review (evening of 5 October). Phase 4 is live with manual check 1 passed (5 October); check 2, the 11:30 reminder, is set for 6 October (both automations switched off the night before), and checks 3 to 5 need a change day. Phase 1 has one check left (about 10 October). Phase 6: step 1 done; step 2 done except the fit on testers' iPhones (in-app consent, Withdraw consent, "Your data", Sync now and the key work D81 all released on 5 October); step 3, the dry run, is prepared (`docs/dry-run-checklist.md`) and waits on a tester's details and the replacement tester. Sabine's self-test runs until about 17 to 24 October.
+- **Current phase:** Phases 2, 3 and 5 are done (Phase 3 on 6 October 2026, after Sabine's wording review). Phase 4 is live with manual check 1 passed (5 October); check 2, the 11:30 reminder, is set for 6 October (both automations switched off the night before), and checks 3 to 5 need a change day. Phase 1 has one check left (about 10 October). Phase 6: step 1 done; step 2 done except the fit on testers' iPhones (in-app consent, Withdraw consent, "Your data", Sync now and the key work D81 all released on 5 October); step 3, the dry run, is prepared (`docs/dry-run-checklist.md`) and waits on a tester's details and the replacement tester. Sabine's self-test runs until about 17 to 24 October.
 - **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, counted until about 10 October 2026 from the uploads log plus Sabine's notes of mornings she sees the Shortcuts "device is locked" message (D75); then Phase 1 closes.
 - **Phase 2 (Data and analysis), done 3 October 2026:**
   - Nights from the Watch's sleep stages (D48 to D50), normals (D11, now from 42 nights), the daily status, nudge and illness check (D51 to D53), insights, versioned score settings, and the every-minute analysis queue, all live.
@@ -61,7 +61,7 @@
 |---|---|---|
 | 1 | Spikes: the riskiest unknowns first | In progress (one check left, until about 10 October) |
 | 2 | Data and analysis | Done (self-test running) |
-| 3 | Readiness card, check-in and Why today | Built, reviewed and live; waiting on the wording sheet review |
+| 3 | Readiness card, check-in and Why today | Done (6 October 2026) |
 | 4 | Notifications and follow-through | Built, reviewed and live; real-life checks from 5 October |
 | 5 | Trends, digest, settings and owner page | Done (4 October 2026) |
 | 6 | Hardening and dry run | In progress: steps 1 and 2 done except the fit on testers' iPhones; the dry run next (prepared) |
@@ -244,11 +244,11 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 **Goal:** build the screens testers use every morning, matching design.md and handling every state.
 
-**Status:** Built, reviewed, live and checked on Sabine's iPhone (4 October 2026; decisions D62 to D65). Left: Sabine's review of the wording sheet (`npm run wording:sheet`), which closes the wording-module task and the phase.
+**Status:** Done (6 October 2026): built, reviewed, live, checked on Sabine's iPhone, and the wording sheet approved after her review. Earlier status: Built, reviewed, live and checked on Sabine's iPhone (4 October 2026; decisions D62 to D65). Left: Sabine's review of the wording sheet (`npm run wording:sheet`), which closes the wording-module task and the phase.
 
 ### Tasks
 - [x] Add design tokens (colours, type, spacing, radius) from design.md as CSS variables (4 October 2026)
-- [ ] Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests
+- [x] Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests (6 October 2026: wording sheet reviewed and approved by Sabine, with her changes: "in your usual range" and no "normal" on any screen (D85), "Your body needs to rest today", the check-in's "Great / Okay / Off")
 - [x] Build the daily check-in screen (good, okay, off, Skip) and the check-in row on the card (4 October 2026)
 - [x] Build the readiness card (4 October 2026):
   - header, status pill, briefing card, nudge block, Why link and digest row
