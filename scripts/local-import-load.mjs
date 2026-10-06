@@ -20,7 +20,7 @@ const { data: created } = await admin.auth.admin.createUser({ email, password, e
 const app = createClient(URL_, PUB, { auth: { persistSession: false } })
 await app.auth.signInWithPassword({ email, password })
 // Uploads need consent (D79).
-await app.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
+await app.rpc('give_consent', { p_version: 2, p_use: true, p_us_storage: true })
 const { data: { session } } = await app.auth.getSession()
 const tokenReply = await fetch(`${URL_}/functions/v1/account-token`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, apikey: PUB, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) })
 const { token } = await tokenReply.json()

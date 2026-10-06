@@ -23,7 +23,7 @@ describe('the numbers panel', () => {
     expect(vsNormalText('hrv', 38, 52)).toBe('14 ms lower')
     expect(vsNormalText('sleep', 352, 430)).toBe('1h 18m less')
     expect(vsNormalText('sleeping_hr', 51, 50)).toBe('1 bpm higher')
-    expect(vsNormalText('hrv', 52.3, 51.8)).toBe('The same as normal')
+    expect(vsNormalText('hrv', 52.3, 51.8)).toBe('The same as usual')
   })
 
   it('compares last night with the last four weeks', () => {

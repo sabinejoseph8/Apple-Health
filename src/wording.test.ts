@@ -31,6 +31,12 @@ describe('wording', () => {
     for (const t of texts) expect(t).not.toContain('—')
   })
 
+  // Sabine's wording review (6 October 2026, D85): "normal" sounds clinical,
+  // so no screen or notification says it; "your usual range" instead.
+  it('never says "normal" (D85)', () => {
+    for (const t of texts) expect(t).not.toMatch(/\bnormal/i)
+  })
+
   it('never names a condition (R61)', () => {
     for (const t of texts) for (const term of FORBIDDEN_TERMS) expect(t.toLowerCase()).not.toMatch(term)
   })

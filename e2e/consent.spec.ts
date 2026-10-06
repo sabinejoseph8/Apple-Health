@@ -32,7 +32,7 @@ test('"I agree" needs both statements, then the app opens', async ({ page }) => 
   await page.getByRole('checkbox', { name: c.agreeUs }).check()
   await page.getByRole('button', { name: c.agree }).click()
   await expect(page.getByRole('heading', { name: c.title, level: 1 })).toHaveCount(0)
-  expect(app.calls.find((x) => x.name === 'give_consent')?.body).toEqual({ p_version: 1, p_use: true, p_us_storage: true })
+  expect(app.calls.find((x) => x.name === 'give_consent')?.body).toEqual({ p_version: 2, p_use: true, p_us_storage: true })
 })
 
 test('not agreeing costs nothing: Sign out', async ({ page }) => {
@@ -43,7 +43,7 @@ test('not agreeing costs nothing: Sign out', async ({ page }) => {
 })
 
 test('Settings shows when, links to the text, and Withdraw consent asks again (D80)', async ({ page }) => {
-  const consents = [{ version: 1, agreed_at: '2026-09-01T12:00:00Z' }]
+  const consents = [{ version: 2, agreed_at: '2026-09-01T12:00:00Z' }]
   const app = await openApp(page, { at: MORNING, tables: { ...tables, consents }, path: '/#/settings' })
   const card = page.locator('section', { has: page.getByRole('heading', { name: c.settingsTitle }) })
   await expect(card).toContainText(c.agreedOn('1 September 2026'))

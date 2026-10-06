@@ -143,9 +143,9 @@ export const wording = {
     morningTitle: 'Clarivi',
     // "Ease off today: HRV well below your usual, sleep short" (R48).
     morning: (status: string, reasons: string) => `${status} today: ${reasons}`,
-    readyReason: 'your readings are close to your normal',
+    readyReason: 'your readings are in your usual range',
     // A Ready day with a reading outside its range: "sleep short, but the rest looks normal".
-    readyDespite: (reasons: string) => `${reasons}, but the rest looks normal`,
+    readyDespite: (reasons: string) => `${reasons}, but the rest looks as usual`,
     reasons: {
       hrv_outside_range: 'HRV well below your usual',
       hrv_worse_than_normal: 'HRV a little below your usual',
@@ -298,7 +298,7 @@ export const wording = {
     hint: 'Tap a night to see its value.',
     night: (date: string, value: string) => `${date}: ${value}`,
     noReading: (date: string) => `${date}: no reading`,
-    building: (nights: number, needed: number) => `Still learning your normal: ${nights} of ${needed} nights`,
+    building: (nights: number, needed: number) => `Still learning your usual levels: ${nights} of ${needed} nights`,
     chartLabel: (name: string) => `${name} over the last 8 weeks`,
   },
 
@@ -352,9 +352,9 @@ export const wording = {
       unfinished: "Last night's sleep hadn't arrived by noon, so there's no status today.",
     },
     learning: {
-      pill: 'Learning your normal',
-      headline: 'Still getting to know your normal',
-      progress: (nights: number, needed: number) => `${nights} of ${needed} nights so far. Clarivi needs ${needed} nights to know your normal.`,
+      pill: 'Learning your usual levels',
+      headline: 'Still learning your usual levels',
+      progress: (nights: number, needed: number) => `${nights} of ${needed} nights so far. Clarivi needs ${needed} nights to know your usual levels.`,
       // Last night's values in plain words, with no verdicts (R32).
       lastNight: (parts: string) => `Last night ${parts}.`,
       slept: (duration: string) => `you slept ${duration}`,
@@ -375,12 +375,12 @@ export const wording = {
   briefing: {
     headline: {
       ready: {
-        allNormal: 'Your readings are all normal',
-        better: 'Your readings are normal or better',
-        small: 'Close to your normal',
-        sleep: 'A short night, but the rest looks normal',
-        hrv: 'Heart rate variability was low, but the rest looks normal',
-        sleeping_hr: 'Your heart rate was up overnight, but the rest looks normal',
+        allNormal: 'Your readings are all in your usual range',
+        better: 'Your readings are in your usual range or better',
+        small: 'Close to your usual range',
+        sleep: 'A short night, but the rest looks as usual',
+        hrv: 'Heart rate variability was low, but the rest looks as usual',
+        sleeping_hr: 'Your heart rate was up overnight, but the rest looks as usual',
       },
       ease_off: {
         sleepAndHrv: "A short night, and your body hasn't fully recovered",
@@ -422,9 +422,9 @@ export const wording = {
       sleeping_hr: "your Watch didn't record your heart rate while you slept",
     },
     building: {
-      sleep: 'your normal for sleep is still being learned',
-      hrv: 'your normal for heart rate variability is still being learned',
-      sleeping_hr: 'your normal for heart rate while you slept is still being learned',
+      sleep: 'your usual range for sleep is still being learned',
+      hrv: 'your usual range for heart rate variability is still being learned',
+      sleeping_hr: 'your usual range for heart rate while you slept is still being learned',
     },
     // What it means.
     meaning: {
@@ -468,44 +468,44 @@ export const wording = {
     groupAbove: (list: string, verb: string) => `Your ${list} ${verb} above your usual range.`,
     groupNormal: (list: string, verb: string) => `Your ${list} ${verb} in your usual range.`,
     groupMissing: (name: string) => `Your Watch didn't record your ${name} last night.`,
-    groupBuilding: (name: string) => `Your normal for ${name} is still being learned.`,
+    groupBuilding: (name: string) => `Your usual range for ${name} is still being learned.`,
     lastNight: 'Last night',
     titles: { hrv: 'Heart Rate Variability', sleep: 'Sleep', sleeping_hr: 'Sleeping Heart Rate' },
     explainers: {
-      hrv: 'The small changes in time between your heartbeats. Higher than your normal usually means you have recovered well. Measured in milliseconds (ms).',
+      hrv: 'The small changes in time between your heartbeats. Higher than usual tends to mean you have recovered well. Measured in milliseconds (ms).',
       sleep: 'The time your Watch counted you as asleep, not just in bed.',
-      sleeping_hr: 'Your heart rate while you were asleep last night. Higher than your normal can be a sign of tiredness or strain. Measured in beats per minute (bpm).',
+      sleeping_hr: 'Your heart rate while you were asleep last night. Higher than usual can be a sign of tiredness or strain. Measured in beats per minute (bpm).',
     },
     units: { hrv: 'ms', sleeping_hr: 'bpm', hours: 'hr', minutes: 'min' },
     // "7h 10m"
     duration: (h: number, m: number) => (h === 0 ? `${m}m` : `${h}h ${String(m).padStart(2, '0')}m`),
-    normalForYou: 'Normal for you',
+    normalForYou: 'Usual for you',
     verdicts: {
       below: 'Below your usual range',
       above: 'Above your usual range',
       in_range: 'In your usual range',
       missing: 'No reading last night',
     },
-    building: (nights: number, needed: number) => `Still learning your normal: ${nights} of ${needed} nights`,
+    building: (nights: number, needed: number) => `Still learning your usual levels: ${nights} of ${needed} nights`,
     chart: { start: '4 weeks ago', band: 'Shaded: your usual range', end: 'Last night', label: (name: string) => `${name} over the last 4 weeks` },
     showNumbers: 'Show the numbers',
     hideNumbers: 'Hide the numbers',
     numbers: {
       range: 'Your usual range',
-      vsNormal: 'Last night vs normal',
+      vsNormal: 'Last night vs usual',
       fourWeeks: 'In the last 4 weeks',
       rangeValue: (low: string, high: string, unit: string) => `${low} to ${high}${unit ? ` ${unit}` : ''}`,
       lower: (diff: string) => `${diff} lower`,
       higher: (diff: string) => `${diff} higher`,
       less: (diff: string) => `${diff} less`,
       more: (diff: string) => `${diff} more`,
-      same: 'The same as normal',
+      same: 'The same as usual',
       lowest: 'Your lowest night',
       highest: 'Your highest night',
       lowerThan: (n: number, of: number) => `Lower than ${n} of ${of} nights`,
       higherThan: (n: number, of: number) => `Higher than ${n} of ${of} nights`,
       footnote: (window: number) =>
-        `Normal is the middle of your last ${window} nights. The shaded range covers your usual ups and downs from night to night. A night outside it is flagged.`,
+        `'Usual for you' is the middle of your last ${window} nights. The shaded range covers your usual ups and downs from night to night. A night outside it is flagged.`,
     },
     // R39: breathing rate, yesterday's resting heart rate and the illness check.
     alsoChecked: {
@@ -519,8 +519,8 @@ export const wording = {
       lower: (a: string) => `${a} was below your usual range.`,
       missingBreathing: 'There was no breathing rate reading last night.',
       missingResting: 'There was no resting heart rate reading for yesterday.',
-      buildingBreathing: 'Your normal breathing rate is still being learned.',
-      buildingResting: 'Your normal resting heart rate is still being learned.',
+      buildingBreathing: 'Your usual breathing rate is still being learned.',
+      buildingResting: 'Your usual resting heart rate is still being learned.',
       clear: "There's no early sign of illness or heavy strain.",
       fired: 'Several of your overnight readings moved the wrong way together, so take note of how you feel today.',
       notRun: "There weren't enough readings to check how they moved together.",
@@ -528,7 +528,7 @@ export const wording = {
     // R40: how the status is decided. The weights are never shown.
     decided: {
       title: "How today's status is decided",
-      intro: 'Each reading adds points when it is worse than your normal. The further off it is, and the more that reading matters, the more points it adds.',
+      intro: 'Each reading adds points when it is worse than usual. The further off it is, and the more that reading matters, the more points it adds.',
       order: (a: string, b: string, c: string) => `${a} matters most, then ${b}, then ${c}.`,
       adds: { ready: "Today's points add up to ready.", ease_off: "Today's points add up to ease off.", rest: "Today's points add up to rest." },
       reading: 'Reading',
@@ -542,8 +542,8 @@ export const wording = {
       today: 'Today',
       footnote: (window: number, recorded: number) =>
         recorded >= window
-          ? `Your normal comes from your last ${window} nights, and all ${window} were recorded.`
-          : `Your normal comes from your last ${window} nights, and ${recorded} of ${window} were recorded.`,
+          ? `Your usual range comes from your last ${window} nights, and all ${window} were recorded.`
+          : `Your usual range comes from your last ${window} nights, and ${recorded} of ${window} were recorded.`,
     },
   },
 
@@ -556,14 +556,15 @@ export const wording = {
     dayAt: (day: string, time: string) => `${day} at ${time}`,
   },
 
-  // The consent text (D79, D80), version 1, approved by Sabine on 4 October
-  // 2026 (docs/consent-draft.md). Shown once after the first sign-in, before
+  // The consent text (D79, D80), version 1 approved by Sabine on 4 October
+  // 2026 (docs/consent-draft.md); version 2 (6 October 2026, D85) only says
+  // "your own usual range" instead of "your own normal". Shown once after the first sign-in, before
   // anything else, and published as Clarivi's privacy policy at #/privacy.
   // Changing these words means a new version, which asks everyone again
   // (public.consent_version() in the database).
   consent: {
-    version: 1,
-    versionLine: 'Version 1, 4 October 2026.',
+    version: 2,
+    versionLine: 'Version 2, 6 October 2026.',
     title: 'How Clarivi uses your data',
     sections: [
       {
@@ -584,7 +585,7 @@ export const wording = {
       {
         title: 'Why',
         bullets: [
-          'To give you a status each morning and one suggestion for the day, based on your readings compared with your own normal.',
+          'To give you a status each morning and one suggestion for the day, based on your readings compared with your own usual range.',
           'To find out, at the end of the test, whether Clarivi helps. Results are reported without names.',
         ],
         paragraphs: ['Clarivi is not a medical device and gives no medical advice. For any health concern, talk to a doctor.'],
@@ -651,7 +652,7 @@ export const wording = {
       {
         title: 'Before you start',
         steps: [
-          'Check that your Watch records your sleep: on your iPhone, open Health, tap Browse, then Sleep. You should see past nights. Clarivi needs at least three weeks of them to learn your normal.',
+          'Check that your Watch records your sleep: on your iPhone, open Health, tap Browse, then Sleep. You should see past nights. Clarivi needs at least three weeks of them to learn your usual range.',
           'Wear your Watch to bed every night with sleep tracking on: in the Watch app on your iPhone, tap Sleep and turn on Track Sleep with Apple Watch.',
           'If another app also records your sleep in Health, or you went on a long trip in the past year, tell Sabine.',
         ],

@@ -110,13 +110,13 @@ describe('other days', () => {
       composite_fired: false,
       points: { hrv: reading('hrv', 52, 52, 6), sleep: reading('sleep', 430, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
     }
-    expect(headline(day)).toBe('Your readings are all normal')
+    expect(headline(day)).toBe('Your readings are all in your usual range')
     expect(briefing(day)).toEqual([
       'Your sleep, heart rate variability and heart rate while you slept were all in your usual range.',
       'Your body looks ready for whatever you have planned.',
       'There was no early sign of illness or heavy strain.',
     ])
-    expect(morningNotification(day)).toBe('Ready today: your readings are close to your normal')
+    expect(morningNotification(day)).toBe('Ready today: your readings are in your usual range')
     expect(whySummary(day).headline).toBe('All three of your recovery readings were in your usual range last night')
   })
 
@@ -141,8 +141,8 @@ describe('other days', () => {
       composite_fired: false,
       points: { hrv: reading('hrv', 52, 52, 6), sleep: reading('sleep', 340, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
     }
-    expect(headline(day)).toBe('A short night, but the rest looks normal')
-    expect(morningNotification(day)).toBe('Ready today: sleep short, but the rest looks normal')
+    expect(headline(day)).toBe('A short night, but the rest looks as usual')
+    expect(morningNotification(day)).toBe('Ready today: sleep short, but the rest looks as usual')
   })
 
   it('leads with good news when a reading was better than normal', () => {
@@ -153,7 +153,7 @@ describe('other days', () => {
       composite_fired: null,
       points: { hrv: reading('hrv', 66, 52, 6), sleep: reading('sleep', 430, 430, 34), sleeping_hr: reading('sleeping_hr', 50, 50, 2.5) },
     }
-    expect(headline(day)).toBe('Your readings are normal or better')
+    expect(headline(day)).toBe('Your readings are in your usual range or better')
     expect(briefing(day)[0]).toBe(
       'Your heart rate variability was above your usual range, and your sleep and heart rate while you slept were both in your usual range.',
     )

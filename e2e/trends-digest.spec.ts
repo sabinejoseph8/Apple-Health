@@ -73,7 +73,7 @@ test.describe('the trend view (R44 to R46)', () => {
     }
     await openApp(page, { at: MORNING, tables: notYet, path: '/#/trends' })
     await expect(page.locator('.reading-sleep .trend-plot')).toBeVisible()
-    await expect(page.getByText('Still learning your normal', { exact: false })).toHaveCount(0)
+    await expect(page.getByText('Still learning your usual levels', { exact: false })).toHaveCount(0)
   })
 
   test('marks nights outside that night\'s range, and shows a tapped night', async ({ page }) => {

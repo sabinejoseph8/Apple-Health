@@ -142,7 +142,7 @@
 - **R29 No sync by noon.** The card says there is no status today. No nudge and no 8pm question follow.
 - **R30 Partial.** If one reading is missing or still building its baseline, the status comes from the other two, and the card says "Based on 2 of 3 readings".
 - **R31 Not enough data.** If two or more readings are missing, or no sleep was recorded, the card says "Not enough data last night", with no status and no notification.
-- **R32 Learning your normal.** If two or more readings are still building a baseline (fewer than 21 valid nights out of the last 42; 28 until 3 October 2026), the card shows "Learning your normal" with progress (for example "14 of 21 nights"). It shows last night's values in plain words, with no verdicts, no status, no notification and no 8pm question.
+- **R32 Learning your usual levels** (on screen since 6 October 2026; first named "Learning your normal"). If two or more readings are still building a baseline (fewer than 21 valid nights out of the last 42; 28 until 3 October 2026), the card shows "Learning your usual levels" with progress (for example "14 of 21 nights"). It shows last night's values in plain words, with no verdicts, no status, no notification and no 8pm question.
 - **R33 Illness check.** If several overnight readings move together, the card shows a short pattern note, never a diagnosis. The words "no early sign of illness or heavy strain" appear only when the illness check ran with its inputs.
 - **R34** If notifications are off or failing, the card says so and explains how to turn them back on.
 
@@ -152,7 +152,7 @@
 - **R37** There is one card for each of the three readings: heart rate variability, sleep, and sleeping heart rate. Each card shows:
   - what the reading measures and its unit, in one grey line
   - last night's value
-  - "Normal for you"
+  - "Usual for you" (first "Normal for you")
   - a verdict: below, above, or in your normal range
   - a 4-week chart with the normal range shaded and last night marked
 - **R38** "Show the numbers" on a card reveals its normal range, how far last night was from normal, and how it compares with the last 4 weeks (for example "Your lowest night"). Tapping again hides them.
@@ -294,7 +294,7 @@
 | Check-in | Skippable, and changeable until the next morning |
 | Missed sync | An 11:30am reminder; a sync before noon gives a late nudge |
 | Missing reading | Its weight moves to the other two; with two or more missing, there is no status |
-| Baseline still building | Counts as missing; with two or more building, the card shows "Learning your normal" and is never Ready |
+| Baseline still building | Counts as missing; with two or more building, the card shows "Learning your usual levels" and is never Ready |
 | Card design | A written morning briefing |
 | Why today design | Reading cards against your normal; plain words, with numbers on tap |
 | Screen name | "Why today", titled with the status |
@@ -328,6 +328,7 @@
 | Password reset (4 Oct 2026) | The owner resets a password with a command that calls an owner-only server function (R63) |
 | Consent (4 Oct 2026) | Each person agrees in the app once, right after their first sign-in, before anything else; the agreement is recorded with the text's version and time; nothing is uploaded before it; a new version asks again; Settings shows when they agreed |
 | Setup guide (4 Oct 2026) | A public page in the app, readable before installing, linked from the sign-in screen and Settings (R10, R62) |
+| No "normal" on screen (6 Oct 2026) | No screen or notification says "normal"; readings are "in your usual range", "above" or "below your usual range", the middle value is "Usual for you", and a new person is "Learning your usual levels"; the consent text is version 2 for the same change |
 | App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
 | Sync now (5 Oct 2026) | While last night isn't in yet, before noon, the card offers Sync now, which runs the Shortcut in one tap; testers name their Shortcut Clarivi Sync during setup |
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |

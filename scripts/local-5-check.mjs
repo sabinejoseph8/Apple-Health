@@ -28,7 +28,7 @@ const noConsentYet = await (async () => {
   return { status: r.status, body: await r.json().catch(() => null) }
 })()
 ok(noConsentYet.status === 403 && noConsentYet.body.error === 'no_consent', 'no upload token before agreeing to the consent text (D79)')
-await app.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
+await app.rpc('give_consent', { p_version: 2, p_use: true, p_us_storage: true })
 const call = async (who, name, body) => {
   const { data: { session } } = await who.auth.getSession()
   const r = await fetch(`${URL_}/functions/v1/${name}`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, apikey: PUB, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -77,7 +77,7 @@ ok(r.status === 200 && sql(`select count(*) from public.checkins where user_id =
 ok(sql(`select ended_why from public.consents where user_id = '${uid}'`) === 'withdrawn', 'and keeps the agreement, marked withdrawn')
 r = await call(again, 'account-token', { password: second })
 ok(r.status === 403 && r.body.error === 'no_consent', 'and no upload token until the person agrees again')
-await again.rpc('give_consent', { p_version: 1, p_use: true, p_us_storage: true })
+await again.rpc('give_consent', { p_version: 2, p_use: true, p_us_storage: true })
 
 // Sign out everywhere (R7): one device ends every session.
 const phone = client(), laptop = client()
