@@ -409,11 +409,12 @@ export const wording = {
       hrv: 'your heart rate variability was higher than normal for you',
       sleeping_hr: 'your heart rate while you slept was lower than normal for you',
     },
-    // Readings that were normal: "Your heart rate while you slept was normal".
+    // Readings in their usual range: "Your heart rate while you slept was in your
+    // usual range" (Sabine's wording review, 6 October 2026: not "normal").
     names: { sleep: 'sleep', hrv: 'heart rate variability', sleeping_hr: 'heart rate while you slept' },
-    normalOne: (a: string) => `your ${a} was normal`,
-    normalTwo: (a: string, b: string) => `your ${a} and ${b} were both normal`,
-    normalThree: (a: string, b: string, c: string) => `your ${a}, ${b} and ${c} were all normal for you`,
+    normalOne: (a: string) => `your ${a} was in your usual range`,
+    normalTwo: (a: string, b: string) => `your ${a} and ${b} were both in your usual range`,
+    normalThree: (a: string, b: string, c: string) => `your ${a}, ${b} and ${c} were all in your usual range`,
     missing: {
       sleep: "your Watch didn't record your sleep",
       hrv: "your Watch didn't record your heart rate variability",
@@ -464,7 +465,7 @@ export const wording = {
     verbFor: (count: number) => (count === 1 ? 'was' : count === 2 ? 'were both' : 'were all'),
     groupBelow: (list: string, verb: string) => `Your ${list} ${verb} below your normal range.`,
     groupAbove: (list: string, verb: string) => `Your ${list} ${verb} above your normal range.`,
-    groupNormal: (list: string, verb: string) => `Your ${list} ${verb} normal for you.`,
+    groupNormal: (list: string, verb: string) => `Your ${list} ${verb} in your usual range.`,
     groupMissing: (name: string) => `Your Watch didn't record your ${name} last night.`,
     groupBuilding: (name: string) => `Your normal for ${name} is still being learned.`,
     lastNight: 'Last night',
@@ -510,9 +511,9 @@ export const wording = {
       title: 'Also checked',
       breathing: (v: string) => `your breathing rate while asleep (${v} breaths a minute)`,
       resting: (v: string) => `yesterday's resting heart rate (${v} bpm)`,
-      bothNormalClear: (a: string, b: string) => `${a} and ${b} were both normal for you, so there is no early sign of illness or heavy strain.`,
-      bothNormal: (a: string, b: string) => `${a} and ${b} were both normal for you.`,
-      normal: (a: string) => `${a} was normal for you.`,
+      bothNormalClear: (a: string, b: string) => `${a} and ${b} were both in your usual range, so there is no early sign of illness or heavy strain.`,
+      bothNormal: (a: string, b: string) => `${a} and ${b} were both in your usual range.`,
+      normal: (a: string) => `${a} was in your usual range.`,
       higher: (a: string) => `${a} was higher than normal for you.`,
       lower: (a: string) => `${a} was lower than normal for you.`,
       missingBreathing: 'There was no breathing rate reading last night.',

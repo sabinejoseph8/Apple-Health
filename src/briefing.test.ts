@@ -15,6 +15,8 @@ import {
 import { notCounted, reading, sampleDay } from './lib/sample-days'
 import { FORBIDDEN_TERMS } from './lib/forbidden-terms'
 
+// The design canvas's words, except "was normal" became "was in your usual
+// range" in Sabine's wording review (6 October 2026).
 describe('the design sample day (Tuesday 29 September)', () => {
   it('has the designed headline', () => {
     expect(headline(sampleDay)).toBe("A short night, and your body hasn't fully recovered")
@@ -24,7 +26,7 @@ describe('the design sample day (Tuesday 29 September)', () => {
     expect(briefing(sampleDay).join(' ')).toBe(
       'You slept much less than you normally do, and your heart rate variability was lower than normal for you. ' +
         'Together, those usually mean your body is still recovering. ' +
-        'Your heart rate while you slept was normal, and there was no early sign of illness or heavy strain.',
+        'Your heart rate while you slept was in your usual range, and there was no early sign of illness or heavy strain.',
     )
   })
 
@@ -37,7 +39,7 @@ describe('the design sample day (Tuesday 29 September)', () => {
       headline: 'Two of your three recovery readings were low last night',
       body: [
         'Your heart rate variability and sleep were both below your normal range.',
-        'Your sleeping heart rate was normal for you.',
+        'Your sleeping heart rate was in your usual range.',
       ],
     })
   })
@@ -46,7 +48,7 @@ describe('the design sample day (Tuesday 29 September)', () => {
 describe("Why today's other words", () => {
   it('has the designed "Also checked" sentence (R39)', () => {
     expect(alsoChecked({ value: 14.8, verdict: 'in_range' }, { value: 55, verdict: 'in_range' }, 'clear')).toEqual([
-      "Your breathing rate while asleep (14.8 breaths a minute) and yesterday's resting heart rate (55 bpm) were both normal for you, so there is no early sign of illness or heavy strain.",
+      "Your breathing rate while asleep (14.8 breaths a minute) and yesterday's resting heart rate (55 bpm) were both in your usual range, so there is no early sign of illness or heavy strain.",
     ])
   })
 
@@ -110,7 +112,7 @@ describe('other days', () => {
     }
     expect(headline(day)).toBe('Your readings are all normal')
     expect(briefing(day)).toEqual([
-      'Your sleep, heart rate variability and heart rate while you slept were all normal for you.',
+      'Your sleep, heart rate variability and heart rate while you slept were all in your usual range.',
       'Your body looks ready for whatever you have planned.',
       'There was no early sign of illness or heavy strain.',
     ])
@@ -153,7 +155,7 @@ describe('other days', () => {
     }
     expect(headline(day)).toBe('Your readings are normal or better')
     expect(briefing(day)[0]).toBe(
-      'Your heart rate variability was higher than normal for you, and your sleep and heart rate while you slept were both normal.',
+      'Your heart rate variability was higher than normal for you, and your sleep and heart rate while you slept were both in your usual range.',
     )
   })
 

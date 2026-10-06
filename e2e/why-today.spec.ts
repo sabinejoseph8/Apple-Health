@@ -54,7 +54,7 @@ test.describe('Why today on an iPhone', () => {
   test('says what else was checked (R39)', async ({ page }) => {
     await openApp(page, { at: '2026-09-29T06:50:00-05:00', tables, path: '/#/why' })
     await expect(page.locator('.also')).toContainText(
-      "Your breathing rate while asleep (14.8 breaths a minute) and yesterday's resting heart rate (55 bpm) were both normal for you, so there is no early sign of illness or heavy strain.",
+      "Your breathing rate while asleep (14.8 breaths a minute) and yesterday's resting heart rate (55 bpm) were both in your usual range, so there is no early sign of illness or heavy strain.",
     )
   })
 
