@@ -1,0 +1,586 @@
+{
+ "p1a-01": {
+  "phase": "1",
+  "texts": [
+   "Create the GitHub repository with GitHub Actions"
+  ]
+ },
+ "p1a-02": {
+  "phase": "1",
+  "texts": [
+   "Set up the local copy of Supabase (needs Docker) for building and tests"
+  ]
+ },
+ "p1a-03": {
+  "phase": "1",
+  "texts": [
+   "Create the one Supabase project (free plan, US East); switch off new sign-ups; set the 12-character password minimum"
+  ]
+ },
+ "p1a-04": {
+  "phase": "1",
+  "texts": [
+   "Create a Vite + React + TypeScript app with a web app manifest and a service worker"
+  ]
+ },
+ "p1a-05": {
+  "phase": "1",
+  "texts": [
+   "Deploy to Vercel (Hobby) with a production address and preview addresses"
+  ]
+ },
+ "p1a-06": {
+  "phase": "1",
+  "texts": [
+   "Create the owner account and a test account in the dashboard, marked as confirmed (no email)"
+  ]
+ },
+ "p1a-07": {
+  "phase": "1",
+  "texts": [
+   "Build sign-in and the forced \"Set a new password\" screen on first login"
+  ]
+ },
+ "p1a-08": {
+  "phase": "1",
+  "texts": [
+   "Create two sample tables with row-level security, and a CI check that fails if any table lacks it"
+  ]
+ },
+ "p1a-09": {
+  "phase": "1",
+  "texts": [
+   "Generate push signing keys; build register_push and a send-push function using @negrel/webpush (fall back to npm:web-push if it fails)"
+  ]
+ },
+ "p1a-10": {
+  "phase": "1",
+  "texts": [
+   "Add the app to the home screen on your iPhone, allow notifications, send a test push and tap it"
+  ]
+ },
+ "p1b-01": {
+  "phase": "1",
+  "texts": [
+   "Build the ingest function: upload token check (hash only), schema check, duplicate-proof storage, reply flags (night_complete, already_complete_today)"
+  ]
+ },
+ "p1b-02": {
+  "phase": "1",
+  "texts": [
+   "Build token creation (shown once) and revocation"
+  ]
+ },
+ "p1b-03": {
+  "phase": "1",
+  "texts": [
+   "Build the Shortcut template: ping first, then read and post readings; save \"synced today\" to iCloud Drive when the night is complete"
+  ]
+ },
+ "p1b-04": {
+  "phase": "1",
+  "texts": [
+   "Set up both automations (charger unplugged; chosen app opened) on your phone (the tester's phone moved to the Phase 6 dry run, D44)"
+  ]
+ },
+ "p1b-05": {
+  "phase": "1",
+  "texts": [
+   "Check: do Watch sleep stages arrive, or only \"asleep\"?"
+  ]
+ },
+ "p1b-06": {
+  "phase": "1",
+  "texts": [
+   "Check: how often does the unplug run fail because the phone is locked?"
+  ]
+ },
+ "p1b-07": {
+  "phase": "1",
+  "texts": [
+   "Check: do readings from a past trip keep their recorded time zone?"
+  ]
+ },
+ "p1c-01": {
+  "phase": "1",
+  "texts": [
+   "Add monthly import to the Shortcut (12 parts, resumable)"
+  ]
+ },
+ "p1c-02": {
+  "phase": "1",
+  "texts": [
+   "Time a full import on your phone and measure the size of one month's post (the tester's import moved to the Phase 6 dry run, D45)"
+  ]
+ },
+ "p1c-03": {
+  "phase": "1",
+  "texts": [
+   "Interrupt an import on purpose and confirm it continues from the last finished month"
+  ]
+ },
+ "p1c-04": {
+  "phase": "1",
+  "texts": [
+   "Count the nights in your year with at least one HRV reading inside the sleep window"
+  ]
+ },
+ "p1-review": {
+  "phase": "1",
+  "texts": [
+   "Code review of everything changed in Phase 1 (1a to 1c); fix what it finds, then re-run the Phase 1 automated tests"
+  ]
+ },
+ "p2-01": {
+  "phase": "2",
+  "texts": [
+   "Build nights: sleep window from Watch sleep stages, local wake date, finished flag, sleeping heart rate (median while asleep), HRV median and count, breathing rate, yesterday's resting heart rate, coverage and confidence (rules in D48, D49 and D50)"
+  ]
+ },
+ "p2-02": {
+  "phase": "2",
+  "texts": [
+   "Build baselines: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range (the window is a setting: 42 nights from version 2, D59)",
+   "Build baselines: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range",
+   "Build baselines: 28-night median and scaled spread, excluding the night judged; 21-valid-night minimum; normal range"
+  ]
+ },
+ "p2-05": {
+  "phase": "2",
+  "texts": [
+   "Build analysis_queue and the every-minute scheduler; imports recompute once at the end and never notify"
+  ]
+ },
+ "p2-03": {
+  "phase": "2",
+  "texts": [
+   "Build daily_status:",
+   "Build daily_status: points per reading, total and zones; a missing reading's weight moved to the other two; no status with two or more missing; \"Learning your normal\"; never Ready without enough data (D51)",
+   "Build daily_status: points per reading, total and zones; a missing reading's weight moved to the other two; no status with two or more missing; \"Learning your normal\"; never Ready without enough data (D51)"
+  ]
+ },
+ "p2-04": {
+  "phase": "2",
+  "texts": [
+   "Build the illness check and nudge selection from the four actions; write results to insights",
+   "Build the illness check and nudge selection from the four actions; write results to insights (D52, D53)",
+   "Build the illness check and nudge selection from the four actions; write results to insights (D52, D53)"
+  ]
+ },
+ "p2-06": {
+  "phase": "2",
+  "texts": [
+   "Build score_settings (versioned) with the starting numbers: HRV 40%, sleeping heart rate 35%, sleep 25%; Ease off from 1, Rest from 2"
+  ]
+ },
+ "p2-07": {
+  "phase": "2",
+  "texts": [
+   "Load your events (illness, major events) from your calendar; detect travel days (or take them from the calendar if time zones were lost in Phase 1)",
+   "Load your events (illness, major events) from your calendar; detect travel days (or take them from the calendar if time zones were lost in Phase 1) (the trip's travel days; no calendar events, D58)",
+   "Load your events (illness, major events) from your calendar; detect travel days (or take them from the calendar if time zones were lost in Phase 1) (the trip's travel days; no calendar events, D58)"
+  ]
+ },
+ "p2-08": {
+  "phase": "2",
+  "texts": [
+   "Import your workout summaries for the Signal check",
+   "Import your workout summaries for the Signal check (280 from a Health export, D54)",
+   "Import your workout summaries for the Signal check (280 from a Health export, D54)"
+  ]
+ },
+ "p2-09": {
+  "phase": "2",
+  "texts": [
+   "Write the pandas reference notebook and compare it with the SQL stage by stage on your year",
+   "Write the pandas reference notebook and compare it with the SQL stage by stage on your year (a script: all 237 nights, 1,185 normals and 237 statuses match)",
+   "Write the pandas reference notebook and compare it with the SQL stage by stage on your year (a script: all 237 nights, 1,185 normals and 237 statuses match)"
+  ]
+ },
+ "p2-10": {
+  "phase": "2",
+  "texts": [
+   "Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing",
+   "Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing (Signal on your year not met: 1 of 13)",
+   "Measure on your year: the disrupted-day match, how often Ease off or Rest fire, and how often each reading is missing (Signal on your year not met: 1 of 13)"
+  ]
+ },
+ "p2-11": {
+  "phase": "2",
+  "texts": [
+   "Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them",
+   "Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them (version 2, frozen, D59)",
+   "Set the final score numbers, decide the HRV minimum and the ease-off cap, then record them (version 2, frozen, D59)"
+  ]
+ },
+ "p2-13": {
+  "phase": "2",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (14 findings: 11 fixed, 3 decided by Sabine)",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (14 findings: 11 fixed, 3 decided by Sabine)"
+  ]
+ },
+ "p2-12": {
+  "phase": "2",
+  "texts": [
+   "Start the two-to-three-week self-test: read your own status each morning before the screens exist",
+   "Start the two-to-three-week self-test: read your own status each morning before the screens exist (started 3 October 2026, with scripts/reference/today.py)",
+   "Start the two-to-three-week self-test: read your own status each morning before the screens exist (started 3 October 2026, with scripts/reference/today.py)"
+  ]
+ },
+ "p3-01": {
+  "phase": "3",
+  "texts": [
+   "Add design tokens (colours, type, spacing, radius) from design.md as CSS variables"
+  ]
+ },
+ "p3-02": {
+  "phase": "3",
+  "texts": [
+   "Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests.",
+   "Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests (wording sheet approved by Sabine after her review; no \"normal\" on any screen, D85)",
+   "Build the wording module: briefing parts, verdicts, nudges, state messages and notification text, with rule tests (wording sheet approved by Sabine after her review; no \"normal\" on any screen, D85)"
+  ]
+ },
+ "p3-03": {
+  "phase": "3",
+  "texts": [
+   "Build the daily check-in screen (good, okay, off, Skip) and the check-in row on the card"
+  ]
+ },
+ "p3-04": {
+  "phase": "3",
+  "texts": [
+   "Build the readiness card:",
+   "Build the readiness card",
+   "Build the readiness card"
+  ]
+ },
+ "p3-05": {
+  "phase": "3",
+  "texts": [
+   "Build Why today:",
+   "Build Why today",
+   "Build Why today"
+  ]
+ },
+ "p3-06": {
+  "phase": "3",
+  "texts": [
+   "Log card views and Why today opens",
+   "Log card views and Why today opens (usage log, never health values)",
+   "Log card views and Why today opens (usage log, never health values)"
+  ]
+ },
+ "p3-07": {
+  "phase": "3",
+  "texts": [
+   "Check safe areas and the one-screen fit on 390-point iPhones",
+   "Check safe areas and the one-screen fit on 390-point iPhones (fits; date clear of the status bar on Sabine's iPhone)",
+   "Check safe areas and the one-screen fit on 390-point iPhones (fits; date clear of the status bar on Sabine's iPhone)"
+  ]
+ },
+ "p3-08": {
+  "phase": "3",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (10 findings: 8 fixed, 1 no change, 1 decided by Sabine, D65)",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (10 findings: 8 fixed, 1 no change, 1 decided by Sabine, D65)"
+  ]
+ },
+ "p4-01": {
+  "phase": "4",
+  "texts": [
+   "Build the notification outbox, with one notification of each kind per user per day"
+  ]
+ },
+ "p4-02": {
+  "phase": "4",
+  "texts": [
+   "Queue the morning notification after analysis (status and reason; none on days without a status)"
+  ]
+ },
+ "p4-03": {
+  "phase": "4",
+  "texts": [
+   "Build plan_notifications() every 5 minutes: 11:30 reminders and 8pm follow-ups by each user's local time"
+  ]
+ },
+ "p4-04": {
+  "phase": "4",
+  "texts": [
+   "Build the sender schedule and delivery, failure and tap logging"
+  ]
+ },
+ "p4-05": {
+  "phase": "4",
+  "texts": [
+   "Build the 8pm card state: follow-through card with equal Yes and No, folded briefing, recorded states with Change"
+  ]
+ },
+ "p4-06": {
+  "phase": "4",
+  "texts": [
+   "Build next-morning carry-over for unanswered questions"
+  ]
+ },
+ "p4-07": {
+  "phase": "4",
+  "texts": [
+   "Show notification health on the card and in Settings"
+  ]
+ },
+ "p4-08": {
+  "phase": "4",
+  "texts": [
+   "Add the late-sync marking (11:30 to noon) and the no-sync-by-noon state"
+  ]
+ },
+ "p4-10": {
+  "phase": "4",
+  "texts": [
+   "Keep, for each user and day, the status, nudge and reason that were shown: when the morning notification is sent and when the card is first opened, saved permanently; the test's Signal and Action results use this record, since recalculation may later correct a past day (D61, from the Phase 2 code review)"
+  ]
+ },
+ "p4-09": {
+  "phase": "4",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (9 findings, all fixed, before release)",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (9 findings, all fixed, before release)"
+  ]
+ },
+ "p5-01": {
+  "phase": "5",
+  "texts": [
+   "Build the trend view: one chart per score reading, last 8 weeks, normal-range band, flagged nights, gaps"
+  ]
+ },
+ "p5-02": {
+  "phase": "5",
+  "texts": [
+   "Build the weekly digest job (Monday 5am local) and page, including the \"first digest\" and missing-days states"
+  ]
+ },
+ "p5-03": {
+  "phase": "5",
+  "texts": [
+   "Build Settings:",
+   "Build Settings (sign out everywhere also stops notifications to every device)",
+   "Build Settings (sign out everywhere also stops notifications to every device)"
+  ]
+ },
+ "p5-04": {
+  "phase": "5",
+  "texts": [
+   "Build owner-status and the owner-only page: last sync, reminder days, delivery failures, import progress, project activity"
+  ]
+ },
+ "p5-05": {
+  "phase": "5",
+  "texts": [
+   "Write the owner admin script to reset a password and set the change-password flag"
+  ]
+ },
+ "p5-06": {
+  "phase": "5",
+  "texts": [
+   "Write the events loader script (built in Phase 2c: scripts/reference/owner_data.py load-events, from private/events.csv)",
+   "Write the events loader script (built in Phase 2c: owner_data.py load-events)",
+   "Write the events loader script (built in Phase 2c: owner_data.py load-events)"
+  ]
+ },
+ "p5-07": {
+  "phase": "5",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (10 findings: 9 fixed, 1 known limit, before release)",
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests (10 findings: 9 fixed, 1 known limit, before release)"
+  ]
+ },
+ "p6-01": {
+  "phase": "6",
+  "texts": [
+   "Turn on a strict Content Security Policy; confirm there are no third-party scripts",
+   "Turn on a strict Content Security Policy; confirm there are no third-party scripts (live since PR #7; headers checked on production; the Home Screen app works under it)",
+   "Turn on a strict Content Security Policy; confirm there are no third-party scripts (live since PR #7; headers checked on production; the Home Screen app works under it)"
+  ]
+ },
+ "p6-02": {
+  "phase": "6",
+  "texts": [
+   "Review secrets: none in the repository, the secret key only in server functions",
+   "Review secrets: none in the repository, the secret key only in server functions (whole history clean; Sabine's email removed from six merge commits)",
+   "Review secrets: none in the repository, the secret key only in server functions (whole history clean; Sabine's email removed from six merge commits)"
+  ]
+ },
+ "p6-03": {
+  "phase": "6",
+  "texts": [
+   "Re-run every row-level security and upload-path test against the live project",
+   "Re-run every row-level security and upload-path test against the live project (catalog check, and 110 of 110 checks from outside as the test account)",
+   "Re-run every row-level security and upload-path test against the live project (catalog check, and 110 of 110 checks from outside as the test account)"
+  ]
+ },
+ "p6-04": {
+  "phase": "6",
+  "texts": [
+   "Make the first db dump backup to an encrypted disk image outside Documents and iCloud (D77); practise one restore on the local copy",
+   "Make the first db dump backup to an encrypted disk image outside Documents and iCloud (D77); practise one restore on the local copy (52 tables, 132,638 rows; every count matched; local copy wiped after)",
+   "Make the first db dump backup to an encrypted disk image outside Documents and iCloud (D77); practise one restore on the local copy (52 tables, 132,638 rows; every count matched; local copy wiped after)"
+  ]
+ },
+ "p6-05": {
+  "phase": "6",
+  "texts": [
+   "Check the Cayman Data Protection Act's rules for health data and storage in the US, and whether a recorded in-app agreement is enough consent (a short summary with sources; not legal advice).",
+   "Check the Cayman Data Protection Act's rules for health data and storage in the US (plus Ontario, Quebec and DC; build to Quebec's rules; docs/cayman-data-protection.md)",
+   "Check the Cayman Data Protection Act's rules for health data and storage in the US (plus Ontario, Quebec and DC; build to Quebec's rules; docs/cayman-data-protection.md)"
+  ]
+ },
+ "p6-06": {
+  "phase": "6",
+  "texts": [
+   "Build in-app consent (D79).",
+   "Consent: given in the app at first sign-in (D79), with Withdraw consent (D80); released and agreed by Sabine and the test account",
+   "Consent: given in the app at first sign-in (D79), with Withdraw consent (D80); released and agreed by Sabine and the test account"
+  ]
+ },
+ "p6-13": {
+  "phase": "6",
+  "texts": [
+   "Replace the placeholder app icon with the open ring and dot (D76)"
+  ]
+ },
+ "p6-07": {
+  "phase": "6",
+  "texts": [
+   "Write the one-page setup guide as a public page in the app, linked from the sign-in screen and Settings (D78, D73).",
+   "Write the one-page setup guide (a public page in the app, linked from sign-in and Settings; approved by Sabine)",
+   "Write the one-page setup guide (a public page in the app, linked from sign-in and Settings; approved by Sabine)"
+  ]
+ },
+ "p6-14": {
+  "phase": "6",
+  "texts": [
+   "Remove Vercel's Supabase connection and its secret copies; type the public values in by hand; replace the Supabase secret key, the database password and the token-signing secret (D81)."
+  ]
+ },
+ "p6-08": {
+  "phase": "6",
+  "texts": [
+   "Publish Shortcut template v1 (blank, asks for the token at install) as an iCloud link from the Shortcuts app, in Settings and the guide (D78, refined).",
+   "Publish Shortcut template v1 (blank, asks for the token at install; an iCloud link checked for personal details, in Settings and the guide)",
+   "Publish Shortcut template v1 (blank, asks for the token at install; an iCloud link checked for personal details, in Settings and the guide)"
+  ]
+ },
+ "p6-09": {
+  "phase": "6",
+  "texts": [
+   "Check the one-screen fit on each tester's iPhone model"
+  ]
+ },
+ "p6-10": {
+  "phase": "6",
+  "texts": [
+   "Run a one-week dry run with one tester; fix what breaks."
+  ]
+ },
+ "p6-11": {
+  "phase": "6",
+  "texts": [
+   "Freeze the score settings; tag the release; write the changelog"
+  ]
+ },
+ "p6-12": {
+  "phase": "6",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests"
+  ]
+ },
+ "p7-01": {
+  "phase": "7",
+  "texts": [
+   "Onboard the testers with the guide; confirm each has a year imported and a status on day one"
+  ]
+ },
+ "p7-02": {
+  "phase": "7",
+  "texts": [
+   "Check the owner page every morning; follow up on any missed sync the same day"
+  ]
+ },
+ "p7-03": {
+  "phase": "7",
+  "texts": [
+   "Back up at least weekly and before any database change"
+  ]
+ },
+ "p7-04": {
+  "phase": "7",
+  "texts": [
+   "Make no changes to score logic or settings during the test"
+  ]
+ },
+ "p7-05": {
+  "phase": "7",
+  "texts": [
+   "Hold the end-of-test conversation with each tester"
+  ]
+ },
+ "p7-06": {
+  "phase": "7",
+  "texts": [
+   "Move the project to Supabase Pro after the test, and switch on the 30-day inactivity sign-out"
+  ]
+ },
+ "p7-07": {
+  "phase": "7",
+  "texts": [
+   "Code review of anything changed during the test (fixes only; score logic stays frozen); fix what it finds, then re-run the full test suite"
+  ]
+ },
+ "p8-01": {
+  "phase": "8",
+  "texts": [
+   "Calculate every target:"
+  ]
+ },
+ "p8-02": {
+  "phase": "8",
+  "texts": [
+   "Report partial-data days separately, and each tester's check-in completion rate"
+  ]
+ },
+ "p8-03": {
+  "phase": "8",
+  "texts": [
+   "Write up the testers' own words from the conversations"
+  ]
+ },
+ "p8-04": {
+  "phase": "8",
+  "texts": [
+   "Build the main demo story: one week from your data where the tool flagged something early, starting from Apple Health's plain numbers"
+  ]
+ },
+ "p8-05": {
+  "phase": "8",
+  "texts": [
+   "Build the appendix: arithmetic, trends, the SQL-versus-pandas check, the disrupted-day check, every target and its result, limitations, and the causal layer as a worked method"
+  ]
+ },
+ "p8-06": {
+  "phase": "8",
+  "texts": [
+   "Apply the retention rule to testers' data (90 days after the test unless they agree otherwise)"
+  ]
+ },
+ "p8-07": {
+  "phase": "8",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
+  ]
+ }
+}

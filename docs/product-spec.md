@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 5 October 2026 (Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
+**Last updated:** 6 October 2026 (the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -117,7 +117,7 @@
 - **R15** Only Apple Watch readings are used. Readings from the iPhone or other apps are ignored.
 
 ### Daily check-in
-- **R16** On the first open of the day, before the status shows, the app asks "How do you feel today?" with three equal answers (good, okay, off) and a Skip option.
+- **R16** On the first open of the day, before the status shows, the app asks "How do you feel today?" with three equal answers ("Great", "Okay", "Off" on screen since 6 October 2026, saved as good, okay and off) and a Skip option.
 - **R17** If skipped, the card appears at once and keeps a small prompt to answer later that day.
 - **R18** An answer can be changed until the next morning's check-in. The first answer, its time and whether the status had already been seen are all kept. (Decided 3 October 2026: the check-in belongs to the calendar day, so in practice an answer can be changed until midnight, when the card moves to the new day.)
 - **R19** The check-in never changes the status.
@@ -153,7 +153,7 @@
   - what the reading measures and its unit, in one grey line
   - last night's value
   - "Usual for you" (first "Normal for you")
-  - a verdict: below, above, or in your normal range
+  - a verdict: below, above, or in your usual range (first "normal range")
   - a 4-week chart with the normal range shaded and last night marked
 - **R38** "Show the numbers" on a card reveals its normal range, how far last night was from normal, and how it compares with the last 4 weeks (for example "Your lowest night"). Tapping again hides them.
 - **R39** An "Also checked" card shows breathing rate and yesterday's resting heart rate, plus the result of the illness check.

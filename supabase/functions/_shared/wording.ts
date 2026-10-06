@@ -717,6 +717,8 @@ export const wording = {
         steps: [
           'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
           "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",
+          // Seen on Sabine's iPhone at the first Sync now (6 October 2026); words approved by her.
+          'The first time you tap Sync now, Shortcuts asks "Allow Clarivi Sync to output 1 text item?". Tap Always Allow. The item is only today\'s date.',
         ],
       },
     ],

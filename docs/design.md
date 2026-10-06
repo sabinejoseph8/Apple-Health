@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 5 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card; 5 October 2026: the Sync now button on the waiting cards)
+**Last updated:** 6 October 2026 (the on-screen words in this file brought in line with the wording review, D85: "Great" on the check-in, "your usual range" in verdicts, labels and footnotes; earlier, 5 October: what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card; 5 October 2026: the Sync now button on the waiting cards)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
@@ -49,13 +49,13 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 **Status**
 | Name | Hex | Used for |
 |---|---|---|
-| Ease off text | `#8A4100` | Ease off pill text, "Today's nudge" label, "Below normal" verdicts |
+| Ease off text | `#8A4100` | Ease off pill text, "Today's nudge" label, "Below your usual range" verdicts |
 | Ease off pill | `#FFEBD6` | Ease off pill background, today's zone box |
 | Ease off tint | `#FFF4E8` | Nudge block background |
 | Ease off line | `#F1D9BF` | Divider inside the nudge block |
 | Ease off border | `#E6CBAE` | Button borders on the nudge tint |
 | Attention orange | `#E07000` | Last-night dot on a chart when outside normal; today's zone outline |
-| Normal green | `#1F7A35` | "In your normal range" verdict, "Recorded: you followed it" |
+| Normal green | `#1F7A35` | "In your usual range" verdict, "Recorded: you followed it" |
 | Ready text / pill | `#1F7A35` / `#E3F4E8` | **Default:** Ready pill |
 | Rest text / pill | `#A1261D` / `#FDE7E5` | **Default:** Rest pill |
 | Neutral text / pill | `#3A3A3C` / `#E5E5EA` | **Default:** pills for Learning your usual levels, Waiting, No sync, Late |
@@ -161,7 +161,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - **Skipped:** "How do you feel today?" with a prompt to answer.
 
 **Daily check-in screen (Default)**
-- One question, "How do you feel today?", with three equal buttons (Good, Okay, Off) and a quiet Skip text button.
+- One question, "How do you feel today?", with three equal buttons (Great, Okay, Off; saved as good, okay and off) and a quiet Skip text button.
 - Shown before the card on the first open of the day.
 
 **List row**
@@ -175,12 +175,12 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - **Explainer:** one grey line saying what it measures, which direction is good, and its unit.
 - **Values:** the big value and unit; on the right, "Usual for you" and the usual value.
 - **Verdicts:**
-  - "Below your normal range" (Ease off text, down arrow)
-  - "Above your normal range" (Ease off text, up arrow) **Default**
-  - "In your normal range" (green tick)
+  - "Below your usual range" (Ease off text, down arrow)
+  - "Above your usual range" (Ease off text, up arrow) **Default**
+  - "In your usual range" (green tick)
   - "No reading last night" (muted) **Default**
 - **Chart:** see "Mini chart" below.
-- **"Show the numbers" / "Hide the numbers":** reveals a grey panel with Your normal range, Last night vs normal, and In the last 4 weeks.
+- **"Show the numbers" / "Hide the numbers":** reveals a grey panel with Your usual range, Last night vs usual, and In the last 4 weeks.
 
 **Mini chart**
 - 4 weeks of nights at full card width, about 72 points tall.
@@ -188,7 +188,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
   - Normal itself is a dashed line.
   - Nights are a 1.8-point line.
   - Last night is a dot: Attention orange if outside the range, the reading's colour if inside.
-- Labels underneath: "4 weeks ago", "Shaded: your normal range", "Last night".
+- Labels underneath: "4 weeks ago", "Shaded: your usual range", "Last night".
 - Missing nights are gaps. While the baseline is building, there is no band.
 
 **Also checked card**
@@ -198,7 +198,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - A plain-words explanation, then "Show the numbers", which reveals:
   - a points table (reading and points, with a divider and "Today's total")
   - three zone boxes (Ready under 1.2, Ease off 1.2 to 2.4, Rest 2.4 or more), with today's box ringed and labelled "Today". The Clarivi Screens canvas shows the earlier placeholder numbers (1 and 2); the screens take the numbers from the active score settings (set 3 October 2026, D59).
-- Footnote: "Your normal comes from your last 42 nights." (The canvas says 28, the earlier window.)
+- Footnote: "Your usual range comes from your last 42 nights, and all 42 were recorded." (or "40 of 42 were recorded" when some are missing). The canvas says "Your normal comes from your last 28 nights", the earlier words and window.
 
 **Primary button**
 - Full width, Link blue fill, white 17 / 600 text, 50 points high ("See your trends").
@@ -256,7 +256,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - Less common card states (waiting, night not finished, missed, late, no sync by noon, partial, not enough data, learning your normal, notifications off, sync rejected). These are left to the build, following the status pill and briefing card patterns. Built in Phase 3 (all but notifications off, which is Phase 4), as below.
 
 **As built in Phase 3 (4 October 2026), on the Default patterns:**
-- **Daily check-in screen:** the date and greeting header, then a white card: "How do you feel today?" (Card headline), three equal Button tint buttons (Good, Okay, Off; 48 points, 17/600 Button blue), the caption "Your answer never changes your status." and a quiet "Skip for now" text button. Opened again from the card, Skip becomes Cancel.
+- **Daily check-in screen:** the date and greeting header, then a white card: "How do you feel today?" (Card headline), three equal Button tint buttons (Great, Okay, Off; 48 points, 17/600 Button blue), the caption "Your answer never changes your status." and a quiet "Skip for now" text button. Opened again from the card, Skip becomes Cancel.
 - **Check-in row:** a face icon in Link blue (wide smile for good, small smile for okay, flat mouth for off), "You said you feel **okay** today" and Change; after Skip, "How do you feel today?" and Answer. The weekly digest row is left out until Phase 5 (D63).
 - **Greeting:** Good morning before noon, Good afternoon until 6pm, Good evening after.
 - **Nudge block by status:** Ease off tint on Ease off days (as designed); Rest pill tint with Rest text eyebrow on Rest days; on Ready days the quiet Background grey with a muted eyebrow, so a normal day stays calm.
@@ -267,7 +267,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - **Icons:** drawn in the app in the SF Symbols style (gear, chevrons, faces, warning, and per reading a pulse line, a moon and a heart).
 - **As built in Phase 4 (4 October 2026):** the 8pm card as designed (Link blue ring, bell with "Today's nudge", the action, "Did you follow it?", Yes and No as equal Button tint buttons, the hint), above the briefing card folded to its pill, headline, "Show this morning's briefing" and the Why link; the recorded states show a green tick or a grey dash with Change. The next morning's question uses the same card with "Yesterday's nudge" and "You can answer until noon.", and a quiet "Not now" under it (Default, so the question never blocks the day). The notifications notice uses the notice pattern with a bell. Settings adds "Last notification delivered today at 6:44am".
 - **As built in Phase 5, Settings (4 October 2026, live):** the nav bar "< Today", then white cards: Signed in as; Notifications (on or off, devices, "Last notification delivered …", Turn on, Send a test); Upload token; Account, a list of rows with chevrons (Change password, Sign out everywhere, and Delete my data in Rest text); then "Sign out of this phone" as a text button. Each Account row opens a card in place of the list: Change password (current, new, type it again, Save password); Sign out everywhere (a line on what it does, then the button); Delete my data (what it removes, that the account stays and it can't be undone, the password, and a red button, which is the confirmation step). Cancel returns to the list; a short line confirms what was done. The setup guide row arrives with the guide (Phase 6, D73).
-- **As built in Phase 5, trends and digest (4 October 2026, live):** "See your trends" is a primary button at the foot of Why today. The trend view: nav bar "Your trends", "The last 8 weeks", then a card per reading (name and icon in its colour, a building note when needed, a 140-point chart, "8 weeks ago" and "Last night", and "Shaded: your normal range. Orange: outside it."). The band follows each night's normal (D70) and is left out where the normal was still being learned; tapping a night (or the arrow keys) shows "Tue 29 Sep: 38 ms" above the chart with a thin guide line. The card's list adds a "Weekly digest" row (calendar icon, the week as "21 Sep to 27 Sep" or "From 5 Oct" before the first, chevron). The digest page: the week as an eyebrow, "Your week" and the nights line, then cards "Your status", "Your readings" and "Your nudges". List rows are 52 points high.
+- **As built in Phase 5, trends and digest (4 October 2026, live):** "See your trends" is a primary button at the foot of Why today. The trend view: nav bar "Your trends", "The last 8 weeks", then a card per reading (name and icon in its colour, a building note when needed, a 140-point chart, "8 weeks ago" and "Last night", and "Shaded: your usual range. Orange: outside it."). The band follows each night's normal (D70) and is left out where the normal was still being learned; tapping a night (or the arrow keys) shows "Tue 29 Sep: 38 ms" above the chart with a thin guide line. The card's list adds a "Weekly digest" row (calendar icon, the week as "21 Sep to 27 Sep" or "From 5 Oct" before the first, chevron). The digest page: the week as an eyebrow, "Your week" and the nights line, then cards "Your status", "Your readings" and "Your nudges". List rows are 52 points high.
 - **As built in Phase 6, the setup guide (4 October 2026, D78):** a public page at `#/guide` that opens without signing in. The nav bar "< Back" and "Set up Clarivi", a short intro, then eight white cards, one per stage, each with a numbered headline (22-point bold) and a numbered list of steps in Text secondary (15 points, 10 points apart): before you start (sleep history, sleep tracking, other sleep apps, long trips), the Home Screen (with the page's own address), sign in (with consent), notifications (with When Unlocked, R62), the Shortcut (with a full-width primary "Get the Clarivi Shortcut" button), the import, the two automations, and each morning; then "Stuck on a step? Contact Sabine." as a footnote. The sign-in screen has a centred "How to set up Clarivi" text link under its footnote; Settings' Upload token card ends with two link rows, "Get the Clarivi Shortcut" (opens outside the app) and "Setup guide".
 - **Wording review (6 October 2026, D85):** no screen says "normal". A reading is "in your usual range", "above" or "below your usual range"; the shaded band is "your usual range" in Why today, the charts, trends and the digest; the middle value is "Usual for you"; the learning state is "Learning your usual levels" (headline "Still learning your usual levels"); Ready headlines say "Your readings are all in your usual range" or "…but the rest looks as usual". The design canvas still shows the earlier words; the wording module wins. A wording test fails if "normal" returns.
 - **Sync now (5 October 2026, D84):** on the waiting, sleep-in-progress and no-sync-yet cards (before noon), a full-width primary "Sync now" button under the card's text, then the caption "Opens the Shortcuts app to send last night's readings. Come back here when it's done." The card reloads when the person comes back. The no-sync-yet line now reads "Tap Sync now, or run Clarivi Sync in the Shortcuts app, before noon to get today's nudge." The morning card still fits 390 by 763 points with it.

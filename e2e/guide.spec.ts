@@ -41,6 +41,11 @@ test('explains the lock screen and When Unlocked (R62)', async ({ page }) => {
   await expect(page.getByText(/Show Previews, and choose When Unlocked/)).toBeVisible()
 })
 
+test('says to tap Always Allow when Sync now first asks to output its item', async ({ page }) => {
+  await page.goto('/#/guide')
+  await expect(page.getByText(/Allow Clarivi Sync to output 1 text item\?.*Tap Always Allow\./)).toBeVisible()
+})
+
 test('Settings shows the Shortcut link and the guide beside the upload token (R10)', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { upload_tokens: [] }, path: '/#/settings' })
   const card = page.locator('section', { has: page.getByRole('heading', { name: wording.uploadToken.title }) })
