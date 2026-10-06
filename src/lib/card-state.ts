@@ -44,7 +44,7 @@ export interface CardInputs {
   recentUploads: UploadRow[]
   // The newest accepted daily or import post, however old.
   lastSync: UploadRow | null
-  // Today's normals and night, for "Learning your normal" (R32).
+  // Today's normals and night, for "Learning your usual levels" (R32).
   baselines: BaselineRow[]
   night: NightRow | null
   // How many valid nights each reading's normal needs (status_zones).

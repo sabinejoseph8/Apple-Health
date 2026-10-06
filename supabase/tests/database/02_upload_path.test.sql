@@ -11,8 +11,8 @@ insert into auth.users (id, email) values
   ('22222222-2222-2222-2222-222222222222', 'user-b@example.test');
 -- Phase 6: uploads need consent (D79), so these made-up people have agreed.
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage) values
-  ('11111111-1111-1111-1111-111111111111', 1, true, true),
-  ('22222222-2222-2222-2222-222222222222', 1, true, true);
+  ('11111111-1111-1111-1111-111111111111', 2, true, true),
+  ('22222222-2222-2222-2222-222222222222', 2, true, true);
 
 -- A time zone offset that makes the phone's local time 8am right now, so the
 -- "last night" tests give the same answer whenever they run.

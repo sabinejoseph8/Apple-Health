@@ -84,7 +84,7 @@ OWNER_ONLY = [
 SIGNED_IN_ONLY = [
     ('consent_version', {}),
     ('forget_all_devices', {}),
-    ('give_consent', {'p_version': 1, 'p_use': True, 'p_us_storage': True}),
+    ('give_consent', {'p_version': 2, 'p_use': True, 'p_us_storage': True}),
     ('log_notification_tap', {'p_id': 0}),
     ('log_usage', {'p_event': 'card_view', 'p_meta': {}}),
     ('record_shown', {'p_date': OLD_DAY}),
@@ -232,7 +232,7 @@ def local(prove: bool) -> Report:
         # Both agree to the consent text (D79), as real people do first.
         for who in people:
             session_, _ = sign_in(url, key, *people[who])
-            api.call(f'{url}/rest/v1/rpc/give_consent', session_, 'POST', {'p_version': 1, 'p_use': True, 'p_us_storage': True})
+            api.call(f'{url}/rest/v1/rpc/give_consent', session_, 'POST', {'p_version': 2, 'p_use': True, 'p_us_storage': True})
         # Someone else uses the app a little, so there are rows to hide.
         other, _ = sign_in(url, key, *people['someone-else'])
         api.call(f'{url}/rest/v1/rpc/submit_checkin', other, 'POST', {'p_date': '2026-10-04', 'p_answer': 'okay'})

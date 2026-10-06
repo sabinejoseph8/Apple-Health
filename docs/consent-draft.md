@@ -1,6 +1,6 @@
 # Consent text: draft for Sabine's review
 
-**Status:** approved by Sabine on 4 October 2026 (Phase 6, D79 and D80); version 1. These words move into the wording module (`wording.consent`), with one change for R61's word check: "doesn't diagnose anything" became "gives no medical advice". The consent screen shows them once, after a person's first sign-in and new password, before anything else. Written to meet the strictest of the rules where testers may live (Quebec's; see `docs/cayman-data-protection.md`, section 7). Square brackets show the screen's controls.
+**Status:** approved by Sabine on 4 October 2026 (Phase 6, D79 and D80); version 1. These words move into the wording module (`wording.consent`), with one change for R61's word check: "doesn't diagnose anything" became "gives no medical advice". The consent screen shows them once, after a person's first sign-in and new password, before anything else. Written to meet the strictest of the rules where testers may live (Quebec's; see `docs/cayman-data-protection.md`, section 7). Square brackets show the screen's controls. **Version 2 (6 October 2026, D85):** the only change is "compared with your own normal" becoming "compared with your own usual range", from Sabine's wording review; everyone agrees once more.
 
 ---
 

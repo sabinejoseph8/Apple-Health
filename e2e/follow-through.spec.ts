@@ -34,10 +34,10 @@ test.describe('the 8pm question on an iPhone', () => {
     expect(question!.y).toBeLessThan(briefingCard!.y)
     // The briefing folds to its headline, the nudge block is left out.
     await expect(page.getByRole('heading', { name: "A short night, and your body hasn't fully recovered" })).toBeVisible()
-    await expect(page.getByText('You slept much less than you normally do', { exact: false })).toHaveCount(0)
+    await expect(page.getByText('You slept much less than usual', { exact: false })).toHaveCount(0)
     await expect(page.locator('.nudge')).toHaveCount(0)
     await page.getByRole('button', { name: f.showBriefing }).click()
-    await expect(page.getByText('You slept much less than you normally do', { exact: false })).toBeVisible()
+    await expect(page.getByText('You slept much less than usual', { exact: false })).toBeVisible()
   })
 
   test('records the answer from the card, and Change lets it be changed (R54, R56)', async ({ page }) => {

@@ -45,7 +45,7 @@ export async function openApp(
   const app: MockApp = { calls: [], reads: [] }
   // The made-up tester has agreed to the consent text (D79), unless a test
   // gives its own "consents" rows (an empty list: not agreed yet).
-  tables = { consents: [{ version: 1, agreed_at: '2026-09-01T12:00:00Z' }], ...tables }
+  tables = { consents: [{ version: 2, agreed_at: '2026-09-01T12:00:00Z' }], ...tables }
   if (ticking) await page.clock.install({ time: new Date(at) })
   else await page.clock.setFixedTime(new Date(at))
   await page.addInitScript((session) => localStorage.setItem('clarivi-auth', session), JSON.stringify(SESSION))

@@ -1,7 +1,7 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 4 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card)
+**Last updated:** 5 October 2026 (what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card; 5 October 2026: the Sync now button on the waiting cards)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
 **Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
 
@@ -34,7 +34,7 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 | Surface | `#FFFFFF` | Cards, rows, buttons on tinted areas |
 | Text | `#000000` | Headlines, values, main text |
 | Text secondary | `#3A3A3C` | Briefing paragraph, body copy, secondary icons |
-| Text muted | `#6C6C70` | Captions, labels, "Normal for you", sync time |
+| Text muted | `#6C6C70` | Captions, labels, "Usual for you", sync time |
 | Separator | `#E5E5EA` | Row dividers, link-row top borders |
 | Divider strong | `#D1D1D6` | Divider inside the points table |
 | Chevron | `#C4C4C8` | Disclosure chevrons on rows and links |
@@ -58,7 +58,7 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 | Normal green | `#1F7A35` | "In your normal range" verdict, "Recorded: you followed it" |
 | Ready text / pill | `#1F7A35` / `#E3F4E8` | **Default:** Ready pill |
 | Rest text / pill | `#A1261D` / `#FDE7E5` | **Default:** Rest pill |
-| Neutral text / pill | `#3A3A3C` / `#E5E5EA` | **Default:** pills for Learning your normal, Waiting, No sync, Late |
+| Neutral text / pill | `#3A3A3C` / `#E5E5EA` | **Default:** pills for Learning your usual levels, Waiting, No sync, Late |
 
 **Readings** (one colour each, used for the reading's label, icon and chart)
 | Reading | Line | Band (normal range) | Median line |
@@ -130,7 +130,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - The title changes with the status.
 
 **Status pill**
-- States: Ready, Ease off, Rest. **Default:** neutral pills for Learning your normal, Waiting, No sync and Late.
+- States: Ready, Ease off, Rest. **Default:** neutral pills for Learning your usual levels, Waiting, No sync and Late.
 - Always appears beside the sync time ("Updated from your Watch at 6:42am").
 
 **Briefing card** (readiness card)
@@ -173,7 +173,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 **Reading card** (Why today)
 - **Header:** reading name in its colour, an icon, and "Last night" on the right.
 - **Explainer:** one grey line saying what it measures, which direction is good, and its unit.
-- **Values:** the big value and unit; on the right, "Normal for you" and the normal value.
+- **Values:** the big value and unit; on the right, "Usual for you" and the usual value.
 - **Verdicts:**
   - "Below your normal range" (Ease off text, down arrow)
   - "Above your normal range" (Ease off text, up arrow) **Default**
@@ -269,6 +269,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 - **As built in Phase 5, Settings (4 October 2026, live):** the nav bar "< Today", then white cards: Signed in as; Notifications (on or off, devices, "Last notification delivered …", Turn on, Send a test); Upload token; Account, a list of rows with chevrons (Change password, Sign out everywhere, and Delete my data in Rest text); then "Sign out of this phone" as a text button. Each Account row opens a card in place of the list: Change password (current, new, type it again, Save password); Sign out everywhere (a line on what it does, then the button); Delete my data (what it removes, that the account stays and it can't be undone, the password, and a red button, which is the confirmation step). Cancel returns to the list; a short line confirms what was done. The setup guide row arrives with the guide (Phase 6, D73).
 - **As built in Phase 5, trends and digest (4 October 2026, live):** "See your trends" is a primary button at the foot of Why today. The trend view: nav bar "Your trends", "The last 8 weeks", then a card per reading (name and icon in its colour, a building note when needed, a 140-point chart, "8 weeks ago" and "Last night", and "Shaded: your normal range. Orange: outside it."). The band follows each night's normal (D70) and is left out where the normal was still being learned; tapping a night (or the arrow keys) shows "Tue 29 Sep: 38 ms" above the chart with a thin guide line. The card's list adds a "Weekly digest" row (calendar icon, the week as "21 Sep to 27 Sep" or "From 5 Oct" before the first, chevron). The digest page: the week as an eyebrow, "Your week" and the nights line, then cards "Your status", "Your readings" and "Your nudges". List rows are 52 points high.
 - **As built in Phase 6, the setup guide (4 October 2026, D78):** a public page at `#/guide` that opens without signing in. The nav bar "< Back" and "Set up Clarivi", a short intro, then eight white cards, one per stage, each with a numbered headline (22-point bold) and a numbered list of steps in Text secondary (15 points, 10 points apart): before you start (sleep history, sleep tracking, other sleep apps, long trips), the Home Screen (with the page's own address), sign in (with consent), notifications (with When Unlocked, R62), the Shortcut (with a full-width primary "Get the Clarivi Shortcut" button), the import, the two automations, and each morning; then "Stuck on a step? Contact Sabine." as a footnote. The sign-in screen has a centred "How to set up Clarivi" text link under its footnote; Settings' Upload token card ends with two link rows, "Get the Clarivi Shortcut" (opens outside the app) and "Setup guide".
+- **Wording review (6 October 2026, D85):** no screen says "normal". A reading is "in your usual range", "above" or "below your usual range"; the shaded band is "your usual range" in Why today, the charts, trends and the digest; the middle value is "Usual for you"; the learning state is "Learning your usual levels" (headline "Still learning your usual levels"); Ready headlines say "Your readings are all in your usual range" or "…but the rest looks as usual". The design canvas still shows the earlier words; the wording module wins. A wording test fails if "normal" returns.
 - **Sync now (5 October 2026, D84):** on the waiting, sleep-in-progress and no-sync-yet cards (before noon), a full-width primary "Sync now" button under the card's text, then the caption "Opens the Shortcuts app to send last night's readings. Come back here when it's done." The card reloads when the person comes back. The no-sync-yet line now reads "Tap Sync now, or run Clarivi Sync in the Shortcuts app, before noon to get today's nudge." The morning card still fits 390 by 763 points with it.
 - **As built in Phase 6, consent (4 October 2026, D79, D80):** the consent screen opens after the first sign-in and new password, before anything else: the large title "How Clarivi uses your data", then a white card per section (a 17-point semibold headline, then body text or a bulleted list in Text secondary), then "Your agreement" with two unticked checkboxes (22 points, Link blue when ticked, each with its statement beside it), the primary "I agree" (an inline "Tick both boxes to agree, or sign out." if one is missing) and "Sign out" as a text button; the version line as a footnote. The same sections, without the agreement, are the public "Your data" page (`#/privacy`, nav bar "< Back"), linked from the guide's sign-in step and from Settings. Settings has a "Your consent" card between Upload token and Account: "You agreed on 4 October 2026." as a caption, a "Read what you agreed to" row and a red "Withdraw consent" row, which opens the same password-and-red-button step as Delete my data.
 - **As built in Phase 5, the owner page (4 October 2026, live):** Settings' "Signed in as" card adds an "Owner page" link row for the owner only. The page: nav bar "Owner", a Project card ("Database: 42.5 MB of 500 MB on the free plan.", with a bold Ease off text warning from 400 MB), then a card per person (name or email, a "You" pill on the owner's), with lines for the last sync, 11:30 reminders, failed notifications and history import; a problem (two reminders in a row, a failure) is in bold Ease off text. A tester who opens it sees "Only the owner can open this page."

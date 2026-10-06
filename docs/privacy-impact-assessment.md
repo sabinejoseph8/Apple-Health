@@ -32,7 +32,7 @@ Sabine's encrypted backups stay on her Mac, outside iCloud (D77).
 - **Access:** row-level security on every table, so each person reaches only their own rows; checked from the outside on the live project (110 of 110 checks); only Sabine can reach the database directly.
 - **Encryption:** in transit (HTTPS everywhere) and at rest (on every Supabase plan); backups in an AES-256 encrypted disk image.
 - **The app:** a strict Content Security Policy; no third-party scripts, analytics or tracking.
-- **Keys:** full-access keys kept only in Supabase once D81 is done.
+- **Keys:** full-access keys kept only in Supabase (D81, done 5 October 2026: Vercel's copies removed, the secret key replaced, the old signing secret revoked).
 - **Retention:** deleted 90 days after the test, unless a tester agrees otherwise; "Delete my data" and "Withdraw consent" at any time.
 - **Incidents:** a breach plan that tells the people affected and the regulators within 5 days (`docs/cayman-data-protection.md`, section 7).
 

@@ -118,7 +118,7 @@ export function rangeText(r: Reading, low: number, high: number): string {
   return r === 'sleep' ? n.rangeValue(formatDuration(low), formatDuration(high), '') : n.rangeValue(String(Math.round(low)), String(Math.round(high)), u[r])
 }
 
-// "14 ms lower", "1h 18m less", "The same as normal".
+// "14 ms lower", "1h 18m less", "The same as usual".
 export function vsNormalText(r: Reading, value: number, normal: number): string {
   const diff = Math.round(value) - Math.round(normal)
   if (diff === 0) return n.same
