@@ -716,6 +716,8 @@ export const wording = {
         title: 'Each morning',
         steps: [
           'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
+          // Seen on Sabine's lock screen on 5 and 7 October 2026 (a locked run waits for a tap); words approved by her.
+          'If your lock screen shows "Find Health Samples Where: Tap to run", unlock your iPhone and tap Continue.',
           "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",
           // Seen on Sabine's iPhone at the first Sync now (6 October 2026); words approved by her.
           'The first time you tap Sync now, Shortcuts asks "Allow Clarivi Sync to output 1 text item?". Tap Always Allow. The item is only today\'s date.',
