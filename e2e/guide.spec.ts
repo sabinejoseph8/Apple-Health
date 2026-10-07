@@ -46,6 +46,11 @@ test('says to tap Always Allow when Sync now first asks to output its item', asy
   await expect(page.getByText(/Allow Clarivi Sync to output 1 text item\?.*Tap Always Allow\./)).toBeVisible()
 })
 
+test('says to unlock and tap Continue when a locked run asks to carry on', async ({ page }) => {
+  await page.goto('/#/guide')
+  await expect(page.getByText(/Find Health Samples Where: Tap to run.*unlock your iPhone and tap Continue\./)).toBeVisible()
+})
+
 test('Settings shows the Shortcut link and the guide beside the upload token (R10)', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { upload_tokens: [] }, path: '/#/settings' })
   const card = page.locator('section', { has: page.getByRole('heading', { name: wording.uploadToken.title }) })
