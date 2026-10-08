@@ -44,6 +44,14 @@ for (const [name, at, tables] of shots) {
   })
 }
 
+// D88: a past day, opened from Why today's Previous day.
+test('22-past-day', async ({ page }) => {
+  const past = { ...row, date: '2026-09-28', status: 'ready', nudge: 'train_as_planned' }
+  await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [past, row], uploads: synced, ...why }, path: '/#/day/2026-09-28' })
+  await page.locator('.day-nav').waitFor()
+  await page.screenshot({ path: 'screenshots/22-past-day.png', fullPage: true })
+})
+
 test('03-why-today and 04-why-today-numbers-open', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [row], uploads: synced, ...why }, path: '/#/why' })
   await page.locator('.decided').waitFor()

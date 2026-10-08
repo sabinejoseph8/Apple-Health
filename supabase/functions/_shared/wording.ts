@@ -289,6 +289,17 @@ export const wording = {
   },
 
   // The trend view (R44 to R46).
+  // D88: a past day's readings, the same screen as Why today for that date
+  // (words approved by Sabine, 8 October 2026). Its title is the date.
+  pastDay: {
+    row: 'Previous days',
+    previous: 'Previous day',
+    next: 'Next day',
+    thatNight: 'That night',
+    nothing: 'Clarivi has no readings for this day.',
+    back: 'Back',
+  },
+
   trends: {
     title: 'Your trends',
     see: 'See your trends',

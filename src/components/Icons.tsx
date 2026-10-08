@@ -142,6 +142,17 @@ export function DashCircleIcon(props: IconProps) {
   )
 }
 
+// A clock with an arrow turning back, for the previous days row.
+export function HistoryIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4.6 13.5a7.5 7.5 0 1 0 1.9-6.9" />
+      <path d="M4.5 3.8v4h4" />
+      <path d="M12 8.2v4.3l3 1.8" />
+    </Svg>
+  )
+}
+
 // A small line chart, for the trends row.
 export function ChartIcon(props: IconProps) {
   return (
