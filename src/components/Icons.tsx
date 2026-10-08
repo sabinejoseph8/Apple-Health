@@ -142,6 +142,16 @@ export function DashCircleIcon(props: IconProps) {
   )
 }
 
+// A small line chart, for the trends row.
+export function ChartIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 4v16h16" />
+      <path d="M7.5 15l3.5-4 3 2.5 4.5-6" />
+    </Svg>
+  )
+}
+
 export function CalendarIcon(props: IconProps) {
   return (
     <Svg {...props}>

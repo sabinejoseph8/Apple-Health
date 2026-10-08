@@ -164,6 +164,31 @@ class Status(unittest.TestCase):
         self.assertEqual(rows.loc[today, 'no_status_reason'], 'night_unfinished')
         self.assertEqual(rows.loc[earlier, 'no_status_reason'], 'not_enough_data')
 
+    def test_stageless_night(self):
+        # D87: plain "asleep" only, at least 2 hours: no_sleep_stages, today and on a past day;
+        # under 2 hours, or with any Watch stage, it isn't.
+        today, past, short, staged = date(2026, 10, 20), date(2026, 10, 17), date(2026, 10, 18), date(2026, 10, 19)
+
+        def rec(stage, start, end):
+            return {'type': 'sleep_stage', 'stage': stage, 'tz_offset_min': -300,
+                    'start_at': pd.Timestamp(start), 'end_at': pd.Timestamp(end)}
+        samples = pd.DataFrame([
+            rec('asleep', '2026-10-20T07:30:00-05:00', '2026-10-20T10:10:00-05:00'),
+            rec('asleep', '2026-10-17T02:00:00-05:00', '2026-10-17T03:10:00-05:00'),
+            rec('asleep', '2026-10-17T03:20:00-05:00', '2026-10-17T04:30:00-05:00'),
+            rec('asleep', '2026-10-18T03:00:00-05:00', '2026-10-18T04:30:00-05:00'),
+            rec('asleep', '2026-10-19T01:00:00-05:00', '2026-10-19T05:00:00-05:00'),
+            rec('core', '2026-10-19T05:00:00-05:00', '2026-10-19T05:40:00-05:00'),
+            rec('asleep', '2026-10-19T13:00:00-05:00', '2026-10-19T16:00:00-05:00'),
+        ])
+        self.assertEqual(ref.stageless_nights(samples), {today, past})
+        uploads = pd.DataFrame([{'status': 'accepted', 'kind': 'daily', 'local_date': d} for d in (today, past, short)])
+        rows = ref.build_status(pd.DataFrame(columns=['night_date']), pd.DataFrame(columns=['night_date', 'metric']),
+                                uploads, S1, today, ref.stageless_nights(samples)).set_index('date')
+        self.assertEqual(rows.loc[today, 'no_status_reason'], 'no_sleep_stages')
+        self.assertEqual(rows.loc[past, 'no_status_reason'], 'no_sleep_stages')
+        self.assertEqual(rows.loc[short, 'no_status_reason'], 'not_enough_data')
+
     def test_version_2_moves_the_lines(self):
         d = date(2026, 9, 30)
         r = ref.build_status(pd.DataFrame([night(d, 352, 51, None)]), pd.DataFrame(normals(d)), pd.DataFrame(),
