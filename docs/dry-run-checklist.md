@@ -1,6 +1,6 @@
 # Dry run: checklist for setting up a tester
 
-**Status:** prepared 5 October 2026 for Phase 6, step 3 (one tester, one week). The same steps onboard every tester in Phase 7. Nothing here holds anyone's details: those stay with Sabine, never in this public repository.
+**Status:** not used: since 8 October 2026 Sabine is the only tester and the dry run is dropped (D89). Kept for the following release, when testers join. Prepared 5 October 2026 for Phase 6, step 3 (one tester, one week). The same steps onboard every tester in Phase 7. Nothing here holds anyone's details: those stay with Sabine, never in this public repository.
 
 ## 1. Before saying yes to a tester
 

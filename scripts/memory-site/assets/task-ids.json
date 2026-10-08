@@ -475,18 +475,6 @@
    "Publish Shortcut template v1 (blank, asks for the token at install; an iCloud link checked for personal details, in Settings and the guide)"
   ]
  },
- "p6-09": {
-  "phase": "6",
-  "texts": [
-   "Check the one-screen fit on each tester's iPhone model"
-  ]
- },
- "p6-10": {
-  "phase": "6",
-  "texts": [
-   "Run a one-week dry run with one tester; fix what breaks."
-  ]
- },
  "p6-11": {
   "phase": "6",
   "texts": [
@@ -497,12 +485,6 @@
   "phase": "6",
   "texts": [
    "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests"
-  ]
- },
- "p7-01": {
-  "phase": "7",
-  "texts": [
-   "Onboard the testers with the guide; confirm each has a year imported and a status on day one"
   ]
  },
  "p7-02": {
@@ -523,16 +505,16 @@
    "Make no changes to score logic or settings during the test"
   ]
  },
+ "p7-01": {
+  "phase": "7",
+  "texts": [
+   "At the end, write your own short account: did Clarivi change a decision, what you ignored and why, whether you'd keep using it (in place of the testers' conversations, D89)"
+  ]
+ },
  "p7-05": {
   "phase": "7",
   "texts": [
-   "Hold the end-of-test conversation with each tester"
-  ]
- },
- "p7-06": {
-  "phase": "7",
-  "texts": [
-   "Move the project to Supabase Pro after the test, and switch on the 30-day inactivity sign-out"
+   "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out)"
   ]
  },
  "p7-07": {
@@ -550,13 +532,14 @@
  "p8-02": {
   "phase": "8",
   "texts": [
+   "Report partial-data days separately, and your check-in completion rate",
    "Report partial-data days separately, and each tester's check-in completion rate"
   ]
  },
- "p8-03": {
+ "p8-09": {
   "phase": "8",
   "texts": [
-   "Write up the testers' own words from the conversations"
+   "Bring your own end-of-test account into the results and the demo"
   ]
  },
  "p8-04": {
@@ -569,12 +552,6 @@
   "phase": "8",
   "texts": [
    "Build the appendix: arithmetic, trends, the SQL-versus-pandas check, the disrupted-day check, every target and its result, limitations, and the causal layer as a worked method"
-  ]
- },
- "p8-06": {
-  "phase": "8",
-  "texts": [
-   "Apply the retention rule to testers' data (90 days after the test unless they agree otherwise)"
   ]
  },
  "p8-08": {
