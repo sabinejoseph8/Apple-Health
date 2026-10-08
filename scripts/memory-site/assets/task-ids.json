@@ -499,12 +499,6 @@
    "Code review of everything changed in this phase; fix what it finds, then re-run this phase's automated tests"
   ]
  },
- "p7-01": {
-  "phase": "7",
-  "texts": [
-   "Onboard the testers with the guide; confirm each has a year imported and a status on day one"
-  ]
- },
  "p7-02": {
   "phase": "7",
   "texts": [
@@ -521,12 +515,6 @@
   "phase": "7",
   "texts": [
    "Make no changes to score logic or settings during the test"
-  ]
- },
- "p7-05": {
-  "phase": "7",
-  "texts": [
-   "Hold the end-of-test conversation with each tester"
   ]
  },
  "p7-06": {

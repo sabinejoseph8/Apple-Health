@@ -1,6 +1,6 @@
 # Clarivi
 
-Clarivi is a small iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a four-week test with four users: Sabine (the owner) and three testers.
+Clarivi is a small iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a two-week test with one user, Sabine (the owner), since 8 October 2026 (D89; first planned as four weeks with Sabine and three testers).
 
 ## Where the plan lives
 
