@@ -89,6 +89,13 @@ describe('which card shows (R25 to R32)', () => {
     })
   })
 
+  it("says the Watch recorded no sleep stages, with Sync now only before noon (D87)", () => {
+    const sync = upload(at(10, 45))
+    const status = noStatus('no_sleep_stages')
+    expect(selectCard(inputs({ now: at(10, 49), status, recentUploads: [sync] })).state).toEqual({ kind: 'no_sleep_stages', beforeNoon: true })
+    expect(selectCard(inputs({ now: at(12, 5), status, recentUploads: [sync] })).state).toEqual({ kind: 'no_sleep_stages', beforeNoon: false })
+  })
+
   it('says no sync yet from 11:30 (R27), and no sync by noon after (R29)', () => {
     expect(selectCard(inputs({ now: at(11, 30) })).state.kind).toBe('missed')
     expect(selectCard(inputs({ now: at(12, 0) })).state).toEqual({ kind: 'no_sync', afterNoon: false })

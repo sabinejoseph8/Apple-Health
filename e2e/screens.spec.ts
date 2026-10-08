@@ -19,6 +19,8 @@ const shots: [string, string, Record<string, unknown[]>, string?][] = [
   ['02-card-sample-day', MORNING, { ...answered, daily_status: [row], uploads: synced, ...why }],
   ['05-card-waiting', MORNING, { ...answered, uploads: [dailySync('2026-09-28T06:51:00-05:00')] }],
   ['06-card-sleep-in-progress', MORNING, { ...answered, daily_status: [none('night_unfinished')], uploads: [dailySync('2026-09-29T06:42:00-05:00', { night_complete: false })] }],
+  ['06b-card-no-sleep-stages', MORNING, { ...answered, daily_status: [none('no_sleep_stages')], uploads: [dailySync('2026-09-29T06:42:00-05:00', { night_complete: false })] }],
+  ['06c-card-no-sleep-stages-afternoon', '2026-09-29T12:10:00-05:00', { ...answered, daily_status: [none('no_sleep_stages')], uploads: [dailySync('2026-09-29T06:42:00-05:00', { night_complete: false })] }],
   ['07-card-no-sync-yet-1140', '2026-09-29T11:40:00-05:00', answered],
   ['08-card-late-1150', '2026-09-29T11:50:00-05:00', { ...answered, daily_status: [row], uploads: [dailySync('2026-09-29T11:45:00-05:00')] }],
   ['09-card-no-sync-by-noon', '2026-09-29T12:10:00-05:00', answered],

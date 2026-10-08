@@ -40,6 +40,10 @@ def make(days: int = 75, seed: int = 7, start: date = date(2026, 6, 1)) -> Dict[
                         'received_at': _ts(datetime(d.year, d.month, d.day, 7, 30), offset)})
         if i % 11 == 5 or i in (20, 21, 22):
             continue  # no sleep recorded
+        if i in (30, 58):
+            # The Watch's sleep without stages (D87): plain "asleep" only, so no night.
+            add('sleep_stage', datetime(d.year, d.month, d.day, 2, 10), datetime(d.year, d.month, d.day, 5, 40), offset, stage='asleep')
+            continue
         t = evening
         wake = datetime(d.year, d.month, d.day, 6, 30) + timedelta(minutes=rnd.randint(-60, 90))
         long_break = i % 9 == 3

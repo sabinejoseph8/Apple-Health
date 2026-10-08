@@ -345,6 +345,13 @@ export const wording = {
       afterNoon: "Today's sync came after noon",
       detail: "There's no status or nudge today. Tomorrow starts afresh.",
     },
+    // D87: the Watch's sleep arrived without stages (words approved by Sabine, 8 October 2026).
+    noSleepStages: {
+      pill: 'No sleep stages',
+      headline: "Your Watch didn't record sleep stages",
+      detail: "Clarivi needs the sleep stages your Watch records to work out your status, so there's no status today.",
+      laterHint: 'If they show up later in the Health app, tap Sync now.',
+    },
     notEnoughData: {
       pill: 'Not enough data',
       headline: 'Not enough data last night',

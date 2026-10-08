@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 6 October 2026 (the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
+**Last updated:** 8 October 2026 (a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -141,7 +141,7 @@
 - **R28 Late.** A sync between 11:30am and noon produces the normal card, marked as late.
 - **R29 No sync by noon.** The card says there is no status today. No nudge and no 8pm question follow.
 - **R30 Partial.** If one reading is missing or still building its baseline, the status comes from the other two, and the card says "Based on 2 of 3 readings".
-- **R31 Not enough data.** If two or more readings are missing, or no sleep was recorded, the card says "Not enough data last night", with no status and no notification.
+- **R31 Not enough data.** If two or more readings are missing, or no sleep was recorded, the card says "Not enough data last night", with no status and no notification. If the Watch's sleep arrived without stages, the card says "Your Watch didn't record sleep stages" instead, from the morning on, with Sync now until noon (D87, 8 October 2026).
 - **R32 Learning your usual levels** (on screen since 6 October 2026; first named "Learning your normal"). If two or more readings are still building a baseline (fewer than 21 valid nights out of the last 42; 28 until 3 October 2026), the card shows "Learning your usual levels" with progress (for example "14 of 21 nights"). It shows last night's values in plain words, with no verdicts, no status, no notification and no 8pm question.
 - **R33 Illness check.** If several overnight readings move together, the card shows a short pattern note, never a diagnosis. The words "no early sign of illness or heavy strain" appear only when the illness check ran with its inputs.
 - **R34** If notifications are off or failing, the card says so and explains how to turn them back on.
@@ -332,6 +332,7 @@
 | App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
 | Sync now (5 Oct 2026) | While last night isn't in yet, before noon, the card offers Sync now, which runs the Shortcut in one tap; testers name their Shortcut Clarivi Sync during setup |
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
+| No sleep stages (8 Oct 2026) | A night the Watch recorded without stages gets no status and its own card, "Your Watch didn't record sleep stages"; every card without a status has a "See your trends" row (R31, R44) |
 | Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 
 ### Open questions (each with a recommended default)

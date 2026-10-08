@@ -198,6 +198,28 @@ def build_nights(samples: pd.DataFrame, uploads: pd.DataFrame) -> pd.DataFrame:
         'coverage', 'confidence'])
 
 
+def stageless_nights(samples: pd.DataFrame) -> set:
+    """Nights whose only sleep is plain "asleep" (the Watch's sleep without
+    stages), at least 2 hours of it (D87). Each record is placed by its own
+    local start time, from 6pm the evening before to noon, dated by that
+    morning, as the night builder places a stretch (D50); a night with any
+    core, deep or REM record is not stage-less."""
+    if not len(samples):
+        return set()
+    st = samples[(samples['type'] == 'sleep_stage') & samples['stage'].isin(ASLEEP + ('asleep',))]
+    totals, staged = {}, set()
+    for s, e, off, stage in zip(st['start_at'], st['end_at'], st['tz_offset_min'], st['stage']):
+        local = local_time(s, off if pd.notna(off) else 0)
+        night_date = (local + pd.Timedelta(hours=6)).date()
+        if local >= pd.Timestamp(night_date) + pd.Timedelta(hours=12):
+            continue
+        if stage in ASLEEP:
+            staged.add(night_date)
+        else:
+            totals[night_date] = totals.get(night_date, 0.0) + (e - s).total_seconds()
+    return {d for d, t in totals.items() if t >= 7200 and d not in staged}
+
+
 def _metric_value(night: dict, metric: str, hrv_min: int):
     if metric == 'hrv':
         return night['hrv_median'] if night['hrv_count'] >= hrv_min and night['hrv_median'] is not None else None
@@ -253,7 +275,7 @@ def build_baselines(nights: pd.DataFrame, settings: dict) -> pd.DataFrame:
 
 
 def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.DataFrame, settings: dict,
-                 today=None) -> pd.DataFrame:
+                 today=None, stageless=None) -> pd.DataFrame:
     """The daily status for every day with a night or a morning sync
     (D35, D36, D51 to D53). `today` is the user's current local date: a sync
     today with no night yet is "night not finished" (Phase 2 code review)."""
@@ -294,7 +316,11 @@ def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.Data
         total = sum(w[m] / weight_used * readings[m]['spreads_worse'] for m in used) if len(used) >= 2 else None
 
         if night is None:
-            status, reason = 'none', 'night_unfinished' if d == today else 'not_enough_data'
+            if stageless and d in stageless:
+                # The Watch's sleep arrived without stages (D87).
+                status, reason = 'none', 'no_sleep_stages'
+            else:
+                status, reason = 'none', 'night_unfinished' if d == today else 'not_enough_data'
         elif not night['finished']:
             status, reason = 'none', 'night_unfinished'
         elif n_building >= 2:

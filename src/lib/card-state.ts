@@ -7,7 +7,7 @@ import { minutesOfDay } from './when'
 
 export interface StatusRow extends DayWords {
   date: string
-  no_status_reason: 'waiting' | 'night_unfinished' | 'no_sync' | 'not_enough_data' | 'learning' | null
+  no_status_reason: 'waiting' | 'night_unfinished' | 'no_sync' | 'not_enough_data' | 'learning' | 'no_sleep_stages' | null
   nudge: Nudge | null
   total: number | null
   settings_version: number
@@ -59,6 +59,8 @@ export type CardState =
   // delayed: the readings arrived a while ago and there is still no status.
   | { kind: 'analysing'; delayed: boolean }
   | { kind: 'night_unfinished' }
+  // The Watch's sleep arrived without stages (D87); Sync now until noon.
+  | { kind: 'no_sleep_stages'; beforeNoon: boolean }
   | { kind: 'missed' }
   | { kind: 'no_sync'; afterNoon: boolean }
   | { kind: 'not_enough_data'; why: 'no_sleep' | 'too_few' | 'unfinished' }
@@ -119,6 +121,8 @@ function selectState(i: CardInputs): CardState {
       case 'night_unfinished':
         // Sleep still in progress until noon (R26), then not enough data (R31).
         return nowMin < NOON ? { kind: 'night_unfinished' } : { kind: 'not_enough_data', why: 'unfinished' }
+      case 'no_sleep_stages':
+        return { kind: 'no_sleep_stages', beforeNoon: nowMin < NOON }
       case 'learning':
         return learning(i)
       case 'not_enough_data':

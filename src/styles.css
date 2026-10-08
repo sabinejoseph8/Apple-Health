@@ -610,7 +610,8 @@ button:focus-visible, a:focus-visible {
 
 /* ---- Phase 5: the digest row and the trend charts ---- */
 
-.digest-row { text-decoration: none; color: var(--text); }
+.digest-row,
+.trends-row { text-decoration: none; color: var(--text); }
 .row-detail { flex: none; font: var(--type-body); color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 .trend-chart { margin: var(--space-4) 0 0; }

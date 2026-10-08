@@ -76,7 +76,8 @@ def run(data: Dict[str, pd.DataFrame]) -> List[Dict]:
     settings = ref.SETTINGS[max(versions)]
     nights = ref.build_nights(data['samples'], data['uploads'])
     baselines = ref.build_baselines(nights, settings)
-    status = ref.build_status(nights, baselines, data['uploads'], settings, data.get('today'))
+    status = ref.build_status(nights, baselines, data['uploads'], settings, data.get('today'),
+                              ref.stageless_nights(data['samples']))
     return [
         stage('nights', data['nights'], nights, ['night_date'], NIGHT_COLS),
         stage('normals', data['baselines'], baselines, ['night_date', 'metric'], BASE_COLS),

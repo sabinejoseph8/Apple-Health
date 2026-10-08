@@ -3,7 +3,7 @@ import { briefing, headline, learningLastNight } from '../../supabase/functions/
 import { wording } from '../../supabase/functions/_shared/wording'
 import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
-import { BellIcon, CalendarIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
+import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
@@ -25,7 +25,7 @@ const c = wording.card
 const s = wording.states
 
 // While a sync could arrive at any moment, the card checks again each minute.
-const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed']
+const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed', 'no_sleep_stages']
 
 // This phone's notifications: whether they can work here and are on (R34).
 export interface PushState {
@@ -199,6 +199,8 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
           <section className="list-card">
             <CheckinRow answer={data.checkin} onOpen={() => setCheckin('later')} />
             <DigestRow latest={data.latestDigest} now={now} />
+            {/* With no status there's no Why today, so the trends get their own row. */}
+            {model.state.kind !== 'status' && <TrendsRow />}
           </section>
         </>
       )}
@@ -227,6 +229,15 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
       )
     case 'night_unfinished':
       return <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} syncNow />
+    case 'no_sleep_stages':
+      return (
+        <NoStatus
+          pill={s.noSleepStages.pill}
+          headline={s.noSleepStages.headline}
+          lines={state.beforeNoon ? [s.noSleepStages.detail, s.noSleepStages.laterHint] : [s.noSleepStages.detail]}
+          syncNow={state.beforeNoon}
+        />
+      )
     case 'missed':
       return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} syncNow />
     case 'no_sync':
@@ -406,6 +417,25 @@ function DigestRow({ latest, now }: { latest: TodayData['latestDigest']; now: Da
       <CalendarIcon className="row-icon" />
       <span className="row-text">{d.row}</span>
       <span className="row-detail">{detail}</span>
+      <ChevronRightIcon className="chevron" />
+    </a>
+  )
+}
+
+// "See your trends" on a card without a status, which has no Why today link
+// to reach them from (Sabine, 8 October 2026).
+function TrendsRow() {
+  return (
+    <a
+      className="list-row trends-row"
+      href="#/trends"
+      onClick={(e) => {
+        e.preventDefault()
+        go('trends')
+      }}
+    >
+      <ChartIcon className="row-icon" />
+      <span className="row-text">{wording.trends.see}</span>
       <ChevronRightIcon className="chevron" />
     </a>
   )
