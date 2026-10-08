@@ -15,6 +15,13 @@ describe('past days', () => {
     expect(routeFrom('#/why')).toBe('why')
   })
 
+  it('ignores a date that does not exist', () => {
+    expect(dayFrom('#/day/2026-02-31')).toBeNull()
+    expect(routeFrom('#/day/2026-02-31')).toBe('today')
+    expect(routeFrom('#/day/2026-13-01')).toBe('today')
+    expect(dayFrom('#/day/2028-02-29')).toBe('2028-02-29')
+  })
+
   it('steps across months and years', () => {
     expect(addDays('2026-10-01', -1)).toBe('2026-09-30')
     expect(addDays('2026-12-31', 1)).toBe('2027-01-01')

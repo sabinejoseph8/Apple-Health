@@ -560,6 +560,12 @@
    "Review D86 with Sabine: whether nights the Watch records without stages should count toward the status"
   ]
  },
+ "p8-03": {
+  "phase": "8",
+  "texts": [
+   "Mark consent_version() stable instead of immutable, in the next release's database change"
+  ]
+ },
  "p8-07": {
   "phase": "8",
   "texts": [

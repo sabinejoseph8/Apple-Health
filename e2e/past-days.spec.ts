@@ -24,11 +24,30 @@ test('from Why today, Previous day opens yesterday, and Next day comes back to t
   await expect(page.getByText(wording.card.status.ready).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: p.decidedTitle, level: 2 })).toBeVisible()
   await expect(page.getByText(p.adds.ready)).toBeVisible()
+  // The reading cards speak of that night too (Sabine, 8 October 2026).
+  await expect(page.getByText(p.explainers.sleeping_hr)).toBeVisible()
+  await expect(page.getByText(p.chartEnd, { exact: true }).first()).toBeVisible()
+  await expect(page.getByText(/last night|yesterday/i)).toHaveCount(0)
   await page.getByRole('button', { name: p.next }).click()
   await expect(page.getByRole('heading', { name: 'Tuesday 29 September', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.why.lastNight, level: 2, exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.why.decided.title, level: 2 })).toBeVisible()
   await expect(page.getByRole('button', { name: p.next })).toHaveCount(0)
+})
+
+test('a past day with every panel open speaks of that night and that day, keeping the nudge it had', async ({ page }) => {
+  const fired = { ...ready28, status: 'ease_off', nudge: 'train_easy', composite_fired: true }
+  const insights = [...(whyTables.insights ?? []), { module: 'illness_check', metric: 'pattern', value: 3, severity: 'fired' }]
+  await openApp(page, { at: MORNING, tables: { ...days(fired, statusRow), insights }, path: '/#/day/2026-09-28' })
+  await expect(page.getByRole('heading', { name: 'Monday 28 September', level: 1 })).toBeVisible()
+  const closed = page.locator('button[aria-expanded="false"]')
+  await expect(closed.first()).toBeVisible()
+  while ((await closed.count()) > 0) await closed.first().click()
+  await expect(page.getByText(p.vsNormal).first()).toBeVisible()
+  await expect(page.getByText(p.total)).toBeVisible()
+  await expect(page.getByText(p.alsoChecked.fired)).toBeVisible()
+  const lines = (await page.locator('main').innerText()).split('\n').filter((l) => /today|yesterday|last night/i.test(l))
+  expect(lines).toEqual([wording.card.nudges.train_easy.action])
 })
 
 test('Previous day stops at the first day Clarivi has', async ({ page }) => {
@@ -56,12 +75,31 @@ test('a card without a status has a Previous days row, and Back returns to the c
   await expect(page.getByRole('heading', { name: wording.states.noSleepStages.headline })).toBeVisible()
 })
 
-test('a past day without a status shows why, as the card did', async ({ page }) => {
+test('a past day without a status shows why, said about that day', async ({ page }) => {
   const past = { ...noStages, date: '2026-09-28' }
   await openApp(page, { at: MORNING, tables: days(past, statusRow), path: '/#/day/2026-09-28' })
   await expect(page.getByText(wording.states.noSleepStages.pill)).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.states.noSleepStages.headline })).toBeVisible()
+  await expect(page.getByText(p.noStatus.noSleepStages)).toBeVisible()
+  await expect(page.getByText(wording.states.noSleepStages.detail)).toHaveCount(0)
 })
+
+// Each reason, said about that day, never about "today" or "last night".
+const pastReasons: [string, object, string, string | null][] = [
+  ['not enough data, no sleep', { no_status_reason: 'not_enough_data' }, p.noStatus.notEnoughData, p.noStatus.noSleep],
+  ['not enough data, too few readings', { no_status_reason: 'not_enough_data', points: { hrv: { value: 40 } } }, p.noStatus.notEnoughData, p.noStatus.tooFew],
+  ['a night that never finished arriving', { no_status_reason: 'night_unfinished' }, p.noStatus.notEnoughData, p.noStatus.unfinished],
+  ['still learning', { no_status_reason: 'learning' }, p.noStatus.learning, null],
+]
+for (const [name, change, headline, line] of pastReasons) {
+  test(`a past day without a status: ${name}`, async ({ page }) => {
+    const past = { ...noStages, ...change, date: '2026-09-28' }
+    await openApp(page, { at: MORNING, tables: days(past, statusRow), path: '/#/day/2026-09-28' })
+    await expect(page.getByRole('heading', { name: headline, level: 2 })).toBeVisible()
+    if (line) await expect(page.getByText(line)).toBeVisible()
+    await expect(page.getByText(/today|last night/i)).toHaveCount(0)
+  })
+}
 
 test('a card with a status keeps the way to past days in Why today', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: days(ready28, statusRow) })

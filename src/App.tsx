@@ -33,8 +33,11 @@ export default function App() {
     )
   }
   // The setup guide and "Your data" are for before signing in too (D78, D79).
-  if (route === 'guide') return <Guide />
-  if (route === 'privacy') return <Privacy />
+  // Once signed in, the signed-in app shows them itself, so it stays open
+  // behind them and Back returns to it as it was.
+  const signedIn = ready && screenFor(session) === 'home'
+  if (!signedIn && route === 'guide') return <Guide />
+  if (!signedIn && route === 'privacy') return <Privacy />
   if (!ready) return <main className="page" aria-busy="true" />
 
   switch (screenFor(session)) {

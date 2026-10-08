@@ -300,6 +300,39 @@ export const wording = {
     adds: { ready: "That day's points added up to ready.", ease_off: "That day's points added up to ease off.", rest: "That day's points added up to rest." },
     nothing: 'Clarivi has no readings for this day.',
     back: 'Back',
+    // A past day without a status: the card's reasons, said about that day
+    // (approved by Sabine, 8 October 2026). The pills stay the card's.
+    noStatus: {
+      noSleepStages: 'Clarivi needs the sleep stages your Watch records to work out your status, so there was no status that day.',
+      learning: 'Clarivi was still learning your usual levels',
+      notEnoughData: 'Not enough data that night',
+      noSleep: "Your Watch didn't record any sleep that night, so there was no status that day.",
+      tooFew: "Two or more of that night's readings were missing, so there was no status that day.",
+      unfinished: "That night's sleep hadn't arrived by noon, so there was no status that day.",
+    },
+    // The reading cards on a past day, where Why today says "last night"
+    // (approved by Sabine, 8 October 2026). The chart ends on that day.
+    missing: 'No reading that night',
+    chartEnd: 'That night',
+    explainers: {
+      sleeping_hr: 'Your heart rate while you were asleep that night. Higher than usual can be a sign of tiredness or strain. Measured in beats per minute (bpm).',
+    },
+    // The summary and Also checked on a past day, in place of Why today's
+    // "last night" and "yesterday" (approved by Sabine, 8 October 2026).
+    summary: {
+      summaryOff: (k: string, total: string, verb: string, dir: string) => `${k} of your ${total} recovery readings ${verb} ${dir} that night`,
+      summaryAllIn: { 3: 'All three of your recovery readings were in your usual range that night', 2: 'Both readings Clarivi could use were in your usual range that night' },
+      groupMissing: (name: string) => `Your Watch didn't record your ${name} that night.`,
+    },
+    alsoChecked: {
+      resting: (v: string) => `the previous day's resting heart rate (${v} bpm)`,
+      missingBreathing: 'There was no breathing rate reading that night.',
+      missingResting: 'There was no resting heart rate reading for the previous day.',
+      fired: 'Several of your overnight readings moved the wrong way together that night.',
+    },
+    // The numbers under a reading, and the points table.
+    vsNormal: 'That night vs usual',
+    total: "That day's total",
   },
 
   trends: {

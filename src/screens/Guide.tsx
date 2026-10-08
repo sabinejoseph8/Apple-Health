@@ -1,7 +1,7 @@
 import { wording } from '../../supabase/functions/_shared/wording'
 import NavBar from '../components/NavBar'
 import { SHORTCUT_URL } from '../lib/links'
-import { go } from '../lib/route'
+import AppLink from '../components/AppLink'
 
 const w = wording.guide
 
@@ -25,16 +25,9 @@ export default function Guide() {
             ))}
           </ol>
           {'withPrivacyLink' in section && (
-            <a
-              className="text-link"
-              href="#/privacy"
-              onClick={(e) => {
-                e.preventDefault()
-                go('privacy')
-              }}
-            >
+            <AppLink className="text-link" to="privacy">
               {wording.consent.guideLink}
-            </a>
+            </AppLink>
           )}
           {'withShortcutLink' in section && (
             <a className="primary button-link" href={SHORTCUT_URL} target="_blank" rel="noopener noreferrer">

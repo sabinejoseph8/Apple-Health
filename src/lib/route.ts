@@ -11,14 +11,18 @@ const ROUTES: Route[] = ['why', 'settings', 'trends', 'digest', 'owner', 'guide'
 const DAY = /^day\/(\d{4}-\d{2}-\d{2})$/
 
 export function routeFrom(hash: string): Route {
+  if (dayFrom(hash)) return 'day'
   const name = hash.replace(/^#\/?/, '')
-  if (DAY.test(name)) return 'day'
   return (ROUTES as string[]).includes(name) ? (name as Route) : 'today'
 }
 
-// The date of a past day's address, "2026-10-06", or null.
+// The date of a past day's address, "2026-10-06", or null, also for a date
+// that doesn't exist, such as 31 February.
 export function dayFrom(hash: string): string | null {
-  return hash.replace(/^#\/?/, '').match(DAY)?.[1] ?? null
+  const date = hash.replace(/^#\/?/, '').match(DAY)?.[1]
+  if (!date) return null
+  const d = new Date(`${date}T12:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === date ? date : null
 }
 
 // True while the current screen was opened from inside the app, so Back can
@@ -48,11 +52,12 @@ export function go(route: Route): void {
 }
 
 // A past day (D88). Stepping from one day to the next replaces the address,
-// so Back still returns to the screen the days were opened from.
+// so Back still returns to the screen the days were opened from (or to the
+// card, when the days were opened from a link).
 export function goDay(date: string, replace = false): void {
+  if (replace) return window.location.replace(`#/day/${date}`)
   openedInApp = true
-  if (replace) window.location.replace(`#/day/${date}`)
-  else window.location.hash = `/day/${date}`
+  window.location.hash = `/day/${date}`
 }
 
 // Back to the card: through the phone's history when the card opened this

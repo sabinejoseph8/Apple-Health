@@ -8,7 +8,7 @@ import { SYNC_NOW_URL } from '../lib/links'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
-import { go, goDay } from '../lib/route'
+import AppLink from '../components/AppLink'
 import { addDays } from '../lib/day'
 import {
   type CheckinAnswer,
@@ -26,7 +26,13 @@ const c = wording.card
 const s = wording.states
 
 // While a sync could arrive at any moment, the card checks again each minute.
-const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed', 'no_sleep_stages']
+// On a morning without sleep stages that's only until noon, when Sync now goes
+// too, as sleep in progress becomes not enough data at noon.
+const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed']
+function watching(state: CardState | undefined): boolean {
+  if (state?.kind === 'no_sleep_stages') return state.beforeNoon
+  return state !== undefined && WATCHING.includes(state.kind)
+}
 
 // This phone's notifications: whether they can work here and are on (R34).
 export interface PushState {
@@ -75,6 +81,7 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
 
   const model: CardModel | null = data ? selectCard({ ...data.inputs, now }) : null
   const kind = model?.state.kind
+  const watch = watching(model?.state)
 
   useEffect(() => {
     load()
@@ -90,11 +97,11 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
     const timer = window.setInterval(() => {
       if (document.visibilityState !== 'visible') return
       const t = new Date()
-      if ((kind && WATCHING.includes(kind)) || (shownDay && localDate(t) !== shownDay)) load()
+      if (watch || (shownDay && localDate(t) !== shownDay)) load()
       else setNow(t)
     }, 60_000)
     return () => window.clearInterval(timer)
-  }, [kind, shownDay, load])
+  }, [watch, shownDay, load])
 
   // Each card view is logged once per kind of card, never with health values
   // (R43); a card showing a status also records what it showed (D61).
@@ -300,17 +307,10 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
           <p className="nudge-detail">{nudge.detail}</p>
         </div>
       )}
-      <a
-        className="link-row"
-        href="#/why"
-        onClick={(e) => {
-          e.preventDefault()
-          go('why')
-        }}
-      >
+      <AppLink className="link-row" to="why">
         <span>{c.why[row.status]}</span>
         <ChevronRightIcon className="chevron" />
-      </a>
+      </AppLink>
     </section>
   )
 }
@@ -347,17 +347,10 @@ function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; he
 // "Open Settings" at the foot of a notice.
 function SettingsLink({ label }: { label: string }) {
   return (
-    <a
-      className="link-row"
-      href="#/settings"
-      onClick={(e) => {
-        e.preventDefault()
-        go('settings')
-      }}
-    >
+    <AppLink className="link-row" to="settings">
       <span>{label}</span>
       <ChevronRightIcon className="chevron" />
-    </a>
+    </AppLink>
   )
 }
 
@@ -409,19 +402,12 @@ function DigestRow({ latest, now }: { latest: TodayData['latestDigest']; now: Da
     ? d.rangeShort(shortDate(latest.week_start), shortDate(latest.week_end))
     : d.firstShort(shortDate(localDate(nextDigestDay(now))))
   return (
-    <a
-      className="list-row digest-row"
-      href="#/digest"
-      onClick={(e) => {
-        e.preventDefault()
-        go('digest')
-      }}
-    >
+    <AppLink className="list-row digest-row" to="digest">
       <CalendarIcon className="row-icon" />
       <span className="row-text">{d.row}</span>
       <span className="row-detail">{detail}</span>
       <ChevronRightIcon className="chevron" />
-    </a>
+    </AppLink>
   )
 }
 
@@ -429,36 +415,22 @@ function DigestRow({ latest, now }: { latest: TodayData['latestDigest']; now: Da
 // to reach them from (Sabine, 8 October 2026).
 function TrendsRow() {
   return (
-    <a
-      className="list-row trends-row"
-      href="#/trends"
-      onClick={(e) => {
-        e.preventDefault()
-        go('trends')
-      }}
-    >
+    <AppLink className="list-row trends-row" to="trends">
       <ChartIcon className="row-icon" />
       <span className="row-text">{wording.trends.see}</span>
       <ChevronRightIcon className="chevron" />
-    </a>
+    </AppLink>
   )
 }
 
 // "Previous days" on a card without a status: opens yesterday (D88).
 function PastDaysRow({ yesterday }: { yesterday: string }) {
   return (
-    <a
-      className="list-row past-days-row"
-      href={`#/day/${yesterday}`}
-      onClick={(e) => {
-        e.preventDefault()
-        goDay(yesterday)
-      }}
-    >
+    <AppLink className="list-row past-days-row" to={{ day: yesterday }}>
       <HistoryIcon className="row-icon" />
       <span className="row-text">{wording.pastDay.row}</span>
       <ChevronRightIcon className="chevron" />
-    </a>
+    </AppLink>
   )
 }
 

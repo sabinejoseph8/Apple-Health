@@ -81,7 +81,7 @@ type ShowProps = { dateText: string | null; row: StatusRow; why: WhyData; past: 
 
 function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
   if (row.status === 'none') return null
-  const summary = whySummary(row)
+  const summary = whySummary(row, past)
   const nudge = row.nudge ? wording.card.nudges[row.nudge].action : null
   return (
     <>
@@ -108,7 +108,7 @@ function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
         <h3 id="also-checked" className="card-title">
           {w.alsoChecked.title}
         </h3>
-        <p className="body">{alsoChecked(why.breathing, why.resting, why.illness).join(' ')}</p>
+        <p className="body">{alsoChecked(why.breathing, why.resting, why.illness, past).join(' ')}</p>
       </section>
 
       <h2 className="section-title">{past ? p.decidedTitle : w.decided.title}</h2>
@@ -145,7 +145,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         </h3>
         <span className="caption">{past ? p.thatNight : w.lastNight}</span>
       </div>
-      <p className="caption">{w.explainers[reading]}</p>
+      <p className="caption">{(past ? { ...w.explainers, ...p.explainers } : w.explainers)[reading]}</p>
 
       {value !== null && verdict !== 'missing' && (
         <div className="reading-values">
@@ -170,7 +170,11 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         {verdict === 'below' && <ArrowDownIcon />}
         {verdict === 'above' && <ArrowUpIcon />}
         {verdict === 'in_range' && <TickCircleIcon />}
-        {verdict === 'building' ? w.building(normal?.validNights ?? 0, needed) : w.verdicts[verdict]}
+        {verdict === 'building'
+          ? w.building(normal?.validNights ?? 0, needed)
+          : verdict === 'missing' && past
+            ? p.missing
+            : w.verdicts[verdict]}
       </p>
 
       <MiniChart
@@ -181,6 +185,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         high={high}
         outside={verdict === 'below' || verdict === 'above'}
         label={w.chart.label(w.names[reading])}
+        end={past ? p.chartEnd : w.chart.end}
       />
 
       {canShowNumbers && (
@@ -196,7 +201,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
                   <dd>{rangeText(reading, low!, high!)}</dd>
                 </div>
                 <div>
-                  <dt>{w.numbers.vsNormal}</dt>
+                  <dt>{past ? p.vsNormal : w.numbers.vsNormal}</dt>
                   <dd>{vsNormalText(reading, value!, normalValue!)}</dd>
                 </div>
                 {fourWeeksText(nights, value!) && (
@@ -256,7 +261,7 @@ function Decided({ row, zones, recorded, past }: { row: StatusRow; zones: Zones 
                 </tbody>
                 <tfoot>
                   <tr>
-                    <th scope="row">{d.total}</th>
+                    <th scope="row">{past ? p.total : d.total}</th>
                     <td>{totalText(row.total ?? 0, zones)}</td>
                   </tr>
                 </tfoot>
@@ -346,19 +351,10 @@ export function DayView({ date }: { date: string }) {
   )
 }
 
-// A past day without a status: why, as the card said it, then the readings
-// that arrived that night.
+// A day without a status: why, then the readings that arrived that night.
 function NoStatusDay({ row, why, past }: { row: StatusRow; why: WhyData; past: boolean }) {
-  const s = wording.states
   const anyValue = WHY_ORDER.some((r) => row.points[r]?.value !== null && row.points[r]?.value !== undefined)
-  const [pill, headline, detail] =
-    row.no_status_reason === 'no_sleep_stages'
-      ? [s.noSleepStages.pill, s.noSleepStages.headline, s.noSleepStages.detail]
-      : row.no_status_reason === 'learning'
-        ? [s.learning.pill, s.learning.headline, null]
-        : row.no_status_reason === 'night_unfinished'
-          ? [s.nightUnfinished.pill, s.nightUnfinished.headline, null]
-          : [s.notEnoughData.pill, s.notEnoughData.headline, anyValue ? s.notEnoughData.tooFew : s.notEnoughData.noSleep]
+  const [pill, headline, detail] = noStatusWords(row, anyValue, past)
   return (
     <>
       <section className="card summary">
@@ -378,4 +374,24 @@ function NoStatusDay({ row, why, past }: { row: StatusRow; why: WhyData; past: b
       )}
     </>
   )
+}
+
+// The pill, headline and line for a day without a status: as the card says
+// them today, or said about that day on a past day. A past night that never
+// finished arriving is simply not enough data, as the card says after noon.
+function noStatusWords(row: StatusRow, anyValue: boolean, past: boolean): [string, string, string | null] {
+  const s = wording.states
+  const n = p.noStatus
+  switch (row.no_status_reason) {
+    case 'no_sleep_stages':
+      return [s.noSleepStages.pill, s.noSleepStages.headline, past ? n.noSleepStages : s.noSleepStages.detail]
+    case 'learning':
+      return [s.learning.pill, past ? n.learning : s.learning.headline, null]
+    case 'night_unfinished':
+      if (past) return [s.notEnoughData.pill, n.notEnoughData, n.unfinished]
+      return [s.nightUnfinished.pill, s.nightUnfinished.headline, null]
+    default:
+      if (past) return [s.notEnoughData.pill, n.notEnoughData, anyValue ? n.tooFew : n.noSleep]
+      return [s.notEnoughData.pill, s.notEnoughData.headline, anyValue ? s.notEnoughData.tooFew : s.notEnoughData.noSleep]
+  }
 }

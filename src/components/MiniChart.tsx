@@ -18,6 +18,7 @@ export default function MiniChart({
   high,
   outside,
   label,
+  end = wording.why.chart.end,
 }: {
   reading: Reading
   nights: NightPoint[]
@@ -26,6 +27,8 @@ export default function MiniChart({
   high: number | null
   outside: boolean
   label: string
+  // The label under the chart's last night: "Last night", or "That night" on a past day.
+  end?: string
 }) {
   const values = nights.map((p) => p.value).filter((v): v is number => v !== null)
   const scale = [...values, ...[normal, low, high].filter((v): v is number => v !== null)]
@@ -77,7 +80,7 @@ export default function MiniChart({
       <figcaption className="mini-chart-labels">
         <span>{wording.why.chart.start}</span>
         {showBand && <span>{wording.why.chart.band}</span>}
-        <span>{wording.why.chart.end}</span>
+        <span>{end}</span>
       </figcaption>
     </figure>
   )

@@ -5,7 +5,9 @@ import { dayFrom, useRoute } from '../lib/route'
 import { endIfSignedOutElsewhere } from '../lib/session'
 import { noteNotificationTap } from '../lib/today'
 import Digest from './Digest'
+import Guide from './Guide'
 import Owner from './Owner'
+import Privacy from './Privacy'
 import Settings from './Settings'
 import Today, { type PushState } from './Today'
 import Trends from './Trends'
@@ -58,6 +60,10 @@ export default function SignedIn({ session }: { session: Session }) {
       return <Digest />
     case 'owner':
       return <Owner />
+    case 'guide':
+      return <Guide />
+    case 'privacy':
+      return <Privacy />
     case 'day': {
       // A past day (D88); keyed by date so stepping to another day reloads.
       const date = dayFrom(window.location.hash)
