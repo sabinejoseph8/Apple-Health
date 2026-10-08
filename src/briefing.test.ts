@@ -76,6 +76,9 @@ describe("Why today's other words", () => {
     expect(alsoChecked({ value: 14.8, verdict: 'in_range' }, { value: null, verdict: 'missing' }, 'not_run', true)).toContain(
       'There was no resting heart rate reading for the previous day.',
     )
+    expect(alsoChecked({ value: 17.2, verdict: 'above' }, { value: 64, verdict: 'above' }, 'fired', true)).toContain(
+      'Several of your overnight readings moved the wrong way together that night.',
+    )
   })
 
   it('writes sleep the way the design does', () => {

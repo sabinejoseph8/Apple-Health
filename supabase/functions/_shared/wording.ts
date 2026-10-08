@@ -328,7 +328,11 @@ export const wording = {
       resting: (v: string) => `the previous day's resting heart rate (${v} bpm)`,
       missingBreathing: 'There was no breathing rate reading that night.',
       missingResting: 'There was no resting heart rate reading for the previous day.',
+      fired: 'Several of your overnight readings moved the wrong way together that night.',
     },
+    // The numbers under a reading, and the points table.
+    vsNormal: 'That night vs usual',
+    total: "That day's total",
   },
 
   trends: {

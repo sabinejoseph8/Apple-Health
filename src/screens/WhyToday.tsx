@@ -201,7 +201,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
                   <dd>{rangeText(reading, low!, high!)}</dd>
                 </div>
                 <div>
-                  <dt>{w.numbers.vsNormal}</dt>
+                  <dt>{past ? p.vsNormal : w.numbers.vsNormal}</dt>
                   <dd>{vsNormalText(reading, value!, normalValue!)}</dd>
                 </div>
                 {fourWeeksText(nights, value!) && (
@@ -261,7 +261,7 @@ function Decided({ row, zones, recorded, past }: { row: StatusRow; zones: Zones 
                 </tbody>
                 <tfoot>
                   <tr>
-                    <th scope="row">{d.total}</th>
+                    <th scope="row">{past ? p.total : d.total}</th>
                     <td>{totalText(row.total ?? 0, zones)}</td>
                   </tr>
                 </tfoot>

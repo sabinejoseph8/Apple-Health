@@ -35,6 +35,21 @@ test('from Why today, Previous day opens yesterday, and Next day comes back to t
   await expect(page.getByRole('button', { name: p.next })).toHaveCount(0)
 })
 
+test('a past day with every panel open speaks of that night and that day, keeping the nudge it had', async ({ page }) => {
+  const fired = { ...ready28, status: 'ease_off', nudge: 'train_easy', composite_fired: true }
+  const insights = [...(whyTables.insights ?? []), { module: 'illness_check', metric: 'pattern', value: 3, severity: 'fired' }]
+  await openApp(page, { at: MORNING, tables: { ...days(fired, statusRow), insights }, path: '/#/day/2026-09-28' })
+  await expect(page.getByRole('heading', { name: 'Monday 28 September', level: 1 })).toBeVisible()
+  const closed = page.locator('button[aria-expanded="false"]')
+  await expect(closed.first()).toBeVisible()
+  while ((await closed.count()) > 0) await closed.first().click()
+  await expect(page.getByText(p.vsNormal).first()).toBeVisible()
+  await expect(page.getByText(p.total)).toBeVisible()
+  await expect(page.getByText(p.alsoChecked.fired)).toBeVisible()
+  const lines = (await page.locator('main').innerText()).split('\n').filter((l) => /today|yesterday|last night/i.test(l))
+  expect(lines).toEqual([wording.card.nudges.train_easy.action])
+})
+
 test('Previous day stops at the first day Clarivi has', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: days(ready28, statusRow), path: '/#/day/2026-09-28' })
   await expect(page.getByRole('heading', { name: 'Monday 28 September', level: 1 })).toBeVisible()
