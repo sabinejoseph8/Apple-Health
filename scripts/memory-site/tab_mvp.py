@@ -262,11 +262,12 @@ def build(doc):
     notes = [inl('**Format note.** ' + fn[:1].upper() + fn[1:], T)] if fn else []
     notes.append('Risk numbers here (R1 to R26) are the MVP\'s own and link within this tab; elsewhere on the site, R-numbers are '
                  'the product spec\'s requirements. Decision numbers (D1 onwards) link here from every tab.')
+    last_d = max(int(n) for s_ in doc['secs'] for n in re.findall(r'\*\*D(\d+)\*\*', '\n'.join(s_['lines'])))
     head = ('<header class="doc-head"><div class="eyebrow">MVP · <span class="mono">mvp.md</span></div>'
             '<h1 class="doc-title">Clarivi MVP</h1>'
             f'<p class="doc-sub">{esc(parts[0] if parts else "")}</p>'
             '<div class="doc-status"><span class="pill neutral">Kept up to date</span>'
-            '<span class="doc-ver">Every scoping decision made · D1 to D85</span></div><dl class="meta">'
+            f'<span class="doc-ver">Every scoping decision made · D1 to D{last_d}</span></div><dl class="meta">'
             + ''.join(f'<div class="meta-row"><dt>{esc(k)}</dt><dd>{v}</dd></div>' for k, v in rows) + '</dl>'
             + ''.join(f'<div class="callout info small">{n}</div>' for n in notes) + '</header>')
     toc, body = [], []

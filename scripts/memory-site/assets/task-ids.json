@@ -577,6 +577,12 @@
    "Apply the retention rule to testers' data (90 days after the test unless they agree otherwise)"
   ]
  },
+ "p8-08": {
+  "phase": "8",
+  "texts": [
+   "Review D86 with Sabine: whether nights the Watch records without stages should count toward the status"
+  ]
+ },
  "p8-07": {
   "phase": "8",
   "texts": [

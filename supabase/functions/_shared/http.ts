@@ -1,6 +1,6 @@
 // Shared helpers for the server functions: CORS for calls from the web app,
 // JSON replies, and the Supabase clients.
-import { createClient, type SupabaseClient, type User } from 'jsr:@supabase/supabase-js@2'
+import { createClient, type SupabaseClient, type User } from 'jsr:@supabase/supabase-js@2.117.2'
 
 export const MIN_PASSWORD_LENGTH = 12
 export const MAX_PASSWORD_LENGTH = 72

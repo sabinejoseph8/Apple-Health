@@ -1,7 +1,7 @@
 // Sets the user's own password on first sign-in and clears the
 // "must change password" flag in the same step, so the flag can only be
 // cleared once a new password is saved (tech-spec section 6).
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient } from 'jsr:@supabase/supabase-js@2.117.2'
 import {
   adminClient,
   corsHeaders,
