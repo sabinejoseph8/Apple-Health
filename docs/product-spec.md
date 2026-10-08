@@ -161,7 +161,7 @@
 - **R41** If a reading is missing, its card says "No reading last night", its chart shows a gap, and its points show as not counted.
 - **R42** If a reading's baseline is still building, its card shows the value and chart without the shaded range or a verdict, plus the number of nights collected.
 - **R43** Each opening of Why today is logged.
-  - Any past day opens the same way, as Why today for that date, with Previous day and Next day; from Why today's Previous day, or the "Previous days" row on a card without a status (D88, 8 October 2026). Opening a past day isn't logged.
+  - Any past day opens the same way, as Why today for that date, with Previous day and Next day; from Why today's Previous day, or the "Previous days" row on a card without a status (D88, 8 October 2026). Opening a past day isn't logged. A past day speaks of that night and that day, never "today", "last night" or "yesterday", except the nudge, which keeps the words that day had (Phase 6 review, 8 October 2026).
 
 ### Trend view
 - **R44** "See your trends" opens one chart per score reading. Each chart shows the normal range as a band and marks flagged nights. Default range: the last 8 weeks.
