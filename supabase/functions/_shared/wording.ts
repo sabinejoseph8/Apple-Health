@@ -310,6 +310,13 @@ export const wording = {
       tooFew: "Two or more of that night's readings were missing, so there was no status that day.",
       unfinished: "That night's sleep hadn't arrived by noon, so there was no status that day.",
     },
+    // The reading cards on a past day, where Why today says "last night"
+    // (approved by Sabine, 8 October 2026). The chart ends on that day.
+    missing: 'No reading that night',
+    chartEnd: 'That night',
+    explainers: {
+      sleeping_hr: 'Your heart rate while you were asleep that night. Higher than usual can be a sign of tiredness or strain. Measured in beats per minute (bpm).',
+    },
   },
 
   trends: {

@@ -145,7 +145,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         </h3>
         <span className="caption">{past ? p.thatNight : w.lastNight}</span>
       </div>
-      <p className="caption">{w.explainers[reading]}</p>
+      <p className="caption">{(past ? { ...w.explainers, ...p.explainers } : w.explainers)[reading]}</p>
 
       {value !== null && verdict !== 'missing' && (
         <div className="reading-values">
@@ -170,7 +170,11 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         {verdict === 'below' && <ArrowDownIcon />}
         {verdict === 'above' && <ArrowUpIcon />}
         {verdict === 'in_range' && <TickCircleIcon />}
-        {verdict === 'building' ? w.building(normal?.validNights ?? 0, needed) : w.verdicts[verdict]}
+        {verdict === 'building'
+          ? w.building(normal?.validNights ?? 0, needed)
+          : verdict === 'missing' && past
+            ? p.missing
+            : w.verdicts[verdict]}
       </p>
 
       <MiniChart
@@ -181,6 +185,7 @@ function ReadingCard({ reading, point, why, past }: { reading: Reading; point: R
         high={high}
         outside={verdict === 'below' || verdict === 'above'}
         label={w.chart.label(w.names[reading])}
+        end={past ? p.chartEnd : w.chart.end}
       />
 
       {canShowNumbers && (

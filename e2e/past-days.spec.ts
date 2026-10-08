@@ -24,6 +24,10 @@ test('from Why today, Previous day opens yesterday, and Next day comes back to t
   await expect(page.getByText(wording.card.status.ready).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: p.decidedTitle, level: 2 })).toBeVisible()
   await expect(page.getByText(p.adds.ready)).toBeVisible()
+  // The reading cards speak of that night too (Sabine, 8 October 2026).
+  await expect(page.getByText(p.explainers.sleeping_hr)).toBeVisible()
+  await expect(page.getByText(p.chartEnd, { exact: true }).first()).toBeVisible()
+  await expect(page.locator('.reading').getByText(/last night/i)).toHaveCount(0)
   await page.getByRole('button', { name: p.next }).click()
   await expect(page.getByRole('heading', { name: 'Tuesday 29 September', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.why.lastNight, level: 2, exact: true })).toBeVisible()
@@ -78,7 +82,7 @@ for (const [name, change, headline, line] of pastReasons) {
     await openApp(page, { at: MORNING, tables: days(past, statusRow), path: '/#/day/2026-09-28' })
     await expect(page.getByRole('heading', { name: headline, level: 2 })).toBeVisible()
     if (line) await expect(page.getByText(line)).toBeVisible()
-    await expect(page.locator('.summary').getByText(/today|last night/i)).toHaveCount(0)
+    await expect(page.getByText(/today|last night/i)).toHaveCount(0)
   })
 }
 
