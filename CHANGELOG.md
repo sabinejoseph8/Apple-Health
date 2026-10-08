@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to Clarivi. Releases are tagged in this repository (tech-spec, Deployment, step 7); during the four-week test the score logic and settings are frozen.
+All notable changes to Clarivi. Releases are tagged in this repository (tech-spec, Deployment, step 7); during the test the score logic and settings are frozen.
 
 ## v1.0.0 (draft, not yet tagged)
 
-The version the four-week test runs on. To be tagged once the dry run's fixes and Phase 6's code review are in, and the score settings are frozen after Sabine's self-test.
+The version the two-week test runs on (D89). To be tagged once Phase 6's code review is in and the score settings are frozen after Sabine's self-test.
 
 ### What Clarivi does
 

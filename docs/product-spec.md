@@ -261,18 +261,17 @@
 - On a night with a reading missing, the card says "Based on 2 of 3 readings"; with two missing, it says "Not enough data last night" and no notification arrives.
 - The morning card fits one screen on each tester's iPhone.
 
-**Test targets** (confirmed 29 September 2026; they must not change once results arrive. Written for four people over 28 days; to be revised for one person over two weeks before the test starts, D89)
-- **Sync:** each user has a successful morning sync on at least 26 of 28 days.
+**Test targets** (confirmed 29 September 2026 for four people over 28 days; revised 8 October 2026 for one person, Sabine, over two weeks, D89, before any test result; they must not change once results arrive)
+- **Sync:** a successful morning sync on at least 13 of 14 days (was 26 of 28 days for each user).
 - **Notifications:** delivered on at least 90% of synced days that have a status.
 - **Isolation:** no user ever sees another's data. No tolerance.
 - **Correctness:** the calculations match the reference check on the owner's year, and no unfinished night is ever scored.
 - **Signal, owner's year:** at least 2 in 3 objectively disrupted days would have been called Ease off or Rest.
 - **Quiet by default:** Ease off and Rest together on no more than about 1 day in 7.
-- **Signal, testers:** check-ins and status agree more often than chance, on days that have a status.
-- **Engagement:** each tester opens the card or taps the notification on at least 5 days a week.
+- **Signal, your check-ins:** your check-ins and your status agree more often than chance, on days that have a status (was the testers' check-ins).
+- **Engagement:** you open the card or tap the notification on at least 10 of 14 days (was 5 days a week for each tester).
 - **Action:** on change days, nudges are marked followed about half the time or more.
-- **Retention:** all three testers are still syncing and opening the card in week four.
-- **Conversations:** a short end-of-test conversation with each tester.
+- **Your account:** a short written account at the end: did Clarivi change a decision, what you ignored and why, whether you'd keep using it (in place of the testers' conversations). The retention target ("all three testers still using it in week four") is dropped.
 
 ---
 
@@ -335,7 +334,7 @@
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
 | Past days (8 Oct 2026) | Any past day opens as Why today for that date, with Previous day and Next day; reached from Why today, or a "Previous days" row on a card without a status (R43) |
 | No sleep stages (8 Oct 2026) | A night the Watch recorded without stages gets no status and its own card, "Your Watch didn't record sleep stages"; every card without a status has a "See your trends" row (R31, R44) |
-| Who tests (8 Oct 2026) | Sabine alone, for two weeks, instead of four people for four weeks (D89) |
+| Who tests (8 Oct 2026) | Sabine alone, for two weeks, instead of four people for four weeks; the targets revised to match before any result (section 9, D89) |
 | Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 
 ### Open questions (each with a recommended default)
