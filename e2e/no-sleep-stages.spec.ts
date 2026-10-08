@@ -40,6 +40,14 @@ test('a card without a status links to the trends', async ({ page }) => {
   await expect(page.getByRole('heading', { name: wording.trends.title, level: 1 })).toBeVisible()
 })
 
+test('the "Not enough data" card links to the trends too', async ({ page }) => {
+  const notEnough = { ...tables, daily_status: [{ ...tables.daily_status[0], no_status_reason: 'not_enough_data' }] }
+  await openApp(page, { at: '2026-09-29T12:10:00-05:00', tables: notEnough })
+  await expect(page.getByRole('heading', { name: wording.states.notEnoughData.headline })).toBeVisible()
+  await page.getByRole('link', { name: wording.trends.see }).click()
+  await expect(page.getByRole('heading', { name: wording.trends.title, level: 1 })).toBeVisible()
+})
+
 test('a card with a status keeps the trends in Why today, not on the card', async ({ page }) => {
   await openApp(page, { at: MORNING, tables: { ...answered, daily_status: [statusRow], uploads: synced } })
   await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible()
