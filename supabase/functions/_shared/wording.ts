@@ -300,6 +300,16 @@ export const wording = {
     adds: { ready: "That day's points added up to ready.", ease_off: "That day's points added up to ease off.", rest: "That day's points added up to rest." },
     nothing: 'Clarivi has no readings for this day.',
     back: 'Back',
+    // A past day without a status: the card's reasons, said about that day
+    // (approved by Sabine, 8 October 2026). The pills stay the card's.
+    noStatus: {
+      noSleepStages: 'Clarivi needs the sleep stages your Watch records to work out your status, so there was no status that day.',
+      learning: 'Clarivi was still learning your usual levels',
+      notEnoughData: 'Not enough data that night',
+      noSleep: "Your Watch didn't record any sleep that night, so there was no status that day.",
+      tooFew: "Two or more of that night's readings were missing, so there was no status that day.",
+      unfinished: "That night's sleep hadn't arrived by noon, so there was no status that day.",
+    },
   },
 
   trends: {

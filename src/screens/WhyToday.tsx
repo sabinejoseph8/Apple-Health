@@ -346,19 +346,10 @@ export function DayView({ date }: { date: string }) {
   )
 }
 
-// A past day without a status: why, as the card said it, then the readings
-// that arrived that night.
+// A day without a status: why, then the readings that arrived that night.
 function NoStatusDay({ row, why, past }: { row: StatusRow; why: WhyData; past: boolean }) {
-  const s = wording.states
   const anyValue = WHY_ORDER.some((r) => row.points[r]?.value !== null && row.points[r]?.value !== undefined)
-  const [pill, headline, detail] =
-    row.no_status_reason === 'no_sleep_stages'
-      ? [s.noSleepStages.pill, s.noSleepStages.headline, s.noSleepStages.detail]
-      : row.no_status_reason === 'learning'
-        ? [s.learning.pill, s.learning.headline, null]
-        : row.no_status_reason === 'night_unfinished'
-          ? [s.nightUnfinished.pill, s.nightUnfinished.headline, null]
-          : [s.notEnoughData.pill, s.notEnoughData.headline, anyValue ? s.notEnoughData.tooFew : s.notEnoughData.noSleep]
+  const [pill, headline, detail] = noStatusWords(row, anyValue, past)
   return (
     <>
       <section className="card summary">
@@ -378,4 +369,24 @@ function NoStatusDay({ row, why, past }: { row: StatusRow; why: WhyData; past: b
       )}
     </>
   )
+}
+
+// The pill, headline and line for a day without a status: as the card says
+// them today, or said about that day on a past day. A past night that never
+// finished arriving is simply not enough data, as the card says after noon.
+function noStatusWords(row: StatusRow, anyValue: boolean, past: boolean): [string, string, string | null] {
+  const s = wording.states
+  const n = p.noStatus
+  switch (row.no_status_reason) {
+    case 'no_sleep_stages':
+      return [s.noSleepStages.pill, s.noSleepStages.headline, past ? n.noSleepStages : s.noSleepStages.detail]
+    case 'learning':
+      return [s.learning.pill, past ? n.learning : s.learning.headline, null]
+    case 'night_unfinished':
+      if (past) return [s.notEnoughData.pill, n.notEnoughData, n.unfinished]
+      return [s.nightUnfinished.pill, s.nightUnfinished.headline, null]
+    default:
+      if (past) return [s.notEnoughData.pill, n.notEnoughData, anyValue ? n.tooFew : n.noSleep]
+      return [s.notEnoughData.pill, s.notEnoughData.headline, anyValue ? s.notEnoughData.tooFew : s.notEnoughData.noSleep]
+  }
 }
