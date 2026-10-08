@@ -693,3 +693,32 @@ a.settings-row {
   color: inherit;
   text-decoration: none;
 }
+
+/* ---- D88: past days ---- */
+
+/* A second button, in the Button tint, under a primary one. */
+.secondary {
+  min-height: 50px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--button-tint);
+  color: var(--button-blue);
+  font: 600 17px var(--font);
+  cursor: pointer;
+}
+
+.trends-row,
+.past-days-row { text-decoration: none; color: var(--text); }
+
+.day-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.day-nav .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}

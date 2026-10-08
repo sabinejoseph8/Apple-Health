@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 8 October 2026 (a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
+**Last updated:** 8 October 2026 (past days open as Why today for that date, R43; a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -161,6 +161,7 @@
 - **R41** If a reading is missing, its card says "No reading last night", its chart shows a gap, and its points show as not counted.
 - **R42** If a reading's baseline is still building, its card shows the value and chart without the shaded range or a verdict, plus the number of nights collected.
 - **R43** Each opening of Why today is logged.
+  - Any past day opens the same way, as Why today for that date, with Previous day and Next day; from Why today's Previous day, or the "Previous days" row on a card without a status (D88, 8 October 2026). Opening a past day isn't logged.
 
 ### Trend view
 - **R44** "See your trends" opens one chart per score reading. Each chart shows the normal range as a band and marks flagged nights. Default range: the last 8 weeks.
@@ -332,6 +333,7 @@
 | App icon (4 Oct 2026) | The open ring with a dot in its opening, white on deep violet (`#5B2A9E`) |
 | Sync now (5 Oct 2026) | While last night isn't in yet, before noon, the card offers Sync now, which runs the Shortcut in one tap; testers name their Shortcut Clarivi Sync during setup |
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
+| Past days (8 Oct 2026) | Any past day opens as Why today for that date, with Previous day and Next day; reached from Why today, or a "Previous days" row on a card without a status (R43) |
 | No sleep stages (8 Oct 2026) | A night the Watch recorded without stages gets no status and its own card, "Your Watch didn't record sleep stages"; every card without a status has a "See your trends" row (R31, R44) |
 | Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 

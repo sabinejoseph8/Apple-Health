@@ -1,17 +1,19 @@
-import { useEffect, useId, useState } from 'react'
+import { type ReactNode, useEffect, useId, useState } from 'react'
 import { alsoChecked, capitalise, type Reading, type ReadingPoints, WHY_ORDER, whySummary } from '../../supabase/functions/_shared/briefing'
 import { wording } from '../../supabase/functions/_shared/wording'
-import { ArrowDownIcon, ArrowUpIcon, HeartIcon, MoonIcon, PulseIcon, TickCircleIcon } from '../components/Icons'
+import { ArrowDownIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, MoonIcon, PulseIcon, TickCircleIcon } from '../components/Icons'
 import MiniChart, { cssName } from '../components/MiniChart'
 import { Loading, LoadFailed } from '../components/LoadState'
 import NavBar from '../components/NavBar'
-import { go } from '../lib/route'
+import { go, goDay } from '../lib/route'
+import { addDays, type DayData, loadDay } from '../lib/day'
 import { type CardState, selectCard, type StatusRow } from '../lib/card-state'
 import { loadStatusInputs, logUsage } from '../lib/today'
-import { dateLine, syncWhen } from '../lib/when'
+import { dateLine, localDate, syncWhen } from '../lib/when'
 import { bigValue, fourWeeksText, loadWhy, rangeText, shortValue, totalText, vsNormalText, type WhyData, zoneNumber, type Zones } from '../lib/why'
 
 const w = wording.why
+const p = wording.pastDay
 const ICONS: Record<Reading, typeof PulseIcon> = { hrv: PulseIcon, sleep: MoonIcon, sleeping_hr: HeartIcon }
 
 type Loaded = { now: Date; today: string; state: CardState; why: WhyData | null }
@@ -53,7 +55,17 @@ export default function WhyToday() {
       {!loaded && !failed && <Loading />}
       {!loaded && failed && <LoadFailed onRetry={load} />}
       {loaded && state?.kind === 'status' && status && loaded.why ? (
-        <StatusWhy now={loaded.now} state={state} row={state.row} why={loaded.why} />
+        <StatusWhy
+          dateText={state.syncedAt ? w.dateLine(dateLine(loaded.now), syncWhen(state.syncedAt, loaded.now)) : null}
+          row={state.row}
+          why={loaded.why}
+          past={false}
+          after={
+            <button className="secondary" type="button" onClick={() => goDay(addDays(loaded.today, -1))}>
+              {p.previous}
+            </button>
+          }
+        />
       ) : (
         loaded && (
           <section className="card">
@@ -65,13 +77,15 @@ export default function WhyToday() {
   )
 }
 
-function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardState, { kind: 'status' }>; row: StatusRow; why: WhyData }) {
+type ShowProps = { dateText: string | null; row: StatusRow; why: WhyData; past: boolean; after?: ReactNode }
+
+function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
   if (row.status === 'none') return null
   const summary = whySummary(row)
   const nudge = row.nudge ? wording.card.nudges[row.nudge].action : null
   return (
     <>
-      {state.syncedAt && <p className="caption date-line">{w.dateLine(dateLine(now), syncWhen(state.syncedAt, now))}</p>}
+      {dateText && <p className="caption date-line">{dateText}</p>}
 
       <section className="card summary" aria-labelledby="why-summary">
         <div className="status-row">
@@ -85,9 +99,9 @@ function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardSta
         <p className="body">{summary.body.join(' ')}</p>
       </section>
 
-      <h2 className="section-title">{w.lastNight}</h2>
+      <h2 className="section-title">{past ? p.thatNight : w.lastNight}</h2>
       {WHY_ORDER.map((r) => (
-        <ReadingCard key={r} reading={r} point={row.points[r]} why={why} />
+        <ReadingCard key={r} reading={r} point={row.points[r]} why={why} past={past} />
       ))}
 
       <section className="card also" aria-labelledby="also-checked">
@@ -97,17 +111,18 @@ function StatusWhy({ now, state, row, why }: { now: Date; state: Extract<CardSta
         <p className="body">{alsoChecked(why.breathing, why.resting, why.illness).join(' ')}</p>
       </section>
 
-      <h2 className="section-title">{w.decided.title}</h2>
-      <Decided row={row} zones={why.zones} recorded={why.normals.sleep?.validNights ?? null} />
+      <h2 className="section-title">{past ? p.decidedTitle : w.decided.title}</h2>
+      <Decided row={row} zones={why.zones} recorded={why.normals.sleep?.validNights ?? null} past={past} />
 
       <button className="primary" type="button" onClick={() => go('trends')}>
         {wording.trends.see}
       </button>
+      {after}
     </>
   )
 }
 
-function ReadingCard({ reading, point, why }: { reading: Reading; point: ReadingPoints | undefined; why: WhyData }) {
+function ReadingCard({ reading, point, why, past }: { reading: Reading; point: ReadingPoints | undefined; why: WhyData; past: boolean }) {
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const Icon = ICONS[reading]
@@ -128,7 +143,7 @@ function ReadingCard({ reading, point, why }: { reading: Reading; point: Reading
           <Icon />
           {w.titles[reading]}
         </h3>
-        <span className="caption">{w.lastNight}</span>
+        <span className="caption">{past ? p.thatNight : w.lastNight}</span>
       </div>
       <p className="caption">{w.explainers[reading]}</p>
 
@@ -201,7 +216,7 @@ function ReadingCard({ reading, point, why }: { reading: Reading; point: Reading
 }
 
 // How today's status is decided (R40): points and zones on tap, never the weights.
-function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null; recorded: number | null }) {
+function Decided({ row, zones, recorded, past }: { row: StatusRow; zones: Zones | null; recorded: number | null; past: boolean }) {
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const d = w.decided
@@ -212,7 +227,7 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
   return (
     <section className="card decided">
       <p className="body">
-        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {d.adds[row.status]}
+        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {past ? p.adds[row.status] : d.adds[row.status]}
       </p>
       {zones && (
         <>
@@ -249,7 +264,7 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
               <div className="zones">
                 {(['ready', 'ease_off', 'rest'] as const).map((z) => (
                   <div key={z} className={`zone${z === row.status ? ` zone-today zone-${z}` : ''}`}>
-                    {z === row.status && <span className="zone-tag">{d.today}</span>}
+                    {z === row.status && !past && <span className="zone-tag">{d.today}</span>}
                     <span className="zone-name">{d.zones[z]}</span>
                     <span className="zone-range">
                       {z === 'ready'
@@ -267,5 +282,100 @@ function Decided({ row, zones, recorded }: { row: StatusRow; zones: Zones | null
         </>
       )}
     </section>
+  )
+}
+
+// A past day (D88): Why today for that date, with the day as the title and
+// Previous day and Next day to step through. Opening one isn't logged, so the
+// test's engagement numbers stay as they are.
+export function DayView({ date }: { date: string }) {
+  const [data, setData] = useState<DayData | null>(null)
+  const [failed, setFailed] = useState(false)
+  const today = localDate(new Date())
+
+  async function load() {
+    try {
+      setData(await loadDay(date))
+      setFailed(false)
+    } catch {
+      setFailed(true)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [date])
+
+  const row = data?.row ?? null
+  const past = date < today
+  const title = dateLine(new Date(`${date}T12:00:00`))
+  const canBack = data ? data.earliest !== null && date > data.earliest : false
+  const canNext = date < today
+
+  return (
+    <main className="page why day">
+      <NavBar title={title} backLabel={p.back} />
+      {!data && !failed && <Loading />}
+      {!data && failed && <LoadFailed onRetry={load} />}
+      {data && !row && (
+        <section className="card">
+          <p className="body">{p.nothing}</p>
+        </section>
+      )}
+      {data && row && row.status !== 'none' && data.why && <StatusWhy dateText={null} row={row} why={data.why} past={past} />}
+      {data && row && row.status === 'none' && data.why && <NoStatusDay row={row} why={data.why} past={past} />}
+      {data && (canBack || canNext) && (
+        <nav className="day-nav" aria-label={title}>
+          {canBack ? (
+            <button className="text-link" type="button" onClick={() => goDay(addDays(date, -1), true)}>
+              <ChevronLeftIcon size={18} />
+              {p.previous}
+            </button>
+          ) : (
+            <span />
+          )}
+          {canNext && (
+            <button className="text-link" type="button" onClick={() => goDay(addDays(date, 1), true)}>
+              {p.next}
+              <ChevronRightIcon size={18} />
+            </button>
+          )}
+        </nav>
+      )}
+    </main>
+  )
+}
+
+// A past day without a status: why, as the card said it, then the readings
+// that arrived that night.
+function NoStatusDay({ row, why, past }: { row: StatusRow; why: WhyData; past: boolean }) {
+  const s = wording.states
+  const anyValue = WHY_ORDER.some((r) => row.points[r]?.value !== null && row.points[r]?.value !== undefined)
+  const [pill, headline, detail] =
+    row.no_status_reason === 'no_sleep_stages'
+      ? [s.noSleepStages.pill, s.noSleepStages.headline, s.noSleepStages.detail]
+      : row.no_status_reason === 'learning'
+        ? [s.learning.pill, s.learning.headline, null]
+        : row.no_status_reason === 'night_unfinished'
+          ? [s.nightUnfinished.pill, s.nightUnfinished.headline, null]
+          : [s.notEnoughData.pill, s.notEnoughData.headline, anyValue ? s.notEnoughData.tooFew : s.notEnoughData.noSleep]
+  return (
+    <>
+      <section className="card summary">
+        <div className="status-row">
+          <span className="pill pill-neutral">{pill}</span>
+        </div>
+        <h2 className="summary-title">{headline}</h2>
+        {detail && <p className="body">{detail}</p>}
+      </section>
+      {anyValue && (
+        <>
+          <h2 className="section-title">{past ? p.thatNight : w.lastNight}</h2>
+          {WHY_ORDER.map((r) => (
+            <ReadingCard key={r} reading={r} point={row.points[r]} why={why} past={past} />
+          ))}
+        </>
+      )}
+    </>
   )
 }

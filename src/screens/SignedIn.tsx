@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { currentPushSupport, refreshSubscription } from '../lib/push'
-import { useRoute } from '../lib/route'
+import { dayFrom, useRoute } from '../lib/route'
 import { endIfSignedOutElsewhere } from '../lib/session'
 import { noteNotificationTap } from '../lib/today'
 import Digest from './Digest'
@@ -9,7 +9,7 @@ import Owner from './Owner'
 import Settings from './Settings'
 import Today, { type PushState } from './Today'
 import Trends from './Trends'
-import WhyToday from './WhyToday'
+import WhyToday, { DayView } from './WhyToday'
 
 // The signed-in app: the card, Why today and Settings.
 export default function SignedIn({ session }: { session: Session }) {
@@ -58,5 +58,10 @@ export default function SignedIn({ session }: { session: Session }) {
       return <Digest />
     case 'owner':
       return <Owner />
+    case 'day': {
+      // A past day (D88); keyed by date so stepping to another day reloads.
+      const date = dayFrom(window.location.hash)
+      return date ? <DayView key={date} date={date} /> : <Today push={push} fromFollowUp={fromFollowUp} />
+    }
   }
 }

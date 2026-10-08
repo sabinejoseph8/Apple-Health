@@ -3,12 +3,13 @@ import { briefing, headline, learningLastNight } from '../../supabase/functions/
 import { wording } from '../../supabase/functions/_shared/wording'
 import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
-import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, WarningIcon } from '../components/Icons'
+import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
-import { go } from '../lib/route'
+import { go, goDay } from '../lib/route'
+import { addDays } from '../lib/day'
 import {
   type CheckinAnswer,
   loadToday,
@@ -201,6 +202,8 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
             <DigestRow latest={data.latestDigest} now={now} />
             {/* With no status there's no Why today, so the trends get their own row. */}
             {model.state.kind !== 'status' && <TrendsRow />}
+            {/* And a way to the days before (D88); a card with a status has Previous day on Why today. */}
+            {model.state.kind !== 'status' && <PastDaysRow yesterday={addDays(data.inputs.today, -1)} />}
           </section>
         </>
       )}
@@ -436,6 +439,24 @@ function TrendsRow() {
     >
       <ChartIcon className="row-icon" />
       <span className="row-text">{wording.trends.see}</span>
+      <ChevronRightIcon className="chevron" />
+    </a>
+  )
+}
+
+// "Previous days" on a card without a status: opens yesterday (D88).
+function PastDaysRow({ yesterday }: { yesterday: string }) {
+  return (
+    <a
+      className="list-row past-days-row"
+      href={`#/day/${yesterday}`}
+      onClick={(e) => {
+        e.preventDefault()
+        goDay(yesterday)
+      }}
+    >
+      <HistoryIcon className="row-icon" />
+      <span className="row-text">{wording.pastDay.row}</span>
       <ChevronRightIcon className="chevron" />
     </a>
   )
