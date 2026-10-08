@@ -461,4 +461,5 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [ ] Build the main demo story: one week from your data where the tool flagged something early, starting from Apple Health's plain numbers
 - [ ] Build the appendix: arithmetic, trends, the SQL-versus-pandas check, the disrupted-day check, every target and its result, limitations, and the causal layer as a worked method
 - [ ] Apply the retention rule to testers' data (90 days after the test unless they agree otherwise)
+- [ ] Review D86 with Sabine: whether nights the Watch records without stages should count toward the status (asked for by Sabine, 8 October 2026; look at how often testers had such nights)
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run the full test suite
