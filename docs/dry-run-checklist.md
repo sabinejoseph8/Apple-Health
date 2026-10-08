@@ -43,6 +43,7 @@ Go through the guide with them. Points that trip people up:
 - The **automations**: Run Immediately, a Text action with exactly `charger` or `app`, then Run Shortcut with that Text as input.
 - **Notification previews: When Unlocked**, if they'd rather keep their status off the lock screen.
 - **A locked run waits for a tap:** if the lock screen shows "Find Health Samples Where: Tap to run", unlock and tap Continue, or that run sends nothing (seen on Sabine's iPhone, 5 and 7 October 2026).
+- **If they ever remove Clarivi from the Home Screen and add it back,** they turn notifications on again in Settings: the card says "Notifications are off on this phone" until they do (seen on Sabine's iPhone, 8 October 2026).
 - **The first Sync now** asks "Allow Clarivi Sync to output 1 text item?": Always Allow (the item is only today's date; seen on Sabine's iPhone, 6 October 2026).
 
 At the end, check together: the card shows (or "Learning your normal"), Settings says they agreed, "Send a test notification" arrives.
