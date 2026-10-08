@@ -34,6 +34,22 @@ test('after noon it says the same, without Sync now', async ({ page }) => {
   await expect(page.getByRole('link', { name: wording.card.syncNow })).toHaveCount(0)
 })
 
+test('checks again each minute until noon, then stops, like sleep in progress', async ({ page }) => {
+  const app = await openApp(page, { at: '2026-09-29T11:58:30-05:00', tables, ticking: true })
+  const reads = () => app.reads.filter((r) => r === 'daily_status').length
+  await expect(page.getByRole('link', { name: wording.card.syncNow })).toBeVisible()
+  const opened = reads()
+  await page.clock.fastForward('01:00')
+  await expect.poll(reads).toBeGreaterThan(opened)
+  // Past noon: Sync now goes, and the minute checks stop.
+  await page.clock.fastForward('01:00')
+  await expect(page.getByRole('link', { name: wording.card.syncNow })).toHaveCount(0)
+  const atNoon = reads()
+  await page.clock.fastForward('03:00')
+  await expect(page.getByRole('heading', { name: s.headline })).toBeVisible()
+  expect(reads()).toBe(atNoon)
+})
+
 test('a card without a status links to the trends', async ({ page }) => {
   await openApp(page, { at: MORNING, tables })
   await page.getByRole('link', { name: wording.trends.see }).click()

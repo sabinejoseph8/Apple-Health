@@ -34,6 +34,7 @@ NO_STATUS = {
     'learning': 'No status: still learning your normal.',
     'waiting': "No status yet: waiting for this morning's sync.",
     'no_sync': 'No status: nothing synced by noon.',
+    'no_sleep_stages': "No status: your Watch didn't record sleep stages last night.",
 }
 NUDGE = {'train_as_planned': 'Train as planned', 'train_easy': 'Train easy today', 'rest': 'Rest today',
          'prioritise_sleep': 'Prioritise sleep tonight'}

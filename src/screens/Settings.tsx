@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 import { ChevronRightIcon } from '../components/Icons'
 import NavBar from '../components/NavBar'
-import { go } from '../lib/route'
+import AppLink from '../components/AppLink'
 import AccountSettings from './AccountSettings'
 import ConsentSettings from './ConsentSettings'
 import UploadToken from './UploadToken'
@@ -92,17 +92,10 @@ export default function Settings({ session }: { session: Session }) {
         <p className="emphasis">{session.user.email}</p>
         {isOwner && <span className="pill">{wording.home.owner}</span>}
         {isOwner && (
-          <a
-            className="link-row"
-            href="#/owner"
-            onClick={(e) => {
-              e.preventDefault()
-              go('owner')
-            }}
-          >
+          <AppLink className="link-row" to="owner">
             <span>{wording.owner.link}</span>
             <ChevronRightIcon className="chevron" />
-          </a>
+          </AppLink>
         )}
       </section>
 

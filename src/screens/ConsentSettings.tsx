@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
 import { ChevronRightIcon } from '../components/Icons'
 import { CONSENT_CHANGED, type Consent, loadConsent } from '../lib/consent'
-import { go } from '../lib/route'
+import AppLink from '../components/AppLink'
 import { localDate, longDate } from '../lib/when'
 import { PasswordConfirm } from './AccountSettings'
 
@@ -41,17 +41,10 @@ export default function ConsentSettings() {
       </h2>
       {agreed && <p className="caption">{w.agreedOn(`${longDate(localDate(agreed))} ${agreed.getFullYear()}`)}</p>}
       <div className="settings-list">
-        <a
-          className="settings-row"
-          href="#/privacy"
-          onClick={(e) => {
-            e.preventDefault()
-            go('privacy')
-          }}
-        >
+        <AppLink className="settings-row" to="privacy">
           <span>{w.read}</span>
           <ChevronRightIcon className="chevron" />
-        </a>
+        </AppLink>
         <button className="settings-row danger" type="button" onClick={() => setWithdrawing(true)}>
           <span>{w.withdraw}</span>
           <ChevronRightIcon className="chevron" />

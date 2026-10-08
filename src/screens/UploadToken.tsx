@@ -3,7 +3,7 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import { ChevronRightIcon } from '../components/Icons'
 import { callFunction } from '../lib/functions'
 import { SHORTCUT_URL } from '../lib/links'
-import { go } from '../lib/route'
+import AppLink from '../components/AppLink'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 
@@ -126,17 +126,14 @@ export default function UploadToken() {
         <span>{w.getShortcut}</span>
         <ChevronRightIcon className="chevron" />
       </a>
-      <a
-        className="link-row"
-        href="#/guide"
-        onClick={(e) => {
-          e.preventDefault()
-          go('guide')
-        }}
-      >
-        <span>{w.guide}</span>
-        <ChevronRightIcon className="chevron" />
-      </a>
+      {/* Not while a new token is on screen: it's shown only once, and leaving
+          Settings for the guide would lose it. */}
+      {!token && (
+        <AppLink className="link-row" to="guide">
+          <span>{w.guide}</span>
+          <ChevronRightIcon className="chevron" />
+        </AppLink>
+      )}
     </section>
   )
 }
