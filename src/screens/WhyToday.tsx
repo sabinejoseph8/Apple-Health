@@ -111,7 +111,7 @@ function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
         <p className="body">{alsoChecked(why.breathing, why.resting, why.illness).join(' ')}</p>
       </section>
 
-      <h2 className="section-title">{w.decided.title}</h2>
+      <h2 className="section-title">{past ? p.decidedTitle : w.decided.title}</h2>
       <Decided row={row} zones={why.zones} recorded={why.normals.sleep?.validNights ?? null} past={past} />
 
       <button className="primary" type="button" onClick={() => go('trends')}>
@@ -227,7 +227,7 @@ function Decided({ row, zones, recorded, past }: { row: StatusRow; zones: Zones 
   return (
     <section className="card decided">
       <p className="body">
-        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {d.adds[row.status]}
+        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {past ? p.adds[row.status] : d.adds[row.status]}
       </p>
       {zones && (
         <>

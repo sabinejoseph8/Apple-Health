@@ -296,6 +296,8 @@ export const wording = {
     previous: 'Previous day',
     next: 'Next day',
     thatNight: 'That night',
+    decidedTitle: 'How the status was decided',
+    adds: { ready: "That day's points added up to ready.", ease_off: "That day's points added up to ease off.", rest: "That day's points added up to rest." },
     nothing: 'Clarivi has no readings for this day.',
     back: 'Back',
   },

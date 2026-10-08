@@ -22,9 +22,12 @@ test('from Why today, Previous day opens yesterday, and Next day comes back to t
   await expect(page.getByRole('heading', { name: 'Monday 28 September', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: p.thatNight, level: 2, exact: true })).toBeVisible()
   await expect(page.getByText(wording.card.status.ready).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: p.decidedTitle, level: 2 })).toBeVisible()
+  await expect(page.getByText(p.adds.ready)).toBeVisible()
   await page.getByRole('button', { name: p.next }).click()
   await expect(page.getByRole('heading', { name: 'Tuesday 29 September', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.why.lastNight, level: 2, exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: wording.why.decided.title, level: 2 })).toBeVisible()
   await expect(page.getByRole('button', { name: p.next })).toHaveCount(0)
 })
 
