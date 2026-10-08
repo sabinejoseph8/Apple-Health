@@ -81,7 +81,7 @@ type ShowProps = { dateText: string | null; row: StatusRow; why: WhyData; past: 
 
 function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
   if (row.status === 'none') return null
-  const summary = whySummary(row)
+  const summary = whySummary(row, past)
   const nudge = row.nudge ? wording.card.nudges[row.nudge].action : null
   return (
     <>
@@ -108,7 +108,7 @@ function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
         <h3 id="also-checked" className="card-title">
           {w.alsoChecked.title}
         </h3>
-        <p className="body">{alsoChecked(why.breathing, why.resting, why.illness).join(' ')}</p>
+        <p className="body">{alsoChecked(why.breathing, why.resting, why.illness, past).join(' ')}</p>
       </section>
 
       <h2 className="section-title">{past ? p.decidedTitle : w.decided.title}</h2>

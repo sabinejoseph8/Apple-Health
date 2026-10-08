@@ -198,9 +198,10 @@ export interface AlsoReading {
 
 // "Also checked" on Why today (R39): breathing rate while asleep, yesterday's
 // resting heart rate and the illness check. The design's words when both are
-// normal and the check found nothing.
-export function alsoChecked(breathing: AlsoReading, resting: AlsoReading, illness: IllnessCheck): string[] {
-  const a = wording.why.alsoChecked
+// normal and the check found nothing. A past day says "that night" and "the
+// previous day" instead (D88).
+export function alsoChecked(breathing: AlsoReading, resting: AlsoReading, illness: IllnessCheck, past = false): string[] {
+  const a = past ? { ...wording.why.alsoChecked, ...wording.pastDay.alsoChecked } : wording.why.alsoChecked
   const shown = (r: AlsoReading) => r.value !== null && r.verdict !== null && r.verdict !== 'missing'
   const breath = shown(breathing) ? capitalise(a.breathing(breathing.value!.toFixed(1))) : null
   const rest = shown(resting) ? a.resting(String(Math.round(resting.value!))) : null
@@ -225,9 +226,9 @@ export function alsoChecked(breathing: AlsoReading, resting: AlsoReading, illnes
 }
 
 // Why today's summary (R36): how many readings were outside the normal range,
-// then one sentence per group of readings.
-export function whySummary(day: DayWords): { headline: string; body: string[] } {
-  const w = wording.why
+// then one sentence per group of readings. A past day says "that night" (D88).
+export function whySummary(day: DayWords, past = false): { headline: string; body: string[] } {
+  const w = past ? { ...wording.why, ...wording.pastDay.summary } : wording.why
   const counted = WHY_ORDER.filter((r) => {
     const v = day.points[r]?.verdict
     return v !== undefined && v !== 'missing' && v !== 'building'

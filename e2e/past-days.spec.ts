@@ -27,7 +27,7 @@ test('from Why today, Previous day opens yesterday, and Next day comes back to t
   // The reading cards speak of that night too (Sabine, 8 October 2026).
   await expect(page.getByText(p.explainers.sleeping_hr)).toBeVisible()
   await expect(page.getByText(p.chartEnd, { exact: true }).first()).toBeVisible()
-  await expect(page.locator('.reading').getByText(/last night/i)).toHaveCount(0)
+  await expect(page.getByText(/last night|yesterday/i)).toHaveCount(0)
   await page.getByRole('button', { name: p.next }).click()
   await expect(page.getByRole('heading', { name: 'Tuesday 29 September', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: wording.why.lastNight, level: 2, exact: true })).toBeVisible()

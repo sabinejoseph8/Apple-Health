@@ -317,6 +317,18 @@ export const wording = {
     explainers: {
       sleeping_hr: 'Your heart rate while you were asleep that night. Higher than usual can be a sign of tiredness or strain. Measured in beats per minute (bpm).',
     },
+    // The summary and Also checked on a past day, in place of Why today's
+    // "last night" and "yesterday" (approved by Sabine, 8 October 2026).
+    summary: {
+      summaryOff: (k: string, total: string, verb: string, dir: string) => `${k} of your ${total} recovery readings ${verb} ${dir} that night`,
+      summaryAllIn: { 3: 'All three of your recovery readings were in your usual range that night', 2: 'Both readings Clarivi could use were in your usual range that night' },
+      groupMissing: (name: string) => `Your Watch didn't record your ${name} that night.`,
+    },
+    alsoChecked: {
+      resting: (v: string) => `the previous day's resting heart rate (${v} bpm)`,
+      missingBreathing: 'There was no breathing rate reading that night.',
+      missingResting: 'There was no resting heart rate reading for the previous day.',
+    },
   },
 
   trends: {

@@ -67,6 +67,17 @@ describe("Why today's other words", () => {
     ])
   })
 
+  it('on a past day, speaks of that night and the previous day (D88)', () => {
+    expect(alsoChecked({ value: null, verdict: 'missing' }, { value: 58, verdict: 'above' }, 'not_run', true)).toEqual([
+      'There was no breathing rate reading that night.',
+      "The previous day's resting heart rate (58 bpm) was above your usual range.",
+      "There weren't enough readings to check how they moved together.",
+    ])
+    expect(alsoChecked({ value: 14.8, verdict: 'in_range' }, { value: null, verdict: 'missing' }, 'not_run', true)).toContain(
+      'There was no resting heart rate reading for the previous day.',
+    )
+  })
+
   it('writes sleep the way the design does', () => {
     expect(formatDuration(430)).toBe('7h 10m')
     expect(formatDuration(45)).toBe('45m')
@@ -100,6 +111,9 @@ describe('other days', () => {
     expect(briefing(day).join(' ')).toContain("your Watch didn't record your heart rate variability")
     expect(whySummary(day).headline).toBe('One of your two recovery readings was low last night')
     expect(whySummary(day).body).toContain("Your Watch didn't record your heart rate variability last night.")
+    // On a past day (D88), the same said about that night.
+    expect(whySummary(day, true).headline).toBe('One of your two recovery readings was low that night')
+    expect(whySummary(day, true).body).toContain("Your Watch didn't record your heart rate variability that night.")
   })
 
   it('reads as calm on a normal day', () => {
@@ -118,6 +132,7 @@ describe('other days', () => {
     ])
     expect(morningNotification(day)).toBe('Ready today: your readings are in your usual range')
     expect(whySummary(day).headline).toBe('All three of your recovery readings were in your usual range last night')
+    expect(whySummary(day, true).headline).toBe('All three of your recovery readings were in your usual range that night')
   })
 
   it('leads with sleep when sleep earns the most points on a sleep-led day', () => {
