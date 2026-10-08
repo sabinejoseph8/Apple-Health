@@ -28,9 +28,9 @@ What is the main thing the user should be able to do?
 Load their Apple Health export and get back a personal dashboard that flags meaningful changes in their own data
 and shows how their metrics move together over time.
 
-[
-](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe)
 What outcome do you want to help the user achieve?
 
 Earlier, evidence-based awareness of their own recovery and readiness state, so training and lifestyle adjustments
 are driven by their own data rather than generic guidance.
+
+[View Clarivi project artifatcs](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe)
