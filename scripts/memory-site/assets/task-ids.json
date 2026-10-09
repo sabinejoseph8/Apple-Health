@@ -514,6 +514,7 @@
  "p7-05": {
   "phase": "7",
   "texts": [
+   "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out). Decided early: Sabine moved the project to Pro on 9 October 2026, before the test (D90); daily backups kept for 7 days, no pausing, the 30-day sign-out switched on the same day, and the owner page counts against 8 GB",
    "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out)"
   ]
  },
