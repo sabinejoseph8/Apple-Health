@@ -1,6 +1,6 @@
 # Clarivi
 
-Clarivi is a small iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a two-week test with one user, Sabine (the owner), since 8 October 2026 (D89; first planned as four weeks with Sabine and three testers).
+Clarivi is a small iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a one-week test with one user, Sabine (the owner), since 8 October 2026 (D89, shortened from two weeks to one by D91; first planned as four weeks with Sabine and three testers).
 
 ## Where the plan lives
 
@@ -69,7 +69,7 @@ Update this file whenever there is a significant new feature, a major bug resolv
 
 - Live project: "Clarivi", ref `vuynnnrijdbvamwfauog`, Pro plan since 9 October 2026 (D90; free before), in US East (`us-east-1`). It replaced the earlier US West project (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
 - Build and test every database change on the local copy first (`supabase start`, which needs Docker Desktop running). Keep migrations in `supabase/migrations/`.
-- Apply changes to the live project only at release, in a backward-compatible way, and only after asking Sabine. During the two-week test, take a backup first.
+- Apply changes to the live project only at release, in a backward-compatible way, and only after asking Sabine. During the one-week test, take a backup first.
 - Every table has row-level security. Never turn it off.
 
 ## Safety rules

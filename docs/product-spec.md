@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 9 October 2026 (the 30-day sign-out on, with Supabase Pro, D90. 8 October: Sabine is the only tester, for two weeks, D89; past days open as Why today for that date, R43; a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
+**Last updated:** 9 October 2026 (the test shortened to one week, with the targets re-scaled before any result, D91; the 30-day sign-out on, with Supabase Pro, D90. 8 October: Sabine is the only tester, for two weeks, D89; past days open as Why today for that date, R43; a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -17,7 +17,7 @@
 
 **Who it is for.** Apple Watch users who train regularly, wear the watch overnight, and want to understand their numbers rather than read isolated daily values.
 
-**v1 (the MVP).** One person, Sabine (the owner), for a two-week test (D89, 8 October 2026; first planned as four people, Sabine plus three testers, for four weeks). The test checks three things:
+**v1 (the MVP).** One person, Sabine (the owner), for a one-week test (D91, 9 October 2026; first two weeks, D89, 8 October; first planned as four people, Sabine plus three testers, for four weeks). The test checks three things:
 - **Feasibility:** data reaches the tool reliably every morning.
 - **Signal:** the status flags days that were really off and stays quiet on normal days.
 - **Value:** the nudge changes a decision at least some of the time.
@@ -261,16 +261,16 @@
 - On a night with a reading missing, the card says "Based on 2 of 3 readings"; with two missing, it says "Not enough data last night" and no notification arrives.
 - The morning card fits one screen on each tester's iPhone.
 
-**Test targets** (confirmed 29 September 2026 for four people over 28 days; revised 8 October 2026 for one person, Sabine, over two weeks, D89, before any test result; they must not change once results arrive)
-- **Sync:** a successful morning sync on at least 13 of 14 days (was 26 of 28 days for each user).
+**Test targets** (confirmed 29 September 2026 for four people over 28 days; revised 8 October 2026 for one person, Sabine, over two weeks, D89, and again 9 October 2026 over one week, D91, before any test result; they must not change once results arrive)
+- **Sync:** a successful morning sync on at least 6 of 7 days (was 13 of 14, D89; first 26 of 28 days for each user).
 - **Notifications:** delivered on at least 90% of synced days that have a status.
 - **Isolation:** no user ever sees another's data. No tolerance.
 - **Correctness:** the calculations match the reference check on the owner's year, and no unfinished night is ever scored.
 - **Signal, owner's year:** at least 2 in 3 objectively disrupted days would have been called Ease off or Rest.
-- **Quiet by default:** Ease off and Rest together on no more than about 1 day in 7.
+- **Quiet by default:** Ease off and Rest together on no more than about 1 day in 7. Over one week this is indicative only: a single change day moves it a lot (D91).
 - **Signal, your check-ins:** your check-ins and your status agree more often than chance, on days that have a status (was the testers' check-ins).
-- **Engagement:** you open the card or tap the notification on at least 10 of 14 days (was 5 days a week for each tester).
-- **Action:** on change days, nudges are marked followed about half the time or more.
+- **Engagement:** you open the card or tap the notification on at least 5 of 7 days (was 10 of 14, D89; first 5 days a week for each tester).
+- **Action:** on change days, nudges are marked followed about half the time or more. Over one week there may be few change days, so this is indicative only (D91).
 - **Your account:** a short written account at the end: did Clarivi change a decision, what you ignored and why, whether you'd keep using it (in place of the testers' conversations). The retention target ("all three testers still using it in week four") is dropped.
 
 ---
@@ -334,7 +334,7 @@
 | Withdrawing consent (4 Oct 2026) | Settings has Withdraw consent: after the password, everything is deleted as Delete my data does, the withdrawal is recorded, and using Clarivi again means agreeing again |
 | Past days (8 Oct 2026) | Any past day opens as Why today for that date, with Previous day and Next day; reached from Why today, or a "Previous days" row on a card without a status (R43) |
 | No sleep stages (8 Oct 2026) | A night the Watch recorded without stages gets no status and its own card, "Your Watch didn't record sleep stages"; every card without a status has a "See your trends" row (R31, R44) |
-| Who tests (8 Oct 2026) | Sabine alone, for two weeks, instead of four people for four weeks; the targets revised to match before any result (section 9, D89) |
+| Who tests (8 Oct 2026, 9 Oct 2026) | Sabine alone, for one week (first two weeks, D89, 8 October; D91, 9 October), instead of four people for four weeks; the targets re-scaled to match before any result (section 9) |
 | Your data (4 Oct 2026) | The consent text is also a public page, "Your data", readable without signing in from the setup guide and Settings, as Clarivi's privacy policy; it names Sabine as the person in charge, with a contact address just for Clarivi |
 
 ### Open questions (each with a recommended default)
