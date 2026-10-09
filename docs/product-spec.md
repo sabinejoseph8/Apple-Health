@@ -1,7 +1,7 @@
 # Product Spec: Clarivi (Apple Health Analytics Tool)
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 8 October 2026 (Sabine is the only tester, for two weeks, D89; past days open as Why today for that date, R43; a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
+**Last updated:** 9 October 2026 (the 30-day sign-out on, with Supabase Pro, D90. 8 October: Sabine is the only tester, for two weeks, D89; past days open as Why today for that date, R43; a night without sleep stages gets its own card, and cards without a status link to the trends, R31; 6 October: the check-in's "Great" (R16) and the "usual range" verdict (R37) recorded, from the wording review; earlier, 5 October: Sync now; afternoon naps kept out of the status for the test; earlier: password minimum settled; shared-phone notifications decided; Phase 2: what counts as a night, points, nudge choice, illness check, Watch readings, owner's workouts and disrupted days, and the final score numbers settled; open questions 1 to 3 closed; Phase 3 planning: zone numbers, links before Phase 5, rejected-sync and import-progress states; Phase 4 planning: follow-through window and next-morning order; Phase 5 planning: trend band, digest, setup guide link, password reset; Phase 6: consent in the app, withdrawing consent, the setup guide, the app icon in deep violet, the public "Your data" page)
 **Owner:** Sabine Joseph
 **Sources:** mvp.md, apple_health_tool_project_brief v2, Clarivi Flow, Design screens
 
@@ -103,7 +103,7 @@
 - **R3** On first sign-in with a temporary password, the user must set a new password before seeing any data. Default: a minimum of 12 characters.
 - **R4** A signed-in user can change their password from Settings by entering the current one.
 - **R5** The sign-in screen says "Forgot your password? Contact Sabine." There is no reset email. The owner can set a new temporary password, and R3 then applies again.
-- **R6** Sessions stay signed in from day to day, so tapping a notification never lands on a sign-in screen. Default: a session ends after 30 days without use.
+- **R6** Sessions stay signed in from day to day, so tapping a notification never lands on a sign-in screen. Default: a session ends after 30 days without use (on since 9 October 2026, with Supabase Pro, D90).
 - **R7** Settings has "Sign out everywhere", which ends the user's sessions on every device.
 - **R8** Reissuing the upload token or deleting data asks for the password again first.
 - **R9** A user only ever sees their own data. Trying to reach another user's data shows nothing and is logged.

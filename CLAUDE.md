@@ -67,7 +67,7 @@ Update this file whenever there is a significant new feature, a major bug resolv
 
 ## Supabase
 
-- Live project: "Clarivi", ref `vuynnnrijdbvamwfauog`, free plan, in US East (`us-east-1`). It replaced the earlier US West project (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
+- Live project: "Clarivi", ref `vuynnnrijdbvamwfauog`, Pro plan since 9 October 2026 (D90; free before), in US East (`us-east-1`). It replaced the earlier US West project (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
 - Build and test every database change on the local copy first (`supabase start`, which needs Docker Desktop running). Keep migrations in `supabase/migrations/`.
 - Apply changes to the live project only at release, in a backward-compatible way, and only after asking Sabine. During the two-week test, take a backup first.
 - Every table has row-level security. Never turn it off.

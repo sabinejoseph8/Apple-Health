@@ -37,6 +37,15 @@ test.describe("the owner's page (R64)", () => {
     await expect(page.getByRole('region', { name: 'owner@example.test' })).toContainText(w.importAll)
   })
 
+  // The Pro plan's 8 GB (D90): the warning comes from 80%.
+  for (const [mb, warns] of [[450, false], [6600, true]] as const) {
+    test(`${warns ? 'warns' : 'does not warn'} at ${mb} MB`, async ({ page }) => {
+      await openApp(page, { at: MORNING, tables: { profiles: [{ is_owner: true }], 'rpc/owner_status': { ...status, database_mb: mb } as never }, path: '/#/owner' })
+      await expect(page.getByText(w.database(String(mb)))).toBeVisible()
+      await expect(page.getByText(w.databaseHigh)).toHaveCount(warns ? 1 : 0)
+    })
+  }
+
   test('is not offered to a tester, and refuses one who finds it', async ({ page }) => {
     await openApp(page, { at: MORNING, tables: { profiles: [{ is_owner: false }] }, path: '/#/settings' })
     await expect(page.getByRole('heading', { name: wording.settings.account })).toBeVisible()
