@@ -1,14 +1,14 @@
 # Progress: Clarivi
 
 **Status of this plan:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 9 October 2026 (auto-merge turned off on the repository: Claude merges once all checks are green; D90: Supabase moved to Pro before the test, with daily backups, no pausing and the 30-day sign-out on; the owner page counts against the Pro plan's 8 GB. 8 October: the Phase 6 code review: 10 findings, 8 fixed, 2 left by Sabine for later, and every past-day screen now speaks of "that night" and "that day"; D89: Sabine is the only tester and the test runs two weeks; D88 built: past days; D87 released through https://github.com/sabinejoseph8/Apple-Health/pull/16: a card for a night without sleep stages and a trends row on cards without a status; a branch rule for `main` and auto-merge allowed; D86 live and merged through https://github.com/sabinejoseph8/Apple-Health/pull/14, with the Supabase library pinned; re-adding the Home Screen app loses its notification sign-up, turned on again. 7 October: the setup guide's line for a locked run released through https://github.com/sabinejoseph8/Apple-Health/pull/13; the notification fix confirmed; 5 and 7 October in the locked-phone count. 6 October: the setup guide's Sync now line released through https://github.com/sabinejoseph8/Apple-Health/pull/12, functions redeployed; Phase 4 manual check 2 passed: the 11:30 reminder, Sync now and the Late card; the server functions redeployed so notifications use the new words; Phase 3 done after Sabine's wording review, D85; consent version 2 and the new wording released and approved in the live app; the Clarivi Memory site refreshed from these files, with an MVP tab, its builder kept in `scripts/memory-site/`. Earlier, 5 October: Phase 4 manual check 1 passed on the first real morning; in-app consent and Sync now released and agreed by Sabine and the test account; the key work D81 done; decisions D83 (afternoon naps stay out) and D84 (Sync now); the dry-run checklist and the v1.0.0 changelog draft approved; Phase 6 now waits on the testers' details for the fit check and the dry run. Earlier, 4 October: Phase 5 done; Phase 6 planned and step 1 done; D75 to D82)
+**Last updated:** 9 October 2026 (the test shortened to one week, D91; auto-merge turned off on the repository: Claude merges once all checks are green; D90: Supabase moved to Pro before the test, with daily backups, no pausing and the 30-day sign-out on; the owner page counts against the Pro plan's 8 GB. 8 October: the Phase 6 code review: 10 findings, 8 fixed, 2 left by Sabine for later, and every past-day screen now speaks of "that night" and "that day"; D89: Sabine is the only tester and the test runs two weeks; D88 built: past days; D87 released through https://github.com/sabinejoseph8/Apple-Health/pull/16: a card for a night without sleep stages and a trends row on cards without a status; a branch rule for `main` and auto-merge allowed; D86 live and merged through https://github.com/sabinejoseph8/Apple-Health/pull/14, with the Supabase library pinned; re-adding the Home Screen app loses its notification sign-up, turned on again. 7 October: the setup guide's line for a locked run released through https://github.com/sabinejoseph8/Apple-Health/pull/13; the notification fix confirmed; 5 and 7 October in the locked-phone count. 6 October: the setup guide's Sync now line released through https://github.com/sabinejoseph8/Apple-Health/pull/12, functions redeployed; Phase 4 manual check 2 passed: the 11:30 reminder, Sync now and the Late card; the server functions redeployed so notifications use the new words; Phase 3 done after Sabine's wording review, D85; consent version 2 and the new wording released and approved in the live app; the Clarivi Memory site refreshed from these files, with an MVP tab, its builder kept in `scripts/memory-site/`. Earlier, 5 October: Phase 4 manual check 1 passed on the first real morning; in-app consent and Sync now released and agreed by Sabine and the test account; the key work D81 done; decisions D83 (afternoon naps stay out) and D84 (Sync now); the dry-run checklist and the v1.0.0 changelog draft approved; Phase 6 now waits on the testers' details for the fit check and the dry run. Earlier, 4 October: Phase 5 done; Phase 6 planned and step 1 done; D75 to D82)
 **Builds on:** product-spec.md (Agreed, v1.0), tech-spec.md (Agreed, v1.0), design.md (Agreed, v1.0)
 
 ---
 
 ## Summary
 
-- **Current phase:** Phases 2, 3 and 5 are done (Phase 3 on 6 October 2026, after Sabine's wording review). Phase 4 is live with manual checks 1 (5 October) and 2 (6 October, the 11:30 reminder) passed; checks 3 to 5 need a change day. Phase 1 has one check left (about 10 October). Phase 6: step 1 done; step 2 done except the fit on testers' iPhones (in-app consent, Withdraw consent, "Your data", Sync now and the key work D81 all released on 5 October); step 3, the dry run, was prepared for a tester (`docs/dry-run-checklist.md`). **Changed 8 October 2026 (D89): Sabine is the only tester, and Phase 7's test runs two weeks instead of four; testers come with the following release.** Approved by her the same day: the targets are revised for one person over two weeks (product-spec section 9), the fit check and the dry run are dropped, and Phase 8 uses her own written account. Sabine's self-test runs until about 17 to 24 October. **Supabase Pro since 9 October 2026 (D90)**, before the test: daily backups, no pausing, and the 30-day sign-out on. **Phase 6 code review done 8 October 2026** (10 findings, 8 fixed, 2 left for later with Sabine's OK); only the freeze, tag and changelog remain, after the self-test.
+- **Current phase:** Phases 2, 3 and 5 are done (Phase 3 on 6 October 2026, after Sabine's wording review). Phase 4 is live with manual checks 1 (5 October) and 2 (6 October, the 11:30 reminder) passed; checks 3 to 5 need a change day. Phase 1 has one check left (about 10 October). Phase 6: step 1 done; step 2 done except the fit on testers' iPhones (in-app consent, Withdraw consent, "Your data", Sync now and the key work D81 all released on 5 October); step 3, the dry run, was prepared for a tester (`docs/dry-run-checklist.md`). **Changed 8 October 2026 (D89): Sabine is the only tester, and Phase 7's test runs two weeks instead of four; testers come with the following release.** **Changed again 9 October 2026 (D91): the test runs one week, starting after her self-test, with the targets re-scaled (6 of 7 syncs, 5 of 7 days opened).** Approved by her the same day: the targets are revised for one person (product-spec section 9; re-scaled to one week by D91), the fit check and the dry run are dropped, and Phase 8 uses her own written account. Sabine's self-test runs until about 17 to 24 October. **Supabase Pro since 9 October 2026 (D90)**, before the test: daily backups, no pausing, and the 30-day sign-out on. **Phase 6 code review done 8 October 2026** (10 findings, 8 fixed, 2 left for later with Sabine's OK); only the freeze, tag and changelog remain, after the self-test.
 - **Phase 1 (Spikes):** 1a, 1c and the Phase 1 code review are done. 1b is done except its last check, the locked-phone rate, counted until about 10 October 2026 from the uploads log plus Sabine's notes of mornings she sees the Shortcuts "device is locked" message (D75); then Phase 1 closes.
 - **Phase 2 (Data and analysis), done 3 October 2026:**
   - Nights from the Watch's sleep stages (D48 to D50), normals (D11, now from 42 nights), the daily status, nudge and illness check (D51 to D53), insights, versioned score settings, and the every-minute analysis queue, all live.
@@ -68,7 +68,7 @@
 | 4 | Notifications and follow-through | Built, reviewed and live; checks 1 and 2 passed (5 and 6 October), 3 to 5 need a change day |
 | 5 | Trends, digest, settings and owner page | Done (4 October 2026) |
 | 6 | Hardening and dry run | In progress: steps 1 and 2 done; the dry run dropped (D89); left: freeze, tag and changelog after the self-test, and the code review |
-| 7 | Two-week test (Sabine only, D89) | Not started |
+| 7 | One-week test (Sabine only, D89, D91) | Not started |
 | 8 | Results and demo | Not started |
 
 Requirement numbers (R1 to R67) refer to product-spec.md.
@@ -409,11 +409,11 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 ---
 
-## Phase 7: Two-week test
+## Phase 7: One-week test
 
 **Goal:** run the test exactly as agreed, with no changes to the score.
 
-**Status:** Not started. Changed 8 October 2026 (D89): Sabine is the only tester, and the test runs two weeks instead of four; the tasks for onboarding testers and holding the testers' end-of-test conversations are gone.
+**Status:** Not started. Changed 8 October 2026 (D89): Sabine is the only tester, and the test runs two weeks instead of four; changed again 9 October 2026 (D91): the test runs one week, after her self-test ends (about 17 to 24 October), with the targets re-scaled before any result; the tasks for onboarding testers and holding the testers' end-of-test conversations are gone.
 
 ### Tasks
 - [ ] Check the owner page every morning; follow up on any missed sync the same day
@@ -428,8 +428,8 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
    *Expected:* the morning synced, or the cause is known that day.
 2. **Weekly:** check the backup folder.
    *Expected:* a backup no more than 7 days old.
-3. **End:** check that both weeks are complete.
-   *Expected:* 14 days of data.
+3. **End:** check that the week is complete.
+   *Expected:* 7 days of data.
 
 ---
 
@@ -441,7 +441,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 ### Tasks
 - [ ] Calculate every target:
-  - sync on 13 of 14 days
+  - sync on 6 of 7 days
   - notifications delivered on 90% of days with a status
   - isolation
   - correctness
