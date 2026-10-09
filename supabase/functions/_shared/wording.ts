@@ -275,8 +275,9 @@ export const wording = {
     notOwner: 'Only the owner can open this page.',
     you: 'You',
     projectHeading: 'Project',
-    database: (mb: string) => `Database: ${mb} MB of 500 MB on the free plan.`,
-    databaseHigh: 'Nearly full: make a backup and plan the move to Supabase Pro.',
+    // The Pro plan since 9 October 2026 (D90; approved by Sabine).
+    database: (mb: string) => `Database: ${mb} MB of 8 GB on the Pro plan.`,
+    databaseHigh: 'Nearly full: make a backup and look at the disk size in Supabase.',
     lastSync: (when: string) => `Last sync ${when}`,
     noSync: 'No sync yet',
     reminders: (n: number) => (n === 0 ? 'No 11:30 reminders in the last 14 days' : `11:30 reminder on ${n} of the last 14 days`),

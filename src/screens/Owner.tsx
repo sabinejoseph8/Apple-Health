@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
 
 const w = wording.owner
-const ALERT_MB = 400
+// The Pro plan includes 8 GB (D90, 9 October 2026); the warning comes at 80%, as it did on the free plan's 500 MB.
+const ALERT_MB = 0.8 * 8 * 1024
 
 interface Person {
   name: string
