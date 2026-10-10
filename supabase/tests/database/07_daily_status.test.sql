@@ -78,9 +78,11 @@ select pg_temp.normals('2026-10-08');
 -- 9 October: no breathing rate or resting heart rate.
 select pg_temp.night('2026-10-09', 430, 50, 52, null, null);
 select pg_temp.normals('2026-10-09');
--- 10 October: a morning sync arrived, but no night was recorded.
+-- 28 September: a morning sync arrived, but no night was recorded. A day in the
+-- past, so the test means the same whenever it runs: on the real "today" the
+-- day would be "sleep in progress" instead.
 insert into public.uploads (user_id, schema_version, kind, device_tz_offset_min, local_date, status)
-values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 1, 'daily', -300, '2026-10-10', 'accepted');
+values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 1, 'daily', -300, '2026-09-28', 'accepted');
 -- 11 October: only sleep is off (4h 10m).
 select pg_temp.night('2026-10-11', 250, 50, 52, 15, 58);
 select pg_temp.normals('2026-10-11');
@@ -129,7 +131,7 @@ select is((select status || '/' || no_status_reason from s where date = '2026-10
   'one building and one missing: not enough data');
 select is((select status || '/' || no_status_reason from s where date = '2026-10-07'), 'none/night_unfinished',
   'an unfinished night gets no status');
-select is((select status || '/' || no_status_reason || '/' || readings_used from s where date = '2026-10-10'),
+select is((select status || '/' || no_status_reason || '/' || readings_used from s where date = '2026-09-28'),
   'none/not_enough_data/0', 'a morning sync with no night recorded: not enough data');
 
 -- Zones and nudges.
