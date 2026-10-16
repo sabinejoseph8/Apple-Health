@@ -291,6 +291,7 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
         {state.syncedAt && <span className="sync-time">{c.synced(syncWhen(state.syncedAt, now))}</span>}
       </div>
       {row.readings_used === 2 && <p className="caption">{c.partial}</p>}
+      {state.noStages && <p className="caption">{c.noStages}</p>}
       <h2 id="card-headline" className="card-headline">
         {headline(row)}
       </h2>

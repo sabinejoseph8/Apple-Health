@@ -41,6 +41,8 @@ export interface WhyData {
   resting: { value: number | null; verdict: Verdict | null }
   illness: IllnessCheck
   zones: Zones | null
+  // The night was built from plain "asleep" records: the Watch recorded no stages (D92).
+  noStages: boolean
 }
 
 const NIGHT_COLUMN: Record<Reading, string> = { hrv: 'hrv_median', sleep: 'asleep_min', sleeping_hr: 'sleeping_hr' }
@@ -59,13 +61,13 @@ export function chartDates(today: string): string[] {
 export async function loadWhy(today: string, settingsVersion: number): Promise<WhyData> {
   const dates = chartDates(today)
   const [nights, baselines, insights, zones] = await Promise.all([
-    supabase.from('nights').select('night_date, asleep_min, hrv_median, sleeping_hr').gte('night_date', dates[0]).lte('night_date', today),
+    supabase.from('nights').select('night_date, asleep_min, hrv_median, sleeping_hr, no_stages').gte('night_date', dates[0]).lte('night_date', today),
     supabase.from('baselines').select('metric, median_28, range_low, range_high, valid_nights, building').eq('night_date', today),
     supabase.from('insights').select('module, metric, value, severity').eq('date', today).in('module', ['also_checked', 'illness_check']),
     supabase.rpc('status_zones', { p_version: settingsVersion }).maybeSingle(),
   ])
 
-  const byDate = new Map((must(nights) as Record<string, number | string | null>[]).map((r) => [r.night_date as string, r]))
+  const byDate = new Map((must(nights) as Record<string, number | string | boolean | null>[]).map((r) => [r.night_date as string, r]))
   const series = (r: Reading): NightPoint[] =>
     dates.map((date) => {
       const v = byDate.get(date)?.[NIGHT_COLUMN[r]]
@@ -93,6 +95,7 @@ export async function loadWhy(today: string, settingsVersion: number): Promise<W
     resting: also('resting_hr'),
     illness: pattern === 'fired' || pattern === 'clear' ? pattern : 'not_run',
     zones: must(zones) as Zones | null,
+    noStages: byDate.get(today)?.no_stages === true,
   }
 }
 

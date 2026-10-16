@@ -1,10 +1,12 @@
--- D87: a day whose only sleep last night is plain "asleep" (the Watch's
--- sleep without stages), at least 2 hours of it, has no status with the
--- reason no_sleep_stages, today and on past days. Once the Watch's stages
--- arrive the night is built as usual. Made-up readings only.
+-- D87, changed by D92: a day whose only sleep last night is plain "asleep"
+-- (the Watch's sleep without stages), at least 2 hours of it, now has a
+-- night (marked no_stages), today and on past days, so it is no longer
+-- labelled no_sleep_stages. Once the Watch's stages arrive the night is
+-- built from them as usual and the mark goes. Under 2 hours is no night.
+-- Made-up readings only.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(11);
 
 -- The local clock is 11am at a UTC-5 style offset chosen so the test means
 -- the same whenever it runs.
@@ -46,35 +48,37 @@ $$;
 select pg_temp.sleep('96969696-9696-9696-9696-969696969696', 'asleep', now() - interval '3 hours 30 minutes', now() - interval '1 hour');
 select pg_temp.daily('96969696-9696-9696-9696-969696969696', pg_temp.today());
 select public.recompute('96969696-9696-9696-9696-969696969696', pg_temp.today() - 2, pg_temp.today());
-select is(pg_temp.reason('96969696-9696-9696-9696-969696969696', pg_temp.today()), 'no_sleep_stages',
-  'a sync with only plain "asleep" sleep last night is labelled no_sleep_stages, not sleep in progress');
-select is((select status from public.daily_status where user_id = '96969696-9696-9696-9696-969696969696' and date = pg_temp.today()),
-  'none', 'and there is still no status');
-select is((select count(*)::int from public.nights where user_id = '96969696-9696-9696-9696-969696969696'), 0,
-  'and no night is built from it');
+select is((select count(*)::int from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), 1,
+  'a night is built from plain "asleep" sleep when the night has no stages (D92)');
+select is((select no_stages from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), true,
+  'and it is marked as having no stages');
+select is((select asleep_min from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), 150.0,
+  'with its time asleep counted as usual');
+select isnt(pg_temp.reason('96969696-9696-9696-9696-969696969696', pg_temp.today()), 'no_sleep_stages',
+  'so the day is no longer labelled no_sleep_stages');
 
 -- The same on a past day (yesterday's sync, yesterday's stage-less night).
 select pg_temp.sleep('96969696-9696-9696-9696-969696969696', 'asleep', now() - interval '1 day 4 hours', now() - interval '1 day 1 hour');
 select pg_temp.daily('96969696-9696-9696-9696-969696969696', pg_temp.today() - 1);
 select public.recompute('96969696-9696-9696-9696-969696969696', pg_temp.today() - 2, pg_temp.today());
-select is(pg_temp.reason('96969696-9696-9696-9696-969696969696', pg_temp.today() - 1), 'no_sleep_stages',
-  'a past stage-less night is labelled the same way, not "not enough data"');
+select is((select no_stages from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today() - 1), true,
+  'a past stage-less night is built and marked the same way');
 
--- The Watch's stages arrive later this morning: the night is built as usual.
+-- The Watch's stages arrive later this morning: the night is built from them, with no mark.
 select pg_temp.sleep('96969696-9696-9696-9696-969696969696', 'core', now() - interval '6 hours', now() - interval '3 hours 30 minutes');
 select public.recompute('96969696-9696-9696-9696-969696969696', pg_temp.today() - 2, pg_temp.today());
-select is((select count(*)::int from public.nights
-            where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), 1,
-  'once the stages arrive, the night is built');
-select isnt(pg_temp.reason('96969696-9696-9696-9696-969696969696', pg_temp.today()), 'no_sleep_stages',
-  'and the day is no longer labelled no_sleep_stages');
+select is((select no_stages from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), false,
+  'once the stages arrive, the night is built from them and the mark goes');
+select is((select asleep_min from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), 150.0,
+  'and only the stages count, never the plain record on top of them');
 
 -- Under 2 hours of plain "asleep" is not a night either way: still in progress today.
 select pg_temp.sleep('97979797-9797-9797-9797-979797979797', 'asleep', now() - interval '2 hours', now() - interval '1 hour');
 select pg_temp.daily('97979797-9797-9797-9797-979797979797', pg_temp.today());
 select public.recompute('97979797-9797-9797-9797-979797979797', pg_temp.today() - 2, pg_temp.today());
+select is((select count(*)::int from public.nights where user_id = '97979797-9797-9797-9797-979797979797'), 0, 'under 2 hours of plain "asleep" builds no night');
 select is(pg_temp.reason('97979797-9797-9797-9797-979797979797', pg_temp.today()), 'night_unfinished',
-  'under 2 hours of plain "asleep" keeps the usual sleep in progress');
+  'and keeps the usual sleep in progress');
 
 -- The card can log that it showed this state, and nothing else new.
 set local role authenticated;

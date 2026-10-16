@@ -70,6 +70,26 @@ class Nights(unittest.TestCase):
         self.assertEqual(r['resting_hr_prev_day'], 57)
         self.assertEqual((r['coverage'], r['confidence'], r['finished']), (1.0, 'high', True))
 
+    def test_a_night_without_stages_is_built_from_plain_asleep(self):
+        # D92: plain "asleep" builds a night when that night has no core, deep or
+        # REM record at all, at least 2 hours of it, marked no_stages.
+        rows = [stage('asleep', '2026-10-20 07:30-05', '2026-10-20 10:10-05'),
+                # A night split by a short awake spell: awake wins.
+                stage('asleep', '2026-10-17 02:00-05', '2026-10-17 04:30-05'),
+                stage('awake', '2026-10-17 03:10-05', '2026-10-17 03:20-05'),
+                # Under 2 hours.
+                stage('asleep', '2026-10-18 03:00-05', '2026-10-18 04:30-05'),
+                # A night with a Watch stage: the plain record on top is ignored.
+                stage('asleep', '2026-10-19 01:00-05', '2026-10-19 05:00-05'),
+                stage('core', '2026-10-19 05:00-05', '2026-10-19 07:10-05'),
+                # A nap, from noon.
+                stage('asleep', '2026-10-19 13:00-05', '2026-10-19 16:00-05')]
+        n = ref.build_nights(samples(rows), UPLOADS).set_index('night_date')
+        self.assertEqual(sorted(n.index), [date(2026, 10, 17), date(2026, 10, 19), date(2026, 10, 20)])
+        self.assertEqual((n.loc[date(2026, 10, 20), 'asleep_min'], bool(n.loc[date(2026, 10, 20), 'no_stages'])), (160.0, True))
+        self.assertEqual((n.loc[date(2026, 10, 17), 'asleep_min'], bool(n.loc[date(2026, 10, 17), 'no_stages'])), (140.0, True))
+        self.assertEqual((n.loc[date(2026, 10, 19), 'asleep_min'], bool(n.loc[date(2026, 10, 19), 'no_stages'])), (130.0, False))
+
     def test_overlapping_records_count_once_and_awake_wins(self):
         rows = [stage('core', '2026-10-07 23:00-05', '2026-10-08 01:00-05'),
                 stage('awake', '2026-10-08 01:00-05', '2026-10-08 01:30-05'),

@@ -107,27 +107,42 @@ def build_nights(samples: pd.DataFrame, uploads: pd.DataFrame) -> pd.DataFrame:
     dated by that morning, with at least 2 hours asleep (D50, D48).
     """
     stages = samples[samples['type'] == 'sleep_stage']
-    asleep_rows = stages[stages['stage'].isin(ASLEEP)].sort_values('end_at')
     awake_rows = stages[stages['stage'] == 'awake']
-    asleep = _union(list(zip(asleep_rows['start_at'], asleep_rows['end_at'])))
     awake = _union(list(zip(awake_rows['start_at'], awake_rows['end_at'])))
-    stretches = _subtract(asleep, awake)
 
-    a_start = asleep_rows['start_at'].dt.tz_convert(None).to_numpy()
-    a_end = asleep_rows['end_at'].dt.tz_convert(None).to_numpy()
-    a_off = asleep_rows['tz_offset_min'].to_numpy()
+    def place(asleep_rows):
+        asleep_rows = asleep_rows.sort_values('end_at')
+        stretches = _subtract(_union(list(zip(asleep_rows['start_at'], asleep_rows['end_at']))), awake)
+        a_start = asleep_rows['start_at'].dt.tz_convert(None).to_numpy()
+        a_end = asleep_rows['end_at'].dt.tz_convert(None).to_numpy()
+        a_off = asleep_rows['tz_offset_min'].to_numpy()
+        out = []
+        for s, e in stretches:
+            # The offset of the asleep stage the stretch starts in (the one that
+            # ends first, if several cover that moment).
+            t = s.tz_convert(None).to_datetime64()
+            hits = np.nonzero((a_start <= t) & (a_end > t) & (a_end < t + np.timedelta64(1, 'D')))[0]
+            offset = int(a_off[hits[0]])
+            local_start = local_time(s, offset)
+            night_date = (local_start + pd.Timedelta(hours=6)).date()
+            if local_start < pd.Timestamp(night_date) + pd.Timedelta(hours=12):
+                out.append((night_date, s, e, offset))
+        return out
 
-    placed = []
-    for s, e in stretches:
-        # The offset of the asleep stage the stretch starts in (the one that
-        # ends first, if several cover that moment).
-        t = s.tz_convert(None).to_datetime64()
-        hits = np.nonzero((a_start <= t) & (a_end > t) & (a_end < t + np.timedelta64(1, 'D')))[0]
-        offset = int(a_off[hits[0]])
-        local_start = local_time(s, offset)
-        night_date = (local_start + pd.Timedelta(hours=6)).date()
-        if local_start < pd.Timestamp(night_date) + pd.Timedelta(hours=12):
-            placed.append((night_date, s, e, offset))
+    # The Watch's stages build a night (D48 to D50). A night with none at all
+    # is built from the plain "asleep" records the Watch writes without stages
+    # (D92), marked no_stages. A night with any core, deep or REM record is
+    # never built from plain "asleep" (an iPhone's or an app's record on top of
+    # the stages), each record placed by its own local start time.
+    staged_rows = stages[stages['stage'].isin(ASLEEP)]
+    staged_dates = set()
+    for s, off in zip(staged_rows['start_at'], staged_rows['tz_offset_min']):
+        local = local_time(s, off if pd.notna(off) else 0)
+        night_date = (local + pd.Timedelta(hours=6)).date()
+        if local < pd.Timestamp(night_date) + pd.Timedelta(hours=12):
+            staged_dates.add(night_date)
+    placed = [(*p, False) for p in place(staged_rows)]
+    placed += [(*p, True) for p in place(stages[stages['stage'] == 'asleep']) if p[0] not in staged_dates]
 
     last_sync = None
     ok = uploads[uploads['status'] == 'accepted'] if len(uploads) else uploads
@@ -141,7 +156,7 @@ def build_nights(samples: pd.DataFrame, uploads: pd.DataFrame) -> pd.DataFrame:
     from_watch = (src == '') | src.isin(watches)
     by_type = {t: g.sort_values('end_at') for t, g in samples[from_watch].groupby('type')}
     rows = []
-    for night_date, group in pd.DataFrame(placed, columns=['night_date', 's', 'e', 'off']).groupby('night_date'):
+    for night_date, group in pd.DataFrame(placed, columns=['night_date', 's', 'e', 'off', 'plain']).groupby('night_date'):
         seconds = sum((e - s).total_seconds() for s, e in zip(group['s'], group['e']))
         asleep_min = Decimal(repr(seconds)) / 60
         if asleep_min < 120:
@@ -191,11 +206,12 @@ def build_nights(samples: pd.DataFrame, uploads: pd.DataFrame) -> pd.DataFrame:
             'resting_hr_prev_day': median(rhr['value']),
             'coverage': coverage,
             'confidence': 'high' if coverage >= 0.7 else 'medium' if coverage >= 0.4 else 'low',
+            'no_stages': bool(group['plain'].any()),
         })
     return pd.DataFrame(rows, columns=[
         'night_date', 'tz_offset_min', 'sleep_start', 'sleep_end', 'asleep_min', 'finished', 'sleeping_hr',
         'sleeping_hr_count', 'hrv_median', 'hrv_count', 'resp_rate', 'resp_count', 'resting_hr_prev_day',
-        'coverage', 'confidence'])
+        'coverage', 'confidence', 'no_stages'])
 
 
 def stageless_nights(samples: pd.DataFrame) -> set:

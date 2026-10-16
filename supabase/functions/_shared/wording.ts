@@ -203,6 +203,8 @@ export const wording = {
     syncNow: 'Sync now',
     syncNowHint: "Opens the Shortcuts app to send last night's readings. Come back here when it's done.",
     partial: 'Based on 2 of 3 readings',
+    // D92: a night the Watch recorded without stages still counts.
+    noStages: "Your Watch didn't record sleep stages, so this uses your total time asleep.",
     nudgeLabel: "Today's nudge",
     nudges: {
       train_as_planned: { action: 'Train as planned', detail: 'Go ahead with the training you had planned for today.' },
@@ -301,6 +303,7 @@ export const wording = {
     adds: { ready: "That day's points added up to ready.", ease_off: "That day's points added up to ease off.", rest: "That day's points added up to rest." },
     nothing: 'Clarivi has no readings for this day.',
     back: 'Back',
+    noStages: "Your Watch didn't record sleep stages that night, so this uses your total time asleep.",
     // A past day without a status: the card's reasons, said about that day
     // (approved by Sabine, 8 October 2026). The pills stay the card's.
     noStatus: {
