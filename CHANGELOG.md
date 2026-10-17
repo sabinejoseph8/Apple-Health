@@ -53,6 +53,6 @@ Each morning, Clarivi turns a person's own Apple Watch readings into a plain-wor
 - Health data is locked while the iPhone is locked, so a sync needs the phone in use; Sync now covers mornings when the automations miss.
 - Naps between noon and 6pm don't count toward the status (D83).
 - A new person sees "Learning your usual levels" until 21 nights are tracked.
-- Plain "asleep" time can't be limited to the Watch, as sleep records carry no source (D92).
+- Sleep records carry no source, so a night with no stages counts only when the Watch's heart rate was recorded through it; an app that writes sleep with stages can't be told from the Watch (D92).
 - Password checks in Settings share one sign-in rate limit with signing in.
 - A phone that already has Clarivi keeps its old icon until the app is added to the Home Screen again.
