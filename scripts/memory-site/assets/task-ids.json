@@ -481,9 +481,16 @@
    "Count nights the Watch records without stages, before the one-week test: migration 20261017000000_stageless_nights.sql (a night is built from plain \"asleep\" records when it has no core, deep or REM record; nights.no_stages), the reference check, the note on the card, Why today and past days."
   ]
  },
+ "p6-10": {
+  "phase": "6",
+  "texts": [
+   "D92 narrowed: a night built from plain \"asleep\" counts only with at least 10 Watch heart rate readings through it (migration 20261018000000_stageless_watch_only.sql, the reference check and tests updated; database 396 checks, reference 32; all seven nights marked so far pass)."
+  ]
+ },
  "p6-11": {
   "phase": "6",
   "texts": [
+   "Freeze the score settings; tag the release; write the changelog.",
    "Freeze the score settings; tag the release; write the changelog"
   ]
  },
