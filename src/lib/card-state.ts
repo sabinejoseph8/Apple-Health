@@ -32,6 +32,7 @@ export interface NightRow {
   asleep_min: number
   hrv_median: number | null
   sleeping_hr: number | null
+  no_stages?: boolean
 }
 
 export interface CardInputs {
@@ -54,7 +55,7 @@ export interface CardInputs {
 }
 
 export type CardState =
-  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean }
+  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean; noStages: boolean }
   | { kind: 'waiting'; lastSync: Date | null }
   // delayed: the readings arrived a while ago and there is still no status.
   | { kind: 'analysing'; delayed: boolean }
@@ -112,6 +113,8 @@ function selectState(i: CardInputs): CardState {
       row,
       syncedAt: synced ?? (i.lastSync ? time(i.lastSync) : null),
       late: synced !== null && minutesOfDay(synced) >= LATE_FROM,
+      // The night was built from plain "asleep" records, the Watch having recorded no stages (D92).
+      noStages: i.night?.no_stages === true,
     }
   }
 

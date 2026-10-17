@@ -97,6 +97,7 @@ function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
           {summary.headline}
         </h2>
         <p className="body">{summary.body.join(' ')}</p>
+        {why.noStages && <p className="caption">{past ? p.noStages : wording.card.noStages}</p>}
       </section>
 
       <h2 className="section-title">{past ? p.thatNight : w.lastNight}</h2>

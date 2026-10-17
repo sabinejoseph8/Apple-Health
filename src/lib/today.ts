@@ -64,7 +64,7 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     loadStatusInputs(now),
     supabase.from('uploads').select('month_id, local_date').eq('kind', 'backfill').eq('status', 'accepted').eq('month_complete', true),
     supabase.from('baselines').select('metric, valid_nights, building').eq('night_date', today),
-    supabase.from('nights').select('asleep_min, hrv_median, sleeping_hr').eq('night_date', today).maybeSingle(),
+    supabase.from('nights').select('asleep_min, hrv_median, sleeping_hr, no_stages').eq('night_date', today).maybeSingle(),
     supabase.from('checkins').select('answer').eq('date', today).order('answered_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('usage_events').select('id').eq('event', 'checkin_skipped').eq('meta->>date', today).limit(1),
     supabase.from('shown_status').select('date, nudge, shown_at').in('date', [yesterday, today]),

@@ -10,7 +10,7 @@ import pandas as pd
 import reference as ref
 
 NIGHT_COLS = ['tz_offset_min', 'sleep_start', 'sleep_end', 'asleep_min', 'finished', 'sleeping_hr', 'sleeping_hr_count',
-              'hrv_median', 'hrv_count', 'resp_rate', 'resp_count', 'resting_hr_prev_day', 'coverage', 'confidence']
+              'hrv_median', 'hrv_count', 'resp_rate', 'resp_count', 'resting_hr_prev_day', 'coverage', 'confidence', 'no_stages']
 BASE_COLS = ['median_28', 'mad_scaled', 'valid_nights', 'range_low', 'range_high', 'building']
 STATUS_COLS = ['status', 'no_status_reason', 'readings_used', 'total', 'nudge', 'reason_codes', 'composite_fired',
                'composite_inputs', 'points']
