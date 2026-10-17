@@ -6,7 +6,7 @@
 -- Made-up readings only.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(13);
 
 -- The local clock is 11am at a UTC-5 style offset chosen so the test means
 -- the same whenever it runs.
@@ -20,9 +20,10 @@ $$;
 
 insert into auth.users (id, email) values
   ('96969696-9696-9696-9696-969696969696', 'no-stages@example.test'),
-  ('97979797-9797-9797-9797-979797979797', 'short-plain@example.test');
+  ('97979797-9797-9797-9797-979797979797', 'short-plain@example.test'),
+  ('98989898-9898-9898-9898-989898989898', 'phone-only@example.test');
 update public.profiles set latest_tz_offset_min = pg_temp.off()
- where user_id in ('96969696-9696-9696-9696-969696969696', '97979797-9797-9797-9797-979797979797');
+ where user_id in ('96969696-9696-9696-9696-969696969696', '97979797-9797-9797-9797-979797979797', '98989898-9898-9898-9898-989898989898');
 
 -- Each reading belongs to an upload; an import post holds them, as an import
 -- never counts as a morning sync.
@@ -36,6 +37,17 @@ create function pg_temp.sleep(p_user uuid, p_stage text, p_start timestamptz, p_
          sha256(convert_to(p_user::text || p_stage || p_start::text || p_end::text, 'UTF8'))
     from u
 $$;
+-- The Watch's heart rate through a stretch: 12 readings spread over it.
+create function pg_temp.hr(p_user uuid, p_start timestamptz, p_end timestamptz) returns void language sql as $$
+  with u as (
+    insert into public.uploads (user_id, schema_version, kind, status, local_date, device_tz_offset_min, month_id)
+    values (p_user, 1, 'backfill', 'accepted', pg_temp.today(), pg_temp.off(), to_char(pg_temp.today(), 'YYYY-MM')) returning id
+  )
+  insert into public.samples (user_id, upload_id, type, start_at, end_at, tz_offset_min, value, unit, source_name, sample_hash)
+  select p_user, u.id, 'heart_rate', t, t, pg_temp.off(), 55, 'count/min', 'Test Watch',
+         sha256(convert_to(p_user::text || 'hr' || t::text, 'UTF8'))
+    from u, generate_series(p_start + (p_end - p_start) / 24, p_end - (p_end - p_start) / 24, (p_end - p_start) / 12) as t
+$$;
 create function pg_temp.daily(p_user uuid, p_date date) returns void language sql as $$
   insert into public.uploads (user_id, schema_version, kind, status, local_date, device_tz_offset_min, run_trigger)
   values (p_user, 1, 'daily', 'accepted', p_date, pg_temp.off(), 'button')
@@ -46,6 +58,7 @@ $$;
 
 -- This morning: 2.5 hours of plain "asleep" and a sync.
 select pg_temp.sleep('96969696-9696-9696-9696-969696969696', 'asleep', now() - interval '3 hours 30 minutes', now() - interval '1 hour');
+select pg_temp.hr('96969696-9696-9696-9696-969696969696', now() - interval '3 hours 30 minutes', now() - interval '1 hour');
 select pg_temp.daily('96969696-9696-9696-9696-969696969696', pg_temp.today());
 select public.recompute('96969696-9696-9696-9696-969696969696', pg_temp.today() - 2, pg_temp.today());
 select is((select count(*)::int from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today()), 1,
@@ -59,6 +72,7 @@ select isnt(pg_temp.reason('96969696-9696-9696-9696-969696969696', pg_temp.today
 
 -- The same on a past day (yesterday's sync, yesterday's stage-less night).
 select pg_temp.sleep('96969696-9696-9696-9696-969696969696', 'asleep', now() - interval '1 day 4 hours', now() - interval '1 day 1 hour');
+select pg_temp.hr('96969696-9696-9696-9696-969696969696', now() - interval '1 day 4 hours', now() - interval '1 day 1 hour');
 select pg_temp.daily('96969696-9696-9696-9696-969696969696', pg_temp.today() - 1);
 select public.recompute('96969696-9696-9696-9696-969696969696', pg_temp.today() - 2, pg_temp.today());
 select is((select no_stages from public.nights where user_id = '96969696-9696-9696-9696-969696969696' and night_date = pg_temp.today() - 1), true,
@@ -79,6 +93,16 @@ select public.recompute('97979797-9797-9797-9797-979797979797', pg_temp.today() 
 select is((select count(*)::int from public.nights where user_id = '97979797-9797-9797-9797-979797979797'), 0, 'under 2 hours of plain "asleep" builds no night');
 select is(pg_temp.reason('97979797-9797-9797-9797-979797979797', pg_temp.today()), 'night_unfinished',
   'and keeps the usual sleep in progress');
+
+-- Plain "asleep" with no Watch heart rate through it (an iPhone or an app, no Watch
+-- worn) builds no night (D92, narrowed); with 10 or more heart rate readings, it does.
+select pg_temp.sleep('98989898-9898-9898-9898-989898989898', 'asleep', now() - interval '3 hours 30 minutes', now() - interval '1 hour');
+select pg_temp.daily('98989898-9898-9898-9898-989898989898', pg_temp.today());
+select public.recompute('98989898-9898-9898-9898-989898989898', pg_temp.today() - 2, pg_temp.today());
+select is((select count(*)::int from public.nights where user_id = '98989898-9898-9898-9898-989898989898'), 0, 'plain "asleep" with no Watch heart rate builds no night');
+select pg_temp.hr('98989898-9898-9898-9898-989898989898', now() - interval '3 hours', now() - interval '2 hours 50 minutes');
+select public.recompute('98989898-9898-9898-9898-989898989898', pg_temp.today() - 2, pg_temp.today());
+select is((select count(*)::int from public.nights where user_id = '98989898-9898-9898-9898-989898989898'), 1, 'and with the Watch heart rate through it, it does');
 
 -- The card can log that it showed this state, and nothing else new.
 set local role authenticated;
