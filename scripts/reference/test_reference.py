@@ -73,7 +73,9 @@ class Nights(unittest.TestCase):
     def test_a_night_without_stages_is_built_from_plain_asleep(self):
         # D92: plain "asleep" builds a night when that night has no core, deep or
         # REM record at all, at least 2 hours of it, marked no_stages.
-        rows = [stage('asleep', '2026-10-20 07:30-05', '2026-10-20 10:10-05'),
+        rows = [reading('heart_rate', t, t, 55) for a, b in (('2026-10-20 07:30-05', '2026-10-20 10:10-05'), ('2026-10-17 02:00-05', '2026-10-17 04:30-05'))
+                for t in pd.date_range(a, b, freq='5min', inclusive='left')] + [
+                stage('asleep', '2026-10-20 07:30-05', '2026-10-20 10:10-05'),
                 # A night split by a short awake spell: awake wins.
                 stage('asleep', '2026-10-17 02:00-05', '2026-10-17 04:30-05'),
                 stage('awake', '2026-10-17 03:10-05', '2026-10-17 03:20-05'),
@@ -84,6 +86,8 @@ class Nights(unittest.TestCase):
                 stage('core', '2026-10-19 05:00-05', '2026-10-19 07:10-05'),
                 # A nap, from noon.
                 stage('asleep', '2026-10-19 13:00-05', '2026-10-19 16:00-05')]
+        # A plain "asleep" night with no Watch heart rate through it (an iPhone's or an app's
+        # record) is not a night (D92, narrowed): 19 October's record is alone, without readings.
         n = ref.build_nights(samples(rows), UPLOADS).set_index('night_date')
         self.assertEqual(sorted(n.index), [date(2026, 10, 17), date(2026, 10, 19), date(2026, 10, 20)])
         self.assertEqual((n.loc[date(2026, 10, 20), 'asleep_min'], bool(n.loc[date(2026, 10, 20), 'no_stages'])), (160.0, True))

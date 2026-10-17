@@ -174,6 +174,10 @@ def build_nights(samples: pd.DataFrame, uploads: pd.DataFrame) -> pd.DataFrame:
 
         hr = hr[np.array([inside(a) and inside(b) for a, b in zip(hr['start_at'], hr['end_at'])], dtype=bool)]
         n_hr = len(hr)
+        # A night from plain "asleep" needs the Watch's heart rate through it
+        # (at least 10 readings), as sleep records carry no source (D92).
+        if bool(group['plain'].any()) and n_hr < 10:
+            continue
         blocks = len({math.floor(t.timestamp() / 900) for t in hr['start_at']})
         coverage = min(1.0, blocks / max(1, math.ceil(float(asleep_min) / 15)))
 
