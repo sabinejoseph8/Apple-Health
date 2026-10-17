@@ -475,6 +475,12 @@
    "Publish Shortcut template v1 (blank, asks for the token at install; an iCloud link checked for personal details, in Settings and the guide)"
   ]
  },
+ "p6-09": {
+  "phase": "6",
+  "texts": [
+   "Count nights the Watch records without stages, before the one-week test: migration 20261017000000_stageless_nights.sql (a night is built from plain \"asleep\" records when it has no core, deep or REM record; nights.no_stages), the reference check, the note on the card, Why today and past days."
+  ]
+ },
  "p6-11": {
   "phase": "6",
   "texts": [
@@ -491,6 +497,12 @@
   "phase": "7",
   "texts": [
    "Check the owner page every morning; follow up on any missed sync the same day"
+  ]
+ },
+ "p7-06": {
+  "phase": "7",
+  "texts": [
+   "Make a new encrypted backup disk before the test starts: create it, save its password in her password manager, make a first backup with scripts/backup-live.sh and practise opening it again; until then Supabase's daily backups (7 days) are the only backup"
   ]
  },
  "p7-03": {
@@ -558,6 +570,7 @@
  "p8-08": {
   "phase": "8",
   "texts": [
+   "Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status. Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year",
    "Review D86 with Sabine: whether nights the Watch records without stages should count toward the status"
   ]
  },
