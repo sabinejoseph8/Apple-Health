@@ -481,7 +481,7 @@
    "Count nights the Watch records without stages, before the one-week test: migration 20261017000000_stageless_nights.sql (a night is built from plain \"asleep\" records when it has no core, deep or REM record; nights.no_stages), the reference check, the note on the card, Why today and past days."
   ]
  },
- "p6-15": {
+ "p6-10": {
   "phase": "6",
   "texts": [
    "D92 narrowed: a night built from plain \"asleep\" counts only with at least 10 Watch heart rate readings through it (migration 20261018000000_stageless_watch_only.sql, the reference check and tests updated; database 396 checks, reference 32; all seven nights marked so far pass)."
@@ -513,10 +513,10 @@
    "Make a new encrypted backup disk before the test starts: create it, save its password in her password manager, make a first backup with scripts/backup-live.sh and practise opening it again; until then Supabase's daily backups (7 days) are the only backup"
   ]
  },
- "p7-03": {
+ "p7-08": {
   "phase": "7",
   "texts": [
-   "Back up at least weekly and before any database change"
+   "Back up the live database to the encrypted disk at the end of the test and before any database change after that; no mid-week backup is needed while nothing changes in the database (D93, 19 October 2026: with Pro's daily backups, D90, the first backup of 17 October serves as the week's, and this copy stays the one kept outside Supabase)"
   ]
  },
  "p7-04": {
