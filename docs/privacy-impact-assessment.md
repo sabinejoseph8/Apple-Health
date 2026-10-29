@@ -56,7 +56,7 @@ Assessed by Sabine Joseph, person in charge of protecting personal information, 
 
 ## 7. Addendum, 29 October 2026 (D94): AI explanations through Anthropic
 
-**Status:** drafted for Sabine's confirmation; applies only to people who tick the optional AI box (R68).
+**Status:** drafted for Sabine's confirmation; applies to everyone, because agreeing to the AI is required to use Clarivi (R68, Sabine, 29 October 2026). A consent that is a condition of use is acceptable for a one-person test; for other testers under Quebec or Ontario rules it should be separate and optional, so revisit before they return.
 
 - **What is sent:** only what `docs/ai-draft.md` lists: the status and nudge, the three readings with the person's usual range and points, a few yes-or-no flags, and for the weekly digest the last 7 days and weekly totals for 8 weeks. Never a name, email address, user id, token, calendar date, time zone, location, raw samples, workouts or notes.
 - **Recipient:** Anthropic, an AI service provider acting as the data processor (its published commercial terms treat the customer as controller). Processing location not confirmed; the consent says "the United States or other countries where Anthropic operates". A written data processing agreement was not confirmed on the pages read; to check before more people use the AI.
