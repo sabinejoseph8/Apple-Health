@@ -7,6 +7,7 @@ import { defineConfig, devices } from '@playwright/test'
 // database request with made-up data.
 const PORT = 5174
 const BUILT_PORT = 5175
+const DEMO_PORT = 5177
 const env = {
   VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
   VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_e2e_placeholder',
@@ -35,6 +36,12 @@ export default defineConfig({
       url: `http://localhost:${BUILT_PORT}`,
       reuseExistingServer: !process.env.CI,
       env,
+    },
+    // The demo build (D95): made-up data, no backend. It is given no environment at all.
+    {
+      command: `npx vite build --mode demo && npx vite preview --mode demo --port ${DEMO_PORT} --strictPort`,
+      url: `http://localhost:${DEMO_PORT}`,
+      reuseExistingServer: !process.env.CI,
     },
   ],
 })
