@@ -39,7 +39,7 @@ python3 checks/prepublish_scan.py --history
 
 ## Reproduce the evaluation
 
-The written evaluation, with the targets and the results of both test weeks, is added after week two. Until then, what can be reproduced from a clone is:
+The written evaluation is [evaluation.md](evaluation.md): the targets and when they were set, how each is counted, week one's results, the AI test set and the module check. Week two's results are added after it ends. What can be reproduced from a clone is:
 
 - The AI test cases are in [docs/ai-eval/](ai-eval/README.md): invented cases and how they are used. Running them needs the project's own AI function and its owner sign-in.
 - The reference check on made-up data is step 5 above.
