@@ -1,7 +1,7 @@
 // R72: only the allow-listed fields can reach the AI. Each test plants a
 // marker in a field that must never be sent and checks it cannot appear.
 import { assert, assertEquals, assertNotEquals } from 'jsr:@std/assert@1'
-import { buildMorningInput, digestInputFrom, inputHash, numbersIn } from './ai-input.ts'
+import { buildMorningInput, digestInputFrom, inputHash } from './ai-input.ts'
 
 const reading = (value: number, normal: number, spread: number, verdict = 'in_range') => ({
   value, normal, range_low: normal - 2 * spread, range_high: normal + 2 * spread, verdict,
@@ -93,9 +93,4 @@ Deno.test('the hash is stable and changes with the input', async () => {
   assertEquals(await inputHash(a), await inputHash(structuredClone(a)))
   assertNotEquals(await inputHash(a), await inputHash(b))
   assertEquals((await inputHash(a)).length, 64)
-})
-
-Deno.test('numbersIn collects every number, rounded too', () => {
-  const s = numbersIn({ a: 1.4, b: [2, { c: 47.6 }], d: 'x' })
-  for (const n of ['1.4', '1', '2', '47.6', '48']) assert(s.has(n), n)
 })

@@ -23,6 +23,9 @@ const CONDITIONS: RegExp[] = [
   /\bbradycardia/i, /\bdepress/i, /\banxi/i, /\bburnout/i, /\bburn out/i, /\bcold\b/i, /\bpain/i, /\bheadache/i,
   /\bnausea/i, /\bdehydrat/i, /\bpregnan/i, /\bcancer/i, /\bdiabet/i, /\bstroke/i, /\bheart attack/i, /\bcardiac/i,
   /\bconcussion/i, /\bpanic/i, /\bmental health/i, /\bsymptom/i, /\bchronic/i, /\binjur/i, /\bstress/i,
+  // Added in the 7b-7 review: a condition named without one of the words above.
+  /\bheart (problem|condition|issue|trouble|disease)/i, /\bhealth (problem|issue|concern|condition)/i, /\bcondition\b/i,
+  /\bunhealthy\b/i,
 ]
 
 // No medical, medication or supplement advice, and no "see a doctor".
@@ -30,6 +33,9 @@ const ADVICE: RegExp[] = [
   /\bdoctor/i, /\bphysician/i, /\bclinician/i, /\bnurse/i, /\bGP\b/, /\bmedic(al|ation|ine)/i, /\bprescri/i, /\bsupplement/i,
   /\bvitamin/i, /\bmagnesium/i, /\bmelatonin/i, /\bcaffeine/i, /\balcohol/i, /\btherap/i, /\btreat/i, /\bhospital/i,
   /\bemergenc/i, /\bseek (help|advice|care)/i, /\bconsult/i, /\bspecialist/i, /\bpill/i,
+  // Added in the 7b-7 review: "see a doctor" and diet advice in other words.
+  /\bprofessional/i, /\bhealth ?care/i, /\bchecked (out|over)\b/i, /\bchecked by\b/i, /\bsee (someone|somebody)\b/i,
+  /\bhydrat/i, /\bdrink/i, /\bdiet\b/i, /\bnutrition/i,
 ]
 
 // What may not be said about a status, and about a nudge.
@@ -46,6 +52,10 @@ const AGAINST_NUDGE: Record<string, RegExp[]> = {
   rest: [/\btrain (hard|as planned|normally|easy)\b/i, /\bgo for it\b/i, /\bpush (hard|yourself)\b/i, /\beasy (run|session|workout)\b/i, /\blight session\b/i],
 }
 
+// A morning text may not guess why the night was as it was (the instruction says so, and the
+// input holds nothing that could show a cause). "Because your Watch did not record..." is a fact
+// from the input, so only the causal words that point at the person's doings are refused.
+const GUESSED_CAUSE: RegExp = /\bbecause (you|of)\b|\bdue to\b|\bcaused?\b|\bthanks to\b|\bresult of\b|\blikely (from|due|because)\b|\bprobably (from|due|because)\b|\bdown to\b|\bfrom (a|an|the|your) (late|hard|heavy|long|big|tough|busy)\b|\b(after|from) (your )?(training|workout|run|dinner|meal|coffee|drinks?)\b/i
 const SELF: RegExp = /\b(AI|A\.I\.|artificial intelligence|language model|Claude|Anthropic|chatbot|assistant)\b/i
 const CAUSAL: RegExp = /\bbecause\b|\bcaused?\b|\bdue to\b|\bleads? to\b|\bled to\b|\bresult(s|ed)? (in|from)\b|\bthanks to\b|\bas a result\b|\bexplains?\b|\bwhy\b|\bso that\b/i
 const TREND: RegExp = /\btrend|\bheading\b|\bgetting (better|worse)\b|\bimprov|\bdecline|\bdownhill|\bdownward|\bupward|\bclimbing\b|\bdropping\b|\brising\b|\bslipping\b/i
@@ -84,6 +94,7 @@ function checkMorning(input: MorningInput, out: MorningOutput): string[] {
   if (text === '') return ['length_ok']
   checkWords(text, input.status, input.nudge, fails)
   if (/\d/.test(text) || NUMBER_WORDS.test(text)) fails.add('no_new_numbers')
+  if (GUESSED_CAUSE.test(text)) fails.add('no_causal_claim')
   if (sentencesOf(text).length > 3 || wordsOf(text) > 60) fails.add('length_ok')
   if (input.flags.sleep_floor && !(/sleep/i.test(text) && FLOOR_SAYS.test(text))) fails.add('credits_sleep_floor')
   if (input.readings_used === 2 && !TWO_OF_THREE.test(text)) fails.add('says_two_of_three')

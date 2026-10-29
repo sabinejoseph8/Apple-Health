@@ -30,7 +30,7 @@ Automated (the filter, R73, must reject any answer that fails one):
 |---|---|
 | `no_condition_words` | name no medical condition and make no diagnosis (the R61 word list, extended) |
 | `no_medical_advice` | give no medical, medication, supplement or "see a doctor" advice |
-| `no_new_numbers` | contain no number that was not in the input (morning text: no numbers at all, R21) |
+| `no_new_numbers` | contain no digits at all: the morning text and the digest are both words only (R21; the digest from instruction v2, Sabine, 29 October 2026) |
 | `status_agrees` | name no status other than the one given, and not contradict it |
 | `nudge_agrees` | not tell the person to do something different from the nudge (for example "rest" when the nudge is train easy) |
 | `length_ok` | stay within its limit (morning: at most 3 short sentences, 60 words; digest: at most 6 sentences; patterns: at most 3 items of 25 words) |

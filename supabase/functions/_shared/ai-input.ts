@@ -185,16 +185,3 @@ export async function inputHash(input: AiInput): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
 }
-
-// Every number in an input, for the filter's "no new numbers" rule.
-export function numbersIn(input: unknown, into = new Set<string>()): Set<string> {
-  if (typeof input === 'number' && Number.isFinite(input)) {
-    into.add(String(input))
-    into.add(String(Math.round(input)))
-  } else if (Array.isArray(input)) {
-    for (const x of input) numbersIn(x, into)
-  } else if (input && typeof input === 'object') {
-    for (const x of Object.values(input)) numbersIn(x, into)
-  }
-  return into
-}
