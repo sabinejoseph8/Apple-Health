@@ -478,19 +478,24 @@
  "p6-09": {
   "phase": "6",
   "texts": [
-   "Count nights the Watch records without stages, before the one-week test: migration 20261017000000_stageless_nights.sql (a night is built from plain \"asleep\" records when it has no core, deep or REM record; nights.no_stages), the reference check, the note on the card, Why today and past days."
+   "Count nights the Watch records without stages, before the one-week test: migration 20261017000000_stageless_nights.sql (a night is built from plain \"asleep\" records when it has no core, deep or REM record; nights.no_stages), the reference check, the note on the card, Why today and past days.",
+   "Count nights the Watch records without stages, before the one-week test",
+   "Count nights the Watch records without stages, before the one-week test"
   ]
  },
  "p6-10": {
   "phase": "6",
   "texts": [
-   "D92 narrowed: a night built from plain \"asleep\" counts only with at least 10 Watch heart rate readings through it (migration 20261018000000_stageless_watch_only.sql, the reference check and tests updated; database 396 checks, reference 32; all seven nights marked so far pass)."
+   "D92 narrowed: a night built from plain \"asleep\" counts only with at least 10 Watch heart rate readings through it (migration 20261018000000_stageless_watch_only.sql, the reference check and tests updated; database 396 checks, reference 32; all seven nights marked so far pass).",
+   "D92 narrowed: a night built from plain asleep counts only with the Watch's heart rate",
+   "D92 narrowed: a night built from plain asleep counts only with the Watch's heart rate"
   ]
  },
  "p6-11": {
   "phase": "6",
   "texts": [
    "Freeze the score settings; tag the release; write the changelog.",
+   "Freeze the score settings; tag the release; write the changelog",
    "Freeze the score settings; tag the release; write the changelog"
   ]
  },
@@ -510,7 +515,8 @@
   "phase": "7",
   "texts": [
    "Make a new encrypted backup disk before the test starts.",
-   "Make a new encrypted backup disk before the test starts: create it, save its password in her password manager, make a first backup with scripts/backup-live.sh and practise opening it again; until then Supabase's daily backups (7 days) are the only backup"
+   "Make a new encrypted backup disk before the test starts: create it, save its password in her password manager, make a first backup with scripts/backup-live.sh and practise opening it again; until then Supabase's daily backups (7 days) are the only backup",
+   "Make a new encrypted backup disk before the test starts"
   ]
  },
  "p7-08": {
@@ -535,6 +541,7 @@
   "phase": "7",
   "texts": [
    "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out). Decided early: Sabine moved the project to Pro on 9 October 2026, before the test (D90); daily backups kept for 7 days, no pausing, the 30-day sign-out switched on the same day, and the owner page counts against 8 GB",
+   "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out)",
    "Decide after the test whether to move the project to Supabase Pro (daily backups, the 30-day inactivity sign-out)"
   ]
  },
@@ -544,9 +551,106 @@
    "Code review of anything changed during the test (fixes only; score logic stays frozen); fix what it finds, then re-run the full test suite"
   ]
  },
+ "p7-03": {
+  "phase": "7",
+  "texts": [
+   "7b-1 Sync changes: a \"When alarm is stopped\" trigger added to the Shortcut (beside the charger and app-open triggers), a wait of 10 minutes before it reads Health (skipped after 11:45, so a late alarm stop is not pushed past noon; her alarm is at 11am), the server and database accept the new trigger name alarm (a small migration like D84's; backup first, Sabine runs db push, functions redeployed), and a setup guide line for the alarm trigger; Sabine updates the Shortcut and adds the alarm automation on her phone, step by step"
+  ]
+ },
+ "p7-09": {
+  "phase": "7",
+  "texts": [
+   "7b-2 A short check of what her year of data supports for sleep need, lagged relationships and change detection; report to Sabine before building anything (lagged relationships may need workouts added to the daily sync, a bigger change to decide first)."
+  ]
+ },
+ "p7-10": {
+  "phase": "7",
+  "texts": [
+   "7b-3 Build the modules the check supports. Dropped by Sabine on 29 October 2026 after 7b-2 (option A): none of the three is built; they stay out of v1 and are reported as tested and not supported (sleep need, lagged relationships) or supported only for large shifts (change detection). Revisit with a second year of data and workouts in the daily sync"
+  ]
+ },
+ "p7-11": {
+  "phase": "7",
+  "texts": [
+   "7b-4 AI groundwork: check Anthropic's data terms and report to Sabine; decide what the AI sees (proposed: the three readings, the usual levels and the status, no name, email or dates beyond the day); rewrite the consent text, the \"Your data\" page and the privacy assessment for the AI (consent version 3), approved by Sabine before anything is sent; Sabine makes the API key and adds it to Supabase's secrets, with a spending limit"
+  ]
+ },
+ "p7-12": {
+  "phase": "7",
+  "texts": [
+   "7b-5 AI build: a server function writes the morning explanation and the model-written weekly digest (a guarded model writes the sentences from the week's facts, which stay computed by the database, D22; the digest still sends no notification, D72) and describes what the modules find; the score still sets the status; fixed, tested wording shows when the AI is slow, down or filtered; a filter and tests for the no-diagnosis rule (R61); backup first, then Sabine runs db push; the same release marks consent_version() stable instead of immutable (moved here from Phase 8) and bumps the consent to version 3"
+  ]
+ },
+ "p7-13": {
+  "phase": "7",
+  "texts": [
+   "7b-5a Write the AI test set before the prompt is written or tuned (D95; Opus 5.5 only, no model comparison): about 40 made-up nights (no real readings), including tricky ones that tempt the AI to name a condition, invent a number or contradict the status, with the expected behaviour written first; and a held-out set of about 20 written before any tuning and kept out of the folder the build session reads. The set is made of invented data only, so it can be public"
+  ]
+ },
+ "p7-14": {
+  "phase": "7",
+  "texts": [
+   "7b-5b Run the models on the test set and compare them. Dropped by Sabine on 29 October 2026: Claude Opus 5.5 is the final decision, no comparison. The made-up test set (7b-5a) is still run on Opus 5.5 alone, through an owner-only mode of the AI function (the key stays in Supabase), to measure the filter pass rate, agreement with the status, speed and cost; the held-out set is graded in a fresh session"
+  ]
+ },
+ "p7-15": {
+  "phase": "7",
+  "texts": [
+   "7b-5c Score settings version 3 with a sleep floor (D96, Sabine, 29 October 2026): when sleep is counted and 1.5 or more spreads below her usual, the status is at least Ease off, with a new reason code and plain words in the wording module (a wording sample sheet for Sabine to approve first; the card, the morning notification, Why today's \"How the status is decided\" and past days); a migration adds a nullable sleep_floor_spreads column (versions 1 and 2 stay null, frozen) and a version 3 copy of version 2 with 1.5; rebuild_status applies the floor; the pandas reference and check.py apply it, so the independent check still matches the database on her year and on the made-up history; tests written first: the floor fires at 1.5 and not below, not when sleep is missing, on a 2 of 3 day, the zone limits unchanged, the old versions unchanged; the year recomputed under version 3 (shown_status keeps what was shown); version 3 frozen when week two starts; the allow-list for the AI gets a yes or no for \"the sleep floor set the status\"; backup first, then Sabine runs db push in the same release as 7b-5"
+  ]
+ },
+ "p7-16": {
+  "phase": "7",
+  "texts": [
+   "7b-6 Update the project memory files for what 7b-1 to 7b-5 built (product spec requirements R68 to R75 and R24, design, tech spec)."
+  ]
+ },
+ "p7-17": {
+  "phase": "7",
+  "texts": [
+   "7b-7 Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
+  ]
+ },
+ "p7-18": {
+  "phase": "7",
+  "texts": [
+   "7b-8 Back up the live database to the encrypted disk, and check the app on Sabine's iPhone, before week two"
+  ]
+ },
+ "p7-19": {
+  "phase": "7",
+  "texts": [
+   "Week two: seven days, starting the day after 7b-1 to 7b-8 are done, with the same targets as week one (sync on 6 of 7 days, opened on 5 of 7, notifications 90%, isolation and correctness; quiet by default, action and check-in agreement indicative only), set before any result; no changes to score logic or settings during the week"
+  ]
+ },
+ "p7-20": {
+  "phase": "7",
+  "texts": [
+   "7b-5v A second model checks every claim in each weekly digest against the data before it is shown: tests first; runner, checker, owner eval mode, fake-server check extended; measured on earlier invented digests, in-sample for the sealed set: it refused the known wrong digest, and some others (2 of 12 and then 1 of 12 development digests, 1 of the other 6 sealed ones), a few of them real slips the grader had missed; a refused digest is written again once, then the fixed digest shows"
+  ]
+ },
+ "p7-21": {
+  "phase": "7",
+  "texts": [
+   "Week two: read the AI-written digests for factual slips like the one the sealed set found (a reading described as changing from day to day wrongly), and tell Sabine what was found"
+  ]
+ },
+ "p7-22": {
+  "phase": "7",
+  "texts": [
+   "Back up the live database to the encrypted disk at the end of week two"
+  ]
+ },
+ "p7-23": {
+  "phase": "7",
+  "texts": [
+   "Reopen the noon rule (R28, R29) only if week two shows syncs still arriving after noon"
+  ]
+ },
  "p8-01": {
   "phase": "8",
   "texts": [
+   "Calculate every target, for week one (19 to 25 October) and for week two, reported separately:",
    "Calculate every target:"
   ]
  },
@@ -582,14 +686,86 @@
    "Review D86 with Sabine: whether nights the Watch records without stages should count toward the status"
   ]
  },
- "p8-03": {
+ "p8-06": {
   "phase": "8",
   "texts": [
-   "Mark consent_version() stable instead of immutable, in the next release's database change"
+   "(moved to 7b-5, the next release's database change) Mark consent_version() stable instead of immutable, in the next release's database change"
   ]
  },
  "p8-07": {
   "phase": "8",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
+  ]
+ },
+ "p9-01": {
+  "phase": "9",
+  "texts": [
+   "Move interview-notes.md into private/ (ignored by Git), stop tracking it, and update CLAUDE.md to name the new place (Sabine, 29 October 2026). The earlier versions stay in the public history, which holds no secrets, passwords or readings; rewriting history is Sabine's call, never automatic"
+  ]
+ },
+ "p9-02": {
+  "phase": "9",
+  "texts": [
+   "Bring the project memory files up to date with what was built, and tick the website"
+  ]
+ },
+ "p9-03": {
+  "phase": "9",
+  "texts": [
+   "Evaluation write-up (docs/evaluation.md): the targets as set before any result (with the date), week one and week two reported separately with every miss stated next to its number, the module check as a pre-registered negative result, and the AI feature's test set and its result on Opus 5.5 (7b-5a); a small script reproduces the numbers (scripts/reference/measure.py and the check scripts); only totals, never readings"
+  ]
+ },
+ "p9-04": {
+  "phase": "9",
+  "texts": [
+   "Demo build on made-up data, so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses"
+  ]
+ },
+ "p9-05": {
+  "phase": "9",
+  "texts": [
+   "Architecture diagram as SVG, PNG and PDF (from the tech spec's overview, including the AI step and what is sent to it)"
+  ]
+ },
+ "p9-06": {
+  "phase": "9",
+  "texts": [
+   "Recruiter README for AI product manager roles, with a \"Try it\" section that offers the layers (read the case study, watch the video, open the demo, inspect the evaluation, run the checks), replacing the current one; the original brief kept as docs/project-brief.md; discloses the AI feature and where data goes"
+  ]
+ },
+ "p9-07": {
+  "phase": "9",
+  "texts": [
+   "Simple automated checks (checks/run_all.py, Python standard library) and a short run guide (docs/how-to-run.md), runnable without real data through scripts/reference/check.py --local-synthetic; the config allows the one contact address in the consent text and the made-up test fixtures, and still flags every other email; the guide says the contact address is listed on purpose"
+  ]
+ },
+ "p9-08": {
+  "phase": "9",
+  "texts": [
+   "One-page \"AI product management case study\" PDF, checked to be one page"
+  ]
+ },
+ "p9-09": {
+  "phase": "9",
+  "texts": [
+   "Private portfolio kit PDF outside the repository (2-minute and 10-minute stories, likely interview questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings)"
+  ]
+ },
+ "p9-10": {
+  "phase": "9",
+  "texts": [
+   "Pre-publish scan including history; Sabine: approve before anything is pushed"
+  ]
+ },
+ "p9-11": {
+  "phase": "9",
+  "texts": [
+   "After pushing, check every README link on GitHub"
+  ]
+ },
+ "p9-12": {
+  "phase": "9",
   "texts": [
    "Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
   ]
