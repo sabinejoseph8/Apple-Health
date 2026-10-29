@@ -234,7 +234,7 @@ Each call carries the user's session.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
 ### AI explanations (D94, planned; the design is in `docs/ai-draft.md`)
-- A server function (planned name `ai-explain`) writes the morning explanation and the weekly digest's sentences and patterns, called after the analysis queue builds a day's status, for people who have agreed (`consents.agreed_ai`, consent version 3). It calls the Anthropic API with the key `ANTHROPIC_API_KEY` from Supabase's secret store and the model from a setting (`claude-opus-5-5` first).
+- A server function (planned name `ai-explain`) writes the morning explanation and the weekly digest's sentences and patterns, called after the analysis queue builds a day's status, for people who have agreed (`consents.agreed_ai`, consent version 3). It calls the Anthropic API with the key `ANTHROPIC_API_KEY` from Supabase's secret store and the model `claude-opus-5-5` (final; one named constant in the function).
 - The input is built by one function from the database's own results and an allow-list (R72); a test with a marker in each forbidden field proves none reaches the AI. The status is passed as a fact. The AI never changes data.
 - The filter (`_shared/ai-filter.ts`, planned) is ordinary code with tests: the R61 word list, numbers only from the input, the right status and nudge, length. One retry, then the fixed wording from the wording module; 20-second timeout.
 - Timing (R70): the analysis queue starts the AI as soon as it builds a status, and the every-minute job is the backup; the card shows the status and headline at once and the briefing line reads "being written" until the text arrives; after 3 minutes from the status being set, or on a failure or a filtered text, it shows the fixed briefing. Agreement to the AI is required for every person (R68), so nothing is sent for anyone who has not agreed to consent version 3.
@@ -414,7 +414,7 @@ How a release reaches the live project: sign the Supabase command-line tool in o
 ---
 
 ### Evaluation plan (D95, 29 October 2026)
-- **What is measured:** the test targets of D9 as re-scaled by D91 and D94 (set before any result), reported for week one and week two separately, plus correctness (the independent pandas check against the database, on Sabine's year and on a made-up history on every push), isolation (the cross-user tests), and, for the AI explanations, a test set of made-up nights (about 40, with a held-out set of about 20 written before tuning).
+- **What is measured:** the test targets of D9 as re-scaled by D91 and D94 (set before any result), reported for week one and week two separately, plus correctness (the independent pandas check against the database, on Sabine's year and on a made-up history on every push), isolation (the cross-user tests), and, for the AI explanations, a test set of made-up nights (about 40, with a held-out set of about 20 written before tuning) run on Opus 5.5 only.
 - **Expected answers:** the targets are in `mvp.md` (D9, D91, D94). The AI test set's expected behaviour is written before the prompt, and the held-out set is graded in a fresh session, never by the session that tuned the prompt. Changes made after seeing the held-out result are labelled in-sample.
 - **Real data:** only totals and counts appear in public documents, never readings.
 - **Who runs it:** the check scripts (`scripts/reference/`) and a fresh review session; Sabine approves what is published.

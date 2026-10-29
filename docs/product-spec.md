@@ -207,7 +207,7 @@
 - **R72** The AI is sent only: the status and nudge; the three readings in plain units with the person's usual range, points and zones; whether readings were missing, the night was built without stages, the sync was late and the illness check fired; and, for the digest, the last 7 days and weekly totals for the 8 weeks before. It is never sent a name, email address, user id, upload token, device name, time zone, location, calendar date, raw samples, workouts or notes.
 - **R73** Every AI text passes a filter before it is shown: no condition name or diagnosis (R61), no number that was not sent, no different status or advice from the nudge chosen, within the length limits. A rejected text gets one retry, then the fixed wording.
 - **R74** Each AI text is saved with its model, instruction version, the day it is for and whether the filter passed, readable only by that person (and the owner), and deleted by "Delete my data" and "Withdraw consent". The provider keeps what it was sent for up to 30 days and cannot delete it on request; the consent says so.
-- **R75** The AI key lives only in Supabase's secret store, spending is capped at the provider, and the model is a setting (Claude Opus 5.5 first).
+- **R75** The AI key lives only in Supabase's secret store, spending is capped at the provider, and the model is Claude Opus 5.5 (Sabine's final decision, 29 October 2026; no comparison with other models).
 
 ---
 

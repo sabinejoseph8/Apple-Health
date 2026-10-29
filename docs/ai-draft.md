@@ -2,7 +2,7 @@
 
 **Status:** draft, 29 October 2026 (D94, Phase 7b-4). Nothing here is built. When Sabine approves, the consent wording goes into `wording.consent` (version 3), the design into `tech-spec.md`, `product-spec.md` and `design.md`, and this file is kept as the record. The AI explains; it never sets the status (D94).
 
-**Model:** Claude Opus 5.5 (`claude-opus-5-5`), chosen by Sabine on 29 October 2026, kept as a setting so it can change. About 0.7 cents for a morning's text and 27 cents a month at Anthropic's published prices (Opus 5.5: $4 per million words in, $20 out).
+**Model:** Claude Opus 5.5 (`claude-opus-5-5`), Sabine's final decision on 29 October 2026, with no comparison against other models. About 0.7 cents for a morning's text and 27 cents a month at Anthropic's published prices (Opus 5.5: $4 per million words in, $20 out).
 
 ---
 
