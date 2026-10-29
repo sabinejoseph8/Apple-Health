@@ -615,6 +615,12 @@
    "7b-7 Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
   ]
  },
+ "p7-24": {
+  "phase": "7",
+  "texts": [
+   "7b-7b Live re-run of the 40 development cases through the deployed AI function under the tightened filter: 38 of 40 passed on a single attempt; the two misses were digests, one refused by the filter for the word \"because\" in a true sentence (a strict false alarm) and one refused by the second-model check for a trend the data did not show (the safety net working); not comparable with the earlier 40 of 40, and still the development set, so the sealed set is the cleaner estimate; written up in docs/ai-eval/README.md"
+  ]
+ },
  "p7-18": {
   "phase": "7",
   "texts": [

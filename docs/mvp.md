@@ -278,6 +278,7 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
   - **Check-in completion:** 3 of the 3 days the card was opened had a check-in answered (3 of 7 days overall).
   - **Engagement, 5 of 7 days: missed.** The card was opened on 3 of 7 days (19, 20 and 21 October), and no notification tap was logged.
   - **Action: not measurable.** No Ease off or Rest was shown, so no follow-through question was asked and none answered.
+  - **Your account: done.** Written and approved by Sabine on 29 October 2026 (her words are in `docs/progress.md`, Phase 7). In short: Clarivi never changed a decision; she ignored nothing, because every day she synced it told her she was ready to go; she would not keep using it as it was, because of the hassle of remembering to sync and because after the noon cutoff the card gives no status for that morning.
   - **Partial-data days:** none. Both days shown rested on all three readings. The other five days had no status shown: 21 October (the night arrived after noon), 22 October (no night recorded) and 23 to 25 October (no sync).
 - **D64** The card's "Sync is being rejected" state (R11) and its import progress ("Importing your history: 5 of 12 months", R12) are built in Phase 3 with the other card states (decided 3 October 2026, planning Phase 3; no phase had them). Consequences: Phase 5's token-reissue check finds the rejected state already in place.
 
