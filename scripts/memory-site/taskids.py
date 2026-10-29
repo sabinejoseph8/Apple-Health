@@ -71,7 +71,8 @@ def assign(tasks, old):
     for i, t in enumerate(tasks):
         if 'id' in t:
             continue
-        a = norm(t['text'])[:90]
+        # The saved words are the task's own words without its dated notes (main_text), so compare those.
+        a = norm(t.get('main_text') or t['text'])[:90]
         for tid, o in old.items():
             if o['phase'] != str(t['phase']) or tid in used:
                 continue
