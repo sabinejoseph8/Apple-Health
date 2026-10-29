@@ -1,0 +1,77 @@
+{
+  "readme": "README.md",
+  "required": [
+    "README.md",
+    "docs/how-to-run.md",
+    "docs/architecture.svg",
+    "docs/architecture.png",
+    "docs/architecture.pdf"
+  ],
+  "_still_to_add_to_required": "docs/evaluation.md, docs/case-study.html and docs/case-study.pdf are added here when Phase 9 builds them (docs/progress.md, Phase 9).",
+  "readme_sections": [],
+  "_readme_sections_to_restore": [
+    "problem",
+    "how it works|how a run works|architecture",
+    "design|decision|tradeoff",
+    "quality|evaluation|measured|results|tested|scorecard",
+    "limitation",
+    "skills"
+  ],
+  "_readme_note": "The README is still the original project brief, which Phase 9 replaces. The section list above is restored when it is replaced; until then the section check is off on purpose.",
+  "evaluation": "docs/evaluation.md",
+  "evaluation_sections": [
+    "what good looks like",
+    "how it is measured",
+    "results",
+    "caveats",
+    "what the results changed"
+  ],
+  "style_files": [
+    "README.md",
+    "docs/*.md",
+    "docs/case-study.html"
+  ],
+  "_style_note": "docs/design-screens.html is left out of the dash check: it is a saved copy of the Clarivi Screens canvas, and the dashes sit in its own script and style comments, not in anything written for a reader.",
+  "case_study_pdf": "docs/case-study.pdf",
+  "headline_numbers": {
+    "_note": "Added with the README, case study and evaluation, once week two's results are in."
+  },
+  "private_paths": [
+    "interview-notes.md",
+    "private/",
+    "portfolio-private/"
+  ],
+  "allowed_emails": [
+    "notions_close_5p@icloud.com",
+    "example.test",
+    "example.invalid",
+    "admin@email.com"
+  ],
+  "_allowed_emails_note": "The first is the one contact address in the consent text, public on purpose (Sabine, 29 October 2026). example.test and example.invalid are made-up addresses in the test fixtures and in a placeholder in send-push; admin@email.com is Supabase's own default in supabase/config.toml. Every other address is still flagged.",
+  "allowed_secret_markers": [
+    "a-brand-new-password",
+    "another-password-999",
+    "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)",
+    "local-ai-check-1",
+    "local-card-demo-only",
+    "local-import-check-pass-1",
+    "local-notify-check-1",
+    "local-owner-check-1",
+    "local-sync-check-pass-1",
+    "my-own-new-password-42",
+    "my-password-123",
+    "not-a-real-password",
+    "not-my-password",
+    "not-the-password",
+    "other-account-pass-1",
+    "reference-check-pass-1",
+    "temporary-pass-1234"
+  ],
+  "_allowed_secret_markers_note": "The made-up passwords of throwaway accounts that the local tests create and delete on a local database, plus one reference to an environment variable in supabase/config.toml. Each is listed by its exact value so a new real secret is still flagged.",
+  "skip_paths": [
+    "node_modules/",
+    "package-lock.json",
+    ".git/",
+    "deno.lock"
+  ]
+}
