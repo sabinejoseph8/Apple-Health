@@ -233,6 +233,13 @@ Each call carries the user's session.
 - Built in Phase 3: `supabase/functions/_shared/briefing.ts` puts the words together from a `daily_status` row (the card's headline and briefing, the morning notification's reason, Why today's summary and "Also checked", and last night's values while learning). The briefing says what was off (outside the range, or at least one spread worse inside it: "a little"), what it means, then what was normal, better, missing or still being learned, with the illness check's words only when it ran. `npm run wording:sheet` prints a sample sheet of every state's words on made-up days, for review.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
+### AI explanations (D94, planned; the design is in `docs/ai-draft.md`)
+- A server function (planned name `ai-explain`) writes the morning explanation and the weekly digest's sentences and patterns, called after the analysis queue builds a day's status, for people who have agreed (`consents.agreed_ai`, consent version 3). It calls the Anthropic API with the key `ANTHROPIC_API_KEY` from Supabase's secret store and the model from a setting (`claude-opus-5-5` first).
+- The input is built by one function from the database's own results and an allow-list (R72); a test with a marker in each forbidden field proves none reaches the AI. The status is passed as a fact. The AI never changes data.
+- The filter (`_shared/ai-filter.ts`, planned) is ordinary code with tests: the R61 word list, numbers only from the input, the right status and nudge, length. One retry, then the fixed wording from the wording module; 20-second timeout.
+- A table `ai_texts` (planned) holds each text with its model, instruction version, day and filter result, under row-level security, deleted by `delete_my_data` and `withdraw_consent`. The input is not stored.
+- What the provider keeps: up to 30 days (longer only if flagged for misuse or required by law), no training on it, no deletion on request. Recorded in the consent and the privacy assessment (an addendum of 29 October 2026).
+
 ---
 
 ## 5. System patterns (secure and extensible)

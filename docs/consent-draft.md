@@ -57,3 +57,9 @@ Version 1, 4 October 2026.
 - **Settings** will show "You agreed on [date]", with a link to read this text again, and the Withdraw consent row (D80).
 - **"Sign out"** is a plain text link beside the button, so not agreeing is always possible and costs nothing.
 - **This text is also the published privacy policy** Quebec asks for: the plan is to make it readable from the setup guide without signing in.
+
+---
+
+## Version 3 (planned, D94, 29 October 2026)
+
+The new "AI explanations" section, the changes to "Where it's kept" and "Who can see it", the third optional box and two corrected lines ("a small test run by Sabine Joseph"; "kept until you delete it or Sabine ends Clarivi, then deleted within 30 days") are drafted and approved in `docs/ai-draft.md`, section 4 and 5. They move into `wording.consent` as version 3 when the AI is built (7b-5), and everyone agrees again.

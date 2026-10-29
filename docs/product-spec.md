@@ -183,11 +183,11 @@
 - **R56** Every answer is logged with its time and where it was given: the 8pm notification, the card after 8pm, or the next morning's card.
 
 ### Weekly digest
-- **R57** Once a week, a digest page summarises the week: what moved against normal, what was flagged, how many days had data and how many nudges were followed. It is written from a fixed template and is reachable from the card.
+- **R57** Once a week, a digest page summarises the week: what moved against normal, what was flagged, how many days had data and how many nudges were followed. It is written from a fixed template (from D94, written by the AI from the same facts when the person has agreed, R71, with the fixed template as the fallback) and is reachable from the card.
 - **R58** Before the first digest, the page says when it will appear. A week with missing days says how many days had data.
 
 ### Privacy and wording
-- **R59** "Delete my data" removes all of that user's readings, results and answers after the password is re-entered, and confirms when it's done.
+- **R59** "Delete my data" removes all of that user's readings, results and answers after the password is re-entered, and confirms when it's done. (It cannot remove what an AI provider holds for up to 30 days, R74.)
 - **R60** No third-party analytics or tracking runs on any page that shows health data.
 - **R61** No screen or notification names a medical condition or suggests a diagnosis.
 - **R62** The setup guide explains that notifications show status and reason on the lock screen, and how to set previews to "When Unlocked".
@@ -198,6 +198,16 @@
 - **R65** The owner can record dated events (illness, major events) for her own year. No screen is required; a simple entry method is enough.
 - **R66** For the owner's account only, workout summaries are loaded once from a Health app export (changed 3 October 2026: no longer through the import Shortcut), used only for the Signal check.
 - **R67** The owner can change the score settings (weights, zone limits, baseline window) without a new release. The settings are frozen for the four-week test.
+
+### AI explanations (D94, decided 29 October 2026, designed in `docs/ai-draft.md`, to be built in Phase 7b)
+- **R68** AI explanations are optional. The consent screen has a third box, unticked, "I agree to Clarivi sending my results, as described above, to an AI service run by Anthropic to write explanations", and Clarivi works in full without it. Settings has an "AI explanations" row, on or off; turning it off stops sending and deletes the saved AI texts. Nothing is sent without the person's agreement.
+- **R69** The AI explains; it never sets the status. The score decides (R24), the same readings always give the same status, and the status is given to the AI as a fact its words must agree with.
+- **R70** The card's briefing is written by the AI when the person has agreed: at most three short sentences, no numbers (R21), and, if the AI is slow (over 20 seconds), unavailable or filtered out, the fixed briefing shows instead. A card is never blank because of the AI.
+- **R71** The weekly digest's sentences (R57) and up to three patterns over the past weeks are written by the AI from the week's facts. The patterns say what "tends to" happen, never what caused it. The digest still sends no notification (D72).
+- **R72** The AI is sent only: the status and nudge; the three readings in plain units with the person's usual range, points and zones; whether readings were missing, the night was built without stages, the sync was late and the illness check fired; and, for the digest, the last 7 days and weekly totals for the 8 weeks before. It is never sent a name, email address, user id, upload token, device name, time zone, location, calendar date, raw samples, workouts or notes.
+- **R73** Every AI text passes a filter before it is shown: no condition name or diagnosis (R61), no number that was not sent, no different status or advice from the nudge chosen, within the length limits. A rejected text gets one retry, then the fixed wording.
+- **R74** Each AI text is saved with its model, instruction version, the day it is for and whether the filter passed, readable only by that person (and the owner), and deleted by "Delete my data" and "Withdraw consent". The provider keeps what it was sent for up to 30 days and cannot delete it on request; the consent says so.
+- **R75** The AI key lives only in Supabase's secret store, spending is capped at the provider, and the model is a setting (Claude Opus 5.5 first).
 
 ---
 
@@ -223,7 +233,7 @@
 - A native iPhone app, an Apple Watch app, or Android.
 - Manual Apple Health exports (the import is automatic).
 - Wrist temperature.
-- A model-written weekly digest (it uses a fixed template).
+- A model-written weekly digest: now in, from D94 (R71), when the person agrees.
 - The causal layer: guided self-experiments and natural experiments.
 - Longer-history analysis: lagged relationships, personal sleep need, seasonality, changepoints.
 - Workout analysis: strength sessions, heart rate recovery, intensity zones, fitness tests.
@@ -243,7 +253,7 @@
 | Nudge calibration | Log each nudge, its reason, whether it was followed and the next day's outcome |
 | Workout-level analysis | Store workout records when they're imported |
 | More delivery channels (for example email) | Treat the card, digest and nudge as content that can be sent through any channel |
-| Model-written digest | Keep "work out the week's facts" separate from "write the sentences" |
+| Model-written digest (planned, D94, R71) | Keep "work out the week's facts" separate from "write the sentences" |
 | A native HealthKit app instead of the Shortcut | Keep the import as a swappable source that produces the same data |
 | More users | Tie every piece of data to its user, with isolation enforced in one place |
 | Tunable or learned score weights | Store the weights, limits and windows as settings, not fixed values |

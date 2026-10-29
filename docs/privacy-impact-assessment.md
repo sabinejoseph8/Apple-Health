@@ -51,3 +51,15 @@ Sabine's encrypted backups stay on her Mac, outside iCloud (D77).
 Given the small scale, the testers' informed and separate consent to US storage, the processor's contract and the technical protections above, storing testers' data with Supabase in the United States is proportionate for the four-week test. The written agreement with the processor is Supabase's Data Processing Addendum, read together with this assessment.
 
 Assessed by Sabine Joseph, person in charge of protecting personal information, 4 October 2026.
+
+---
+
+## 7. Addendum, 29 October 2026 (D94): AI explanations through Anthropic
+
+**Status:** drafted for Sabine's confirmation; applies only to people who tick the optional AI box (R68).
+
+- **What is sent:** only what `docs/ai-draft.md` lists: the status and nudge, the three readings with the person's usual range and points, a few yes-or-no flags, and for the weekly digest the last 7 days and weekly totals for 8 weeks. Never a name, email address, user id, token, calendar date, time zone, location, raw samples, workouts or notes.
+- **Recipient:** Anthropic, an AI service provider acting as the data processor (its published commercial terms treat the customer as controller). Processing location not confirmed; the consent says "the United States or other countries where Anthropic operates". A written data processing agreement was not confirmed on the pages read; to check before more people use the AI.
+- **What Anthropic does with it:** by default does not train its models on API inputs or outputs; keeps them up to 30 days (Sonnet and Opus 5.5 are not among the "Covered Models" that require a 30-day hold, but the older retention article gives 30 days); may keep a flagged request up to 2 years and safety scores up to 7 years; does not delete API data on request. So "Delete my data" and "Withdraw consent" cannot remove it; the consent says so.
+- **Risks and what reduces them:** a provider breach (little data, no identity, short retention, a provider security programme); the AI wording a condition or advice (a tested filter and a fixed fallback, R73); the person did not realise (a separate, optional, unticked box and plain wording); a key leaks (kept only in Supabase's secrets, spending capped).
+- **Conclusion:** proportionate for a one-person test with the safeguards above. Still to do before other testers use the AI: confirm the processing location and the agreement with Anthropic.
