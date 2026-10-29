@@ -197,6 +197,8 @@ select throws_ok('delete from public.score_settings where version = 99', 'P0001'
   'score settings version 99 is frozen', 'or deleted');
 
 -- The whole chain from readings: recompute builds the status too.
+-- The range runs to tomorrow so today's sync is always inside it: this test failed once "today" passed
+-- the settings' 28-night window after 30 September (found 29 October 2026).
 insert into public.uploads (id, user_id, schema_version, kind, device_tz_offset_min, local_date, status)
 values ('cccccccc-0000-0000-0000-000000000001', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 1, 'daily', -300, (now() - interval '5 hours')::date, 'accepted');  -- the user's day at UTC-5, not the database's UTC day (which is a day ahead from 7pm to midnight)
 insert into public.samples (user_id, upload_id, type, start_at, end_at, tz_offset_min, stage, value, sample_hash)
@@ -208,7 +210,7 @@ insert into public.samples (user_id, upload_id, type, start_at, end_at, tz_offse
 select 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'cccccccc-0000-0000-0000-000000000001', 'heart_rate', t, t, -300, 52,
        sha256(convert_to(t::text, 'UTF8'))
   from generate_series(timestamptz '2026-09-28 23:30-05', '2026-09-29 05:30-05', interval '30 minutes') as t;
-select is((public.recompute('cccccccc-cccc-cccc-cccc-cccccccccccc', '2026-09-28', '2026-09-30') ->> 'status')::int, 2,
+select is((public.recompute('cccccccc-cccc-cccc-cccc-cccccccccccc', '2026-09-28', current_date + 1) ->> 'status')::int, 2,
   'recompute also builds the status: the night, and this morning''s sync');
 select is((select status || '/' || no_status_reason from public.daily_status
             where user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' and date = '2026-09-29'), 'none/learning',
