@@ -272,7 +272,7 @@
 - The morning card fits one screen on each tester's iPhone.
 
 **Test targets** (confirmed 29 September 2026 for four people over 28 days; revised 8 October 2026 for one person, Sabine, over two weeks, D89, and again 9 October 2026 over one week, D91, before any test result; they must not change once results arrive)
-- **Sync:** a successful morning sync on at least 6 of 7 days (was 13 of 14, D89; first 26 of 28 days for each user).
+- **Sync:** a successful morning sync on at least 6 of 7 days (was 13 of 14, D89; first 26 of 28 days for each user). How it is counted: from week two, a successful morning sync means the morning's status was worked out and shown before noon (D99, decided 29 October 2026 after week one's results; the target itself is unchanged). Week one stays as recorded, 4 of 7 days counting any accepted post (D94), with the stricter counts beside it in `docs/mvp.md`.
 - **Notifications:** delivered on at least 90% of synced days that have a status.
 - **Isolation:** no user ever sees another's data. No tolerance.
 - **Correctness:** the calculations match the reference check on the owner's year, and no unfinished night is ever scored.
