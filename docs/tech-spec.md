@@ -233,10 +233,10 @@ Each call carries the user's session.
 - Built in Phase 3: `supabase/functions/_shared/briefing.ts` puts the words together from a `daily_status` row (the card's headline and briefing, the morning notification's reason, Why today's summary and "Also checked", and last night's values while learning). The briefing says what was off (outside the range, or at least one spread worse inside it: "a little"), what it means, then what was normal, better, missing or still being learned, with the illness check's words only when it ran. `npm run wording:sheet` prints a sample sheet of every state's words on made-up days, for review.
 - The app and the push sender both use it, so the words are defined in one place and tested once.
 
-### Sleep floor (D96, planned, score settings version 3)
+### Sleep floor (D96, released 29 October 2026, score settings version 3)
 - `score_settings.sleep_floor_spreads` (nullable; versions 1 and 2 are null and frozen; version 3 is 1.5). In `rebuild_status`, after the zone limits set a status, a day whose sleep reading is counted and has `spreads_worse` of at least the floor, and whose status would be Ready, becomes Ease off with the reason code `sleep_floor`. Missing or building sleep never fires it. The pandas reference applies the same rule. Version 3 is frozen when week two starts.
 
-### AI explanations (D94, built 29 October 2026, not yet released; the design is in `docs/ai-draft.md`)
+### AI explanations (D94, built and released 29 October 2026; the design is in `docs/ai-draft.md`)
 - A server function (planned name `ai-explain`) writes the morning explanation and the weekly digest's sentences and patterns, called after the analysis queue builds a day's status, for people who have agreed (`consents.agreed_ai`, consent version 3). It calls the Anthropic API with the key `ANTHROPIC_API_KEY` from Supabase's secret store and the model `claude-opus-5-5` (final; one named constant in the function).
 - The input is built by one function from the database's own results and an allow-list (R72); a test with a marker in each forbidden field proves none reaches the AI. The status is passed as a fact. The AI never changes data.
 - The filter (`_shared/ai-filter.ts`, planned) is ordinary code with tests: the R61 word list, numbers only from the input, the right status and nudge, length. One retry, then the fixed wording from the wording module; 20-second timeout.
