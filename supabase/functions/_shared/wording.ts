@@ -761,18 +761,20 @@ export const wording = {
         ],
       },
       {
-        title: 'Set up the two morning automations',
+        title: 'Set up the three morning automations',
         steps: [
           'In the Shortcuts app, tap Automation, then the + button.',
-          'The first runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text.',
-          'The second runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync and the Text as input.',
-          'Both act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
+          // D94: the alarm run waits 10 minutes before it reads Health, so the Watch has time to send the night.
+          'The first runs when you stop your alarm: choose Alarm, pick your alarm, then Is Stopped, and Run Immediately. Add a Text action holding exactly alarm, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text. The sync then waits 10 minutes, so your Watch can send last night.',
+          'The second runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text.',
+          'The third runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync and the Text as input.',
+          'They act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
         ],
       },
       {
         title: 'Each morning',
         steps: [
-          'Unplug your iPhone and open your morning app: the sync runs by itself. If your phone was still locked when you unplugged, the app automation catches up.',
+          'Stop your alarm: the sync runs by itself about 10 minutes later. If your phone was locked, unplugging it or opening your morning app catches up.',
           // Seen on Sabine's lock screen on 5 and 7 October 2026 (a locked run waits for a tap); words approved by her.
           'If your lock screen shows "Find Health Samples Where: Tap to run", unlock your iPhone and tap Continue.',
           "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",

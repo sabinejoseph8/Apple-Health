@@ -99,13 +99,13 @@ Built in Phase 1a (3 October 2026):
 **Raw data (never changed after arrival)**
 | Table | Holds | Key fields |
 |---|---|---|
-| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `set_aside_count`, `set_aside_note`, `status` (accepted, rejected), `error` |
+| `uploads` | One row per post | `id`, `user_id`, `token_id`, `received_at`, `schema_version`, `kind` (daily, backfill, ping), `month_id`, `run_trigger` (charger, app, manual, button, alarm), `device_tz_offset_min`, `local_date`, `sample_count`, `duplicate_count`, `night_complete`, `set_aside_count`, `set_aside_note`, `status` (accepted, rejected), `error` |
 | `samples` | Every reading | `id`, `user_id`, `upload_id`, `type` (heart_rate, hrv_sdnn, sleep_stage, resting_hr, respiratory_rate), `start_at`, `end_at`, `tz_offset_min`, `value`, `unit`, `stage`, `source_name`, `source_device`, `sample_hash` (unique per user) |
 | `workouts` | Owner only, for the Signal check | `id`, `user_id`, `activity`, `start_at`, `end_at`, `tz_offset_min`, `duration_min`, `avg_hr`, `source_name` |
 
 Built in Phase 1b (3 October 2026):
 - `upload_tokens`: at most one working token per user (a unique index on unrevoked tokens). The app can read when its token was made and last used, but never the hash (column-level grants).
-- `uploads.run_trigger` is `charger`, `app`, `manual` or, from 5 October 2026, `button`: the card's Sync now link (`shortcuts://run-shortcut?name=Clarivi%20Sync&input=text&text=button`, D84) passes "button" as the Shortcut's input, which skips its sync-or-import question (migration `20261013000000_sync_button.sql`; `TRIGGERS` in `_shared/ingest-schema.ts`).
+- `uploads.run_trigger` is `charger`, `app`, `manual`, `alarm` (from 29 October 2026, D94: the Shortcut's third automation, run when the person stops their alarm; it waits 10 minutes before reading Health so the Watch can send the night, and skips the wait from 11:45 so it can't push the post past noon; migration `20261029000000_alarm_trigger.sql`) or, from 5 October 2026, `button`: the card's Sync now link (`shortcuts://run-shortcut?name=Clarivi%20Sync&input=text&text=button`, D84) passes "button" as the Shortcut's input, which skips its sync-or-import question (migration `20261013000000_sync_button.sql`; `TRIGGERS` in `_shared/ingest-schema.ts`).
 - `uploads` also logs rejected posts from a known token (a replaced token, or a body the function refused, with the reason), so a broken Shortcut shows up in the log. `run_trigger`, `local_date` and `night_complete` were added to measure locked-phone runs and answer "already synced today?". A run blocked by a locked phone at its first step (reading the "synced today" file) never reaches the server, so the locked-phone count adds the owner's notes (D75, 4 October 2026).
 - `samples.sample_hash` is a SHA-256 of the type, start, end, value, stage and source. The time zone isn't part of it, so the same moment posted from another time zone is the same reading. Heart rate is stored only from 6pm to noon, by each reading's own local time (D43). Sleep readings arrive with no source: Shortcuts doesn't report one for sleep (Phase 1b), so Watch sleep is recognised by its stages (core, deep, REM, awake) for D10.
 - All writes go through two database functions callable only with the secret key: `ingest_upload(token_hash, upload, error)` and `issue_upload_token(user, token_hash)`.
@@ -173,7 +173,7 @@ Built in Phase 2c (3 October 2026):
   - `kind` (daily, backfill or ping)
   - `month_id` (backfill only)
   - `device_tz_offset_min`
-  - `trigger` (charger, app or manual), which automation ran the Shortcut
+  - `trigger` (charger, app, alarm or manual; "button" from the card), which automation ran the Shortcut
   - readings in either of two shapes, which become the same rows:
     - `series` (what the Shortcut sends, D42): one object per reading type with lists `start`, `end`, `value`, `unit`, `source` (and optional `device`, `stage`). A type with no readings arrives as `[""]`. If an extra column (unit, source, device) has a different length, it's set aside rather than rejecting the post.
     - `samples`: a list, each with `type`, `start`, `end`, `value`, `unit`, optional `stage`, `source` and `device`

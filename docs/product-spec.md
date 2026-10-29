@@ -112,7 +112,7 @@
 - **R10** Settings lets the user create an upload token. The token is shown once with a copy button, alongside a link to the Shortcut and the one-page setup guide.
 - **R11** Reissuing the token stops the old one working at once. Uploads with an old or invalid token are rejected, and the card shows "Sync is being rejected" with a link to Settings.
 - **R12** The one-time import of the last 12 months runs in monthly parts. The card shows progress (for example "Importing your history: 5 of 12 months"), an interrupted import continues from the last finished month, and importing never sends a notification.
-- **R13** Each morning between 4am and noon, the data posts by itself when the phone is unplugged or when the tester opens their chosen app. Running it twice, or by hand, never duplicates data or sends a second morning notification.
+- **R13** Each morning between 4am and noon, the data posts by itself when the phone is unplugged, when the tester opens their chosen app or, from D94 (29 October 2026, to be built), when the tester stops their alarm. Running it twice, or by hand, never duplicates data or sends a second morning notification.
 - **R14** The card shows when the data was last synced, for example "Updated from your Watch at 6:42am".
 - **R15** Only Apple Watch readings are used. Readings from the iPhone or other apps are ignored.
 

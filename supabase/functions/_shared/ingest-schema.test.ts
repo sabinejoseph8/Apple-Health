@@ -150,7 +150,7 @@ Deno.test('the post itself must be well formed', () => {
 })
 
 Deno.test('an unrecognised trigger word is recorded as unknown, and the readings are kept', () => {
-  for (const given of ['Tiktok', 'alarm', 42]) {
+  for (const given of ['Tiktok', 'doorbell', 42]) {
     const r = parseUpload(daily([hr], { trigger: given }), NOW)
     assert(r.ok, String(given))
     assertEquals(r.upload.trigger, null)
@@ -165,6 +165,12 @@ Deno.test('a sync from the card\'s Sync now button is recorded as such (D84)', (
   const r = parseUpload(daily([hr], { trigger: 'button' }), NOW)
   assert(r.ok)
   assertEquals(r.upload.trigger, 'button')
+})
+
+Deno.test('a sync from the alarm automation is recorded as such (D94)', () => {
+  const r = parseUpload(daily([hr], { trigger: 'alarm' }), NOW)
+  assert(r.ok)
+  assertEquals(r.upload.trigger, 'alarm')
 })
 
 Deno.test('a ping carries no readings', () => {

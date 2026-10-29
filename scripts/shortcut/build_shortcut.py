@@ -258,6 +258,9 @@ class Builder:
     def stop(self):
         self.add('exit', {})
 
+    def wait(self, seconds):
+        self.add('delay', {'WFDelayTime': seconds})
+
     def notify(self, *parts):
         self.add('notification', {'UUID': new_id(), 'WFNotificationActionTitle': tokens(self.words['appName']),
                                   'WFNotificationActionBody': tokens(*parts), 'WFNotificationActionSound': False})
@@ -545,8 +548,8 @@ def import_history(b, url, words):
 def build(url=INGEST_URL):
     words = shortcut_wording()
     b = Builder(words)
-    b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from two automations '
-              '(charger unplugged, and an app you open each morning) and can be run by hand.')
+    b.comment('Clarivi Sync sends last night\'s Apple Watch readings to Clarivi. It runs from three automations '
+              '(your alarm stopped, charger unplugged, and an app you open each morning) and can be run by hand.')
 
     token = b.text(TOKEN_PLACEHOLDER)
     b.questions.append({'ActionIndex': len(b.actions) - 1, 'Category': 'Parameter', 'DefaultValue': '',
@@ -554,7 +557,7 @@ def build(url=INGEST_URL):
                         'Text': 'Paste your upload token from Clarivi (Upload token, then Create token).'})
     b.set_variable('Token', token)
 
-    b.comment('Which automation ran this: "charger" or "app", passed in as input. Run by hand, it is "manual".')
+    b.comment('Which automation ran this: "alarm", "charger" or "app", passed in as input. Run by hand, it is "manual".')
     group = b.if_(shortcut_input(), 100)
     b.set_variable('Trigger', b.text(shortcut_input()))
     b.otherwise(group)
@@ -603,6 +606,26 @@ def build(url=INGEST_URL):
     b.save_marker()
     b.stop()
     b.end_if(already)
+
+    b.comment('Stopping the alarm can come before the Watch has sent the night\'s sleep, which Clarivi counts '
+              'only once its last stage is 10 minutes old (D86). So the alarm run waits 10 minutes, unless '
+              'it is 11:45 or later, where waiting would push the post past noon (D94).')
+    b.set_variable('Wait', b.text('no'))
+    alarm = b.if_(variable('Trigger'), 4, string='alarm')
+    before_eleven = b.if_(hour.ref(), 0, number=11)
+    b.set_variable('Wait', b.text('yes'))
+    b.otherwise(before_eleven)
+    at_eleven = b.if_(hour.ref(), 4, number=11)
+    minute = b.number(b.text(current_date(date_format('m'))))
+    early_minute = b.if_(minute.ref(), 0, number=45)
+    b.set_variable('Wait', b.text('yes'))
+    b.end_if(early_minute)
+    b.end_if(at_eleven)
+    b.end_if(before_eleven)
+    b.end_if(alarm)
+    waiting = b.if_(variable('Wait'), 4, string='yes')
+    b.wait(600)
+    b.end_if(waiting)
 
     b.comment('Read yesterday\'s and today\'s readings, one list per column. Clarivi keeps heart rate '
               'from 6pm to noon.')
