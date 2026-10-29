@@ -99,7 +99,7 @@ Deno.test('the text never talks about itself or the model', () => {
   assert(fails('M01', morning('Claude thinks your readings are in your usual range.')).includes('no_self_reference'))
 })
 
-Deno.test('digest: numbers must come from the input, patterns are "tends to", never a cause', () => {
+Deno.test('digest: words only, patterns are "tends to", never a cause', () => {
   const d1 = input('D01')
   assertEquals(
     checkOutput(d1, {
@@ -111,6 +111,10 @@ Deno.test('digest: numbers must come from the input, patterns are "tends to", ne
   assert(
     checkOutput(d1, { sentences: 'Seven days were Ready and your average HRV was 91.', patterns: [] }).includes('no_new_numbers'),
   )
+  // Even a figure that is in the data is refused: the digest uses words.
+  assert(checkOutput(d1, { sentences: 'Heart rate variability stayed between 44 and 49.', patterns: [] }).includes('no_new_numbers'))
+  assert(checkOutput(d1, { sentences: 'All 7 days were Ready.', patterns: [] }).includes('no_new_numbers'))
+  assert(checkOutput(d1, { sentences: 'Every day was Ready.', patterns: ['Your sleep tends to stay in step with your heart rate variability.'] }).length === 0)
   assert(
     checkOutput(input('D02'), {
       sentences: 'Two days were Ease off.',

@@ -3,7 +3,7 @@
 // that failed (docs/ai-eval/README.md); an empty list means the text may be
 // shown. A text that fails is tried once more, then the fixed wording shows.
 
-import { type AiInput, type DigestInput, type MorningInput, numbersIn } from './ai-input.ts'
+import type { AiInput, DigestInput, MorningInput } from './ai-input.ts'
 
 export type { AiInput } from './ai-input.ts'
 export interface MorningOutput {
@@ -100,9 +100,8 @@ function checkDigest(input: DigestInput, out: DigestOutput): string[] {
   // Patterns may be listed, so the list rules apply to the sentences only.
   if (!plainText(sentences) || patterns.some((p) => !plainText(p))) fails.add('plain_text')
 
-  const allowed = numbersIn(input)
-  const bad = (all.match(/\d+(?:\.\d+)?/g) ?? []).filter((n) => !(allowed.has(n) || (Number.isInteger(+n) && +n >= 0 && +n <= 8)))
-  if (bad.length > 0) fails.add('no_new_numbers')
+  // Words only (Sabine, 29 October 2026): the digest holds no digits at all.
+  if (/\d/.test(all)) fails.add('no_new_numbers')
   if (sentencesOf(sentences).length > 6 || wordsOf(sentences) > 140) fails.add('length_ok')
   if (patterns.length > 3 || patterns.some((p) => p === '' || wordsOf(p) > 25)) fails.add('length_ok')
   if (CAUSAL.test(all)) fails.add('no_causal_claim')
