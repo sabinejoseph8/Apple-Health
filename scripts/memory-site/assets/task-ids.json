@@ -701,6 +701,7 @@
  "p8-06": {
   "phase": "8",
   "texts": [
+   "(moved to 7b-5, the next release's database change) Mark consent_version() stable instead of immutable, in the next release's database change (done: the function is stable in the live database, checked 29 October 2026 (provolatile s), made so in the consent version 4 migration 20261102000000_consent_v4.sql)",
    "(moved to 7b-5, the next release's database change) Mark consent_version() stable instead of immutable, in the next release's database change"
   ]
  },
