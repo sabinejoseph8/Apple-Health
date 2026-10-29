@@ -412,6 +412,12 @@ How a release reaches the live project: sign the Supabase command-line tool in o
 
 ---
 
+### Evaluation plan (D95, 29 October 2026)
+- **What is measured:** the test targets of D9 as re-scaled by D91 and D94 (set before any result), reported for week one and week two separately, plus correctness (the independent pandas check against the database, on Sabine's year and on a made-up history on every push), isolation (the cross-user tests), and, for the AI explanations, a test set of made-up nights (about 40, with a held-out set of about 20 written before tuning).
+- **Expected answers:** the targets are in `mvp.md` (D9, D91, D94). The AI test set's expected behaviour is written before the prompt, and the held-out set is graded in a fresh session, never by the session that tuned the prompt. Changes made after seeing the held-out result are labelled in-sample.
+- **Real data:** only totals and counts appear in public documents, never readings.
+- **Who runs it:** the check scripts (`scripts/reference/`) and a fresh review session; Sabine approves what is published.
+
 ## 9. Critical risks and challenges
 
 The riskiest items sit in the earliest phases. Phase names are proposals for progress.md: 1 Spikes, 2 Data and analysis, 3 Card and Why today, 4 Notifications and follow-through, 5 Trends, digest, settings and owner page, 6 Hardening and dry run, 7 Two-week test (four weeks until D89).

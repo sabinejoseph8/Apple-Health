@@ -449,7 +449,9 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [x] 7b-2 A short check of what her year of data supports for sleep need, lagged relationships and change detection; report to Sabine before building anything (lagged relationships may need workouts added to the daily sync, a bigger change to decide first). Done 29 October 2026 with `scripts/module-check/check.py` on a restored copy of the 28 October backup in the local copy only (wiped afterwards; the exported files deleted; the report is in `private/module-check/report.md`), with the criteria fixed before looking. Results: sleep need NOT SUPPORTED (0 of 12 combinations; the Watch's sleep rarely reaches 7.5 hours, so the data can't show where more sleep helps); lagged relationships NOT SUPPORTED (0 of 12; the 28 workouts file ends on 2 October and the live sync sends none); change detection PARTLY SUPPORTED (only shifts of 1.5 spreads or more, found within 14 nights in about two thirds of tries; a one-spread shift within 7 nights only 10% of the time against a target of 80%). What to build is Sabine's decision
 - [x] 7b-3 Build the modules the check supports. Dropped by Sabine on 29 October 2026 after 7b-2 (option A): none of the three is built; they stay out of v1 and are reported as tested and not supported (sleep need, lagged relationships) or supported only for large shifts (change detection). Revisit with a second year of data and workouts in the daily sync
 - [x] 7b-4 (done 29 October 2026: Anthropic's data terms read and reported; the allow-list, the safety design and the consent version 3 wording approved by Sabine in `docs/ai-draft.md` with her answers (two old lines corrected, no caption on the AI's words, the region worded as "the United States or other countries where Anthropic operates"); Claude Opus 5.5 chosen as the first model; the privacy assessment addendum, R68 to R75 and the design and tech notes written; Sabine set a $5 monthly limit in Anthropic's Console and stored the key as `ANTHROPIC_API_KEY` in Supabase's secrets, checked by name) AI groundwork: check Anthropic's data terms and report to Sabine; decide what the AI sees (proposed: the three readings, the usual levels and the status, no name, email or dates beyond the day); rewrite the consent text, the "Your data" page and the privacy assessment for the AI (consent version 3), approved by Sabine before anything is sent; Sabine makes the API key and adds it to Supabase's secrets, with a spending limit
-- [ ] 7b-5 AI build: a server function writes the morning explanation and the model-written weekly digest (a guarded model writes the sentences from the week's facts, which stay computed by the database, D22; the digest still sends no notification, D72) and describes what the modules find; the score still sets the status; fixed, tested wording shows when the AI is slow, down or filtered; a filter and tests for the no-diagnosis rule (R61); backup first, then Sabine runs `db push`
+- [ ] 7b-5 AI build: a server function writes the morning explanation and the model-written weekly digest (a guarded model writes the sentences from the week's facts, which stay computed by the database, D22; the digest still sends no notification, D72) and describes what the modules find; the score still sets the status; fixed, tested wording shows when the AI is slow, down or filtered; a filter and tests for the no-diagnosis rule (R61); backup first, then Sabine runs `db push`; the same release marks `consent_version()` stable instead of immutable (moved here from Phase 8) and bumps the consent to version 3
+- [ ] 7b-5a Write the AI test set before the prompt is written or tuned (D95): about 40 made-up nights (no real readings), including tricky ones that tempt the AI to name a condition, invent a number or contradict the status, with the expected behaviour written first; and a held-out set of about 20 written before any tuning and kept out of the folder the build session reads. The set is made of invented data only, so it can be public
+- [ ] 7b-5b Run the models on the test set and compare Claude Opus 5.5, Sonnet 5.5 and Haiku 5.5 on filter pass rate, agreement with the status, speed and cost; a fresh session grades the held-out set, so whoever tuned the prompt never sees its answers; report the held-out result with its limits next to the number, and label any change made after seeing it as in-sample
 - [ ] 7b-6 Update the project memory files for what 7b-1 to 7b-5 built (product spec requirements, design, tech spec)
 - [ ] 7b-7 Code review of everything changed in this phase; fix what it finds, then re-run the full test suite
 - [ ] 7b-8 Back up the live database to the encrypted disk, and check the app on Sabine's iPhone, before week two
@@ -487,5 +489,41 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [ ] Build the main demo story: one week from your data where the tool flagged something early, starting from Apple Health's plain numbers
 - [ ] Build the appendix: arithmetic, trends, the SQL-versus-pandas check, the disrupted-day check, every target and its result, limitations, and the causal layer as a worked method
 - [ ] Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status (asked for by Sabine on 8 October 2026 as the D86 review; D92 on 16 October made them count). Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year
-- [ ] Mark `consent_version()` stable instead of immutable, in the next release's database change (Phase 6 code review, 8 October 2026; left until after the test with Sabine's OK, as it needs a live database change and does no harm now)
+- [ ] (moved to 7b-5, the next release's database change) Mark `consent_version()` stable instead of immutable, in the next release's database change (Phase 6 code review, 8 October 2026; left until after the test with Sabine's OK, as it needs a live database change and does no harm now)
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run the full test suite
+
+---
+
+## Phase 9: Portfolio package (D95)
+
+**Goal:** turn Clarivi into evidence an AI product manager recruiter can understand in two minutes and inspect in ten, using the `portfolio-package` skill, built after week two's results are in.
+
+**Status:** Not started. Planned 29 October 2026 (Sabine's decisions: build after week two; interview notes private; the README replaced and the original brief kept as `docs/project-brief.md`; the repository name `Apple-Health` kept; the contact address in the consent text allowed through the pre-publish scan, every other email still flagged; Sabine then asked for a different contact address in the policy, changed with consent version 3 in 7b-5, so the scan allows the new one). Nothing public is pushed without her approval.
+
+### Tasks
+- [ ] Move `interview-notes.md` into `private/` (ignored by Git), stop tracking it, and update `CLAUDE.md` to name the new place (Sabine, 29 October 2026). The earlier versions stay in the public history, which holds no secrets, passwords or readings; rewriting history is Sabine's call, never automatic
+- [ ] Bring the project memory files up to date with what was built, and tick the website
+- [ ] Evaluation write-up (`docs/evaluation.md`): the targets as set before any result (with the date), week one and week two reported separately with every miss stated next to its number, the module check as a pre-registered negative result, and the AI feature's test set and model comparison (7b-5a, 7b-5b); a small script reproduces the numbers (`scripts/reference/measure.py` and the check scripts); only totals, never readings
+- [ ] Architecture diagram as SVG, PNG and PDF (from the tech spec's overview, including the AI step and what is sent to it)
+- [ ] Recruiter README for AI product manager roles, replacing the current one; the original brief kept as `docs/project-brief.md`; discloses the AI feature and where data goes
+- [ ] Simple automated checks (`checks/run_all.py`, Python standard library) and a short run guide (`docs/how-to-run.md`), runnable without real data through `scripts/reference/check.py --local-synthetic`; the config allows the one contact address in the consent text and the made-up test fixtures, and still flags every other email; the guide says the contact address is listed on purpose
+- [ ] One-page "AI product management case study" PDF, checked to be one page
+- [ ] Private portfolio kit PDF outside the repository (2-minute and 10-minute stories, likely interview questions, a reader test, a demo video script)
+- [ ] Pre-publish scan including history; **Sabine:** approve before anything is pushed
+- [ ] After pushing, check every README link on GitHub
+- [ ] Code review of everything changed in this phase; fix what it finds, then re-run the full test suite
+
+### Automated tests
+- `python3 checks/run_all.py` passes: required docs exist, README sections and links, no em dashes, headline numbers agree across README, case study and evaluation, the case study is one page, private files are ignored and untracked.
+- `python3 checks/prepublish_scan.py --history` reports nothing new.
+- The evaluation script reproduces the numbers in `docs/evaluation.md`.
+
+### Manual verification
+1. **README:** open it on GitHub and read it for 60 seconds.
+   *Expected:* you can say the problem, the user, the headline result and its main limit.
+2. **Links:** click every link in the README on GitHub.
+   *Expected:* each opens the right file or page.
+3. **Case study:** open the PDF.
+   *Expected:* exactly one page, and its numbers match the evaluation.
+4. **Reader test:** give the README to someone who hasn't seen the project.
+   *Expected:* they answer most of the kit's questions correctly from it alone.
