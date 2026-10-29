@@ -57,6 +57,10 @@ SERVER_ONLY = [
     ('followthrough_open', {'p_user': NOBODY, 'p_date': OLD_DAY}),
     ('has_consent', {'p_user': NOBODY}),
     ('ingest_upload', {'p_token_hash': '0' * 64, 'p_upload': None, 'p_error': 'privacy check'}),
+    ('ai_digest_input', {'p_user': NOBODY, 'p_week_start': OLD_DAY}),
+    ('ai_enqueue', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY}),
+    ('ai_fail', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY, 'p_error': 'x'}),
+    ('ai_finish', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY}),
     ('issue_upload_token', {'p_user': NOBODY, 'p_token_hash': '0' * 64}),
     ('local_moment', {'p_user': NOBODY, 'p_date': OLD_DAY, 'p_time': '12:00'}),
     ('local_now', {'p_user': NOBODY}),
@@ -84,7 +88,7 @@ OWNER_ONLY = [
 SIGNED_IN_ONLY = [
     ('consent_version', {}),
     ('forget_all_devices', {}),
-    ('give_consent', {'p_version': 2, 'p_use': True, 'p_us_storage': True}),
+    ('give_consent', {'p_version': 3, 'p_use': True, 'p_us_storage': True, 'p_ai': True}),
     ('log_notification_tap', {'p_id': 0}),
     ('log_usage', {'p_event': 'card_view', 'p_meta': {}}),
     ('record_shown', {'p_date': OLD_DAY}),
@@ -232,7 +236,7 @@ def local(prove: bool) -> Report:
         # Both agree to the consent text (D79), as real people do first.
         for who in people:
             session_, _ = sign_in(url, key, *people[who])
-            api.call(f'{url}/rest/v1/rpc/give_consent', session_, 'POST', {'p_version': 2, 'p_use': True, 'p_us_storage': True})
+            api.call(f'{url}/rest/v1/rpc/give_consent', session_, 'POST', {'p_version': 3, 'p_use': True, 'p_us_storage': True, 'p_ai': True})
         # Someone else uses the app a little, so there are rows to hide.
         other, _ = sign_in(url, key, *people['someone-else'])
         api.call(f'{url}/rest/v1/rpc/submit_checkin', other, 'POST', {'p_date': '2026-10-04', 'p_answer': 'okay'})

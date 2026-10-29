@@ -11,6 +11,15 @@ export interface StatusRow extends DayWords {
   nudge: Nudge | null
   total: number | null
   settings_version: number
+  // When the analysis wrote this row; the card waits for the AI's text for a while after (R70).
+  computed_at?: string
+}
+
+// The AI's explanation for a day, and what it was written for (R70, R74).
+export interface AiTextRow {
+  status: string | null
+  nudge: string | null
+  body: { explanation?: string }
 }
 
 export interface UploadRow {
@@ -48,6 +57,8 @@ export interface CardInputs {
   // Today's normals and night, for "Learning your usual levels" (R32).
   baselines: BaselineRow[]
   night: NightRow | null
+  // This morning's AI explanation, if one has been written (R70).
+  aiText?: AiTextRow | null
   // How many valid nights each reading's normal needs (status_zones).
   minValidNights: Partial<Record<Reading, number>>
   // Months of the one-year import that have arrived, while under 12 (R12).
@@ -55,7 +66,10 @@ export interface CardInputs {
 }
 
 export type CardState =
-  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean; noStages: boolean }
+  // ai: the AI's explanation for this status, or null to show the fixed briefing (R70).
+  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean; noStages: boolean; ai: string | null }
+  // The status is in and the AI is still writing its explanation (D95, option B): the whole card waits.
+  | { kind: 'writing' }
   | { kind: 'waiting'; lastSync: Date | null }
   // delayed: the readings arrived a while ago and there is still no status.
   | { kind: 'analysing'; delayed: boolean }
@@ -80,11 +94,27 @@ export const LATE_FROM = 11 * 60 + 30
 export const NOON = 12 * 60
 // The status usually follows a sync within a minute or two.
 export const ANALYSING_FOR_MS = 15 * 60 * 1000
+// How long the card waits for the AI's text before showing the fixed briefing (R70).
+export const AI_WAIT_MS = 3 * 60 * 1000
 const SCORE_READINGS: Reading[] = ['hrv', 'sleep', 'sleeping_hr']
 const DEFAULT_MIN_VALID = 21
 
 const time = (u: UploadRow) => new Date(u.received_at)
 const newestFirst = (a: UploadRow, b: UploadRow) => b.received_at.localeCompare(a.received_at)
+
+// The AI's explanation, only while it still matches the day's status and nudge.
+function aiFor(row: StatusRow, text: AiTextRow | null | undefined): string | null {
+  if (!text || text.status !== row.status || text.nudge !== row.nudge) return null
+  const explanation = text.body?.explanation
+  return typeof explanation === 'string' && explanation.trim() !== '' ? explanation : null
+}
+
+// Within 3 minutes of the status being written, with no text yet, the card waits.
+function waitingForAi(row: StatusRow, now: Date): boolean {
+  if (!row.computed_at) return false
+  const age = now.getTime() - new Date(row.computed_at).getTime()
+  return age >= -60_000 && age < AI_WAIT_MS
+}
 
 export function selectCard(i: CardInputs): CardModel {
   return { state: selectState(i), rejected: selectRejected(i), importMonths: i.importMonths }
@@ -108,9 +138,12 @@ function selectState(i: CardInputs): CardState {
       // Last night only arrived after noon: no status today (R29).
       return firstAfterNoon ? { kind: 'no_sync', afterNoon: true } : { kind: 'not_enough_data', why: 'unfinished' }
     }
+    const ai = aiFor(row, i.aiText)
+    if (ai === null && waitingForAi(row, i.now)) return { kind: 'writing' }
     return {
       kind: 'status',
       row,
+      ai,
       syncedAt: synced ?? (i.lastSync ? time(i.lastSync) : null),
       late: synced !== null && minutesOfDay(synced) >= LATE_FROM,
       // The night was built from plain "asleep" records, the Watch having recorded no stages (D92).

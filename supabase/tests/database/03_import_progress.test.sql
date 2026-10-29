@@ -9,8 +9,8 @@ select plan(13);
 
 insert into auth.users (id, email) values ('33333333-3333-3333-3333-333333333333', 'user-c@example.test');
 -- Phase 6: uploads need consent (D79), so these made-up people have agreed.
-insert into public.consents (user_id, version, agreed_use, agreed_us_storage) values
-  ('33333333-3333-3333-3333-333333333333', 2, true, true);
+insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai) values
+  ('33333333-3333-3333-3333-333333333333', 3, true, true, true);
 select public.issue_upload_token('33333333-3333-3333-3333-333333333333', repeat('f', 64));
 
 -- The phone is on UTC here, so its local month is the UTC month.

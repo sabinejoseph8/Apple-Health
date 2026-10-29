@@ -104,6 +104,11 @@ jobs:
           python3 scripts/reference/privacy_check.py --local
           if python3 scripts/reference/privacy_check.py --local --prove > prove.log; then cat prove.log; echo "The privacy check missed an unprotected table."; exit 1; fi
           grep -q "privacy_check_leak: no one else's rows" prove.log
+      - name: The AI writer, against a fake Anthropic server (nothing real is called)
+        run: |
+          pkill -f "supabase functions serve" || true
+          sleep 3
+          npm run check:local:ai
       - name: Function log
         if: failure()
         run: cat functions.log

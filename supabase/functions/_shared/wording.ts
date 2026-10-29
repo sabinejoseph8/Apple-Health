@@ -245,6 +245,9 @@ export const wording = {
     rangeShort: (start: string, end: string) => `${start} to ${end}`,
     firstOn: (date: string) => `Your first weekly digest arrives on ${date}.`,
     firstShort: (date: string) => `From ${date}`,
+    // D95, R71: the AI's sentences and patterns, in place of the cards below.
+    aiHeading: 'This week',
+    patternsHeading: 'Patterns over the weeks',
     nightsAll: 'Clarivi had readings from all 7 nights.',
     nightsSome: (n: number) => `Clarivi had readings from ${n} of 7 nights, so this summary is based on those.`,
     nightsNone: 'Clarivi had no readings from your Watch this week.',
@@ -374,6 +377,11 @@ export const wording = {
   // Cards without a status (R25 to R32), and notices that sit on any card
   // (R11, R12). Each has a pill, a headline and one plain line.
   states: {
+    // D95, R70: the whole card waits for the AI's explanation, up to 3 minutes.
+    writing: {
+      pill: 'Getting ready',
+      headline: 'Getting your day ready…',
+    },
     waiting: {
       pill: 'Waiting',
       headline: "Waiting for this morning's sync",
@@ -639,14 +647,14 @@ export const wording = {
   // Changing these words means a new version, which asks everyone again
   // (public.consent_version() in the database).
   consent: {
-    version: 2,
-    versionLine: 'Version 2, 6 October 2026.',
+    version: 3,
+    versionLine: 'Version 3, 29 October 2026.',
     title: 'How Clarivi uses your data',
     sections: [
       {
         title: 'Who runs Clarivi',
         paragraphs: [
-          'Clarivi is a small four-week test run by Sabine Joseph in the Cayman Islands. Sabine is in charge of protecting your information. Questions, requests or complaints: notions_close_5p@icloud.com.',
+          'Clarivi is a small test run by Sabine Joseph in the Cayman Islands. Sabine is in charge of protecting your information. Questions, requests or complaints: notions_close_5p@icloud.com.',
         ],
       },
       {
@@ -656,6 +664,15 @@ export const wording = {
           'Your answers in the app: how you feel each morning, and whether you followed the day\'s suggestion.',
           'How you use the app: which screens you open, and when notifications arrive and are tapped. This log never holds your readings.',
           'Your email address, to sign you in.',
+        ],
+      },
+      {
+        // D94, D95: the AI explanations; agreeing to them is required (R68).
+        title: 'AI explanations',
+        paragraphs: [
+          'Clarivi uses an AI service, Claude, made by Anthropic, to write the plain-words explanation of your morning, your weekly digest and a few patterns across your weeks. Each time, Clarivi sends it only your results: your three readings, your usual range, your status, and for the digest a summary of your week and the weeks before. It never sends your name, your email address or calendar dates.',
+          'The AI explains your results. It does not set your status, which comes from fixed arithmetic, and it gives no medical advice.',
+          "To use Clarivi you need to agree to this. If you don't, you can sign out and nothing is sent.",
         ],
       },
       {
@@ -670,12 +687,13 @@ export const wording = {
         title: "Where it's kept",
         paragraphs: [
           'Your data is stored and processed in the United States, by Supabase (a database service, on Amazon\'s servers in US East). The app itself is served by Vercel, also in the US, but your readings never pass through it. Data held in the US can be reached under US law, for example by US authorities with legal power to ask for it.',
+          'The results described above are also processed by Anthropic, which runs the AI service, in the United States or other countries where Anthropic operates. Anthropic does not use what it receives from Clarivi to train its models. It keeps it for up to 30 days, longer only if its safety systems flag a request or the law requires it (flagged requests can be kept for up to 2 years). Anthropic does not delete this on request, so Delete my data in Clarivi cannot remove it; it clears itself within that time.',
         ],
       },
       {
         title: 'Who can see it',
         paragraphs: [
-          'You, in the app. Sabine, who runs the test, can reach the database to run it and to help you. Nobody else. Your data is never sold or shared, and Clarivi has no ads or tracking.',
+          "You, in the app. Sabine, who runs the test, can reach the database to run it and to help you. Anthropic's AI service sees the results described above. Nobody else. Your data is never sold, and Clarivi has no ads or tracking.",
         ],
       },
       {
@@ -686,7 +704,7 @@ export const wording = {
       },
       {
         title: "How long it's kept",
-        paragraphs: ["Until 90 days after the test ends, then it's deleted, unless you agree to something else."],
+        paragraphs: ['Kept until you delete it or Sabine ends Clarivi, then deleted within 30 days.'],
       },
       {
         title: 'Your choices',
@@ -701,9 +719,10 @@ export const wording = {
     agreeTitle: 'Your agreement',
     agreeUse: 'I agree to Clarivi collecting and using my Apple Watch readings, my answers and my use of the app, as described above.',
     agreeUs: 'I agree to my data being stored and processed in the United States.',
+    agreeAi: 'I agree to Clarivi sending my results, as described above, to an AI service run by Anthropic to write explanations.',
     agree: 'I agree',
     agreeing: 'Saving…',
-    needBoth: 'Tick both boxes to agree, or sign out.',
+    needAll: 'Tick all three boxes to agree, or sign out.',
     signOut: 'Sign out',
     // Settings and the public page.
     settingsTitle: 'Your consent',

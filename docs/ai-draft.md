@@ -26,7 +26,7 @@ The server builds the AI's input from the database's own results. Only the field
 | Text | Where | Limits |
 |---|---|---|
 | **Morning explanation** | The briefing slot on the card, in place of the fixed briefing | At most 3 short sentences, no numbers (R21), 60 words |
-| **Weekly digest** | The digest page (R-numbers to follow), in place of the fixed sentences | At most 6 sentences, numbers allowed only if they appear in the input |
+| **Weekly digest** | The digest page (R-numbers to follow), in place of the fixed sentences | At most 6 sentences, words only: no digits (Sabine, 29 October 2026) |
 | **Patterns over weeks** | A short list on the digest page | At most 3 items of 25 words each, each tied to something in the 8 weeks sent, and worded as "tends to", never as a cause |
 
 Why today keeps its fixed wording. **No caption marks the AI's words (decided by Sabine, 29 October 2026).** The consent text and the "AI explanations" row in Settings are where a person learns the AI is used, and the saved record of each AI text (section 3, point 6) shows which words were AI-written. To revisit if other testers return, since a stricter regime may want the words marked.

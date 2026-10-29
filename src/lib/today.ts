@@ -2,7 +2,7 @@
 // every query only ever returns the signed-in user's own rows.
 
 import type { Nudge, Reading } from '../../supabase/functions/_shared/briefing.ts'
-import { type BaselineRow, type CardInputs, importMonthsFrom, type NightRow, type StatusRow, type UploadRow } from './card-state'
+import { type AiTextRow, type BaselineRow, type CardInputs, importMonthsFrom, type NightRow, type StatusRow, type UploadRow } from './card-state'
 import { type FollowAnswer, type FollowDay, followDays } from './follow'
 import { must, supabase } from './supabase'
 import { localDate } from './when'
@@ -31,7 +31,7 @@ const UPLOAD_COLUMNS = 'received_at, kind, status, error, local_date, night_comp
 export async function loadStatusInputs(now: Date): Promise<CardInputs> {
   const today = localDate(now)
   const since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
-  const [status, recent, last] = await Promise.all([
+  const [status, recent, last, ai] = await Promise.all([
     supabase.from('daily_status').select('*').eq('date', today).maybeSingle(),
     supabase.from('uploads').select(UPLOAD_COLUMNS).gte('received_at', since).order('received_at', { ascending: false }).limit(200),
     supabase
@@ -42,10 +42,13 @@ export async function loadStatusInputs(now: Date): Promise<CardInputs> {
       .order('received_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // This morning's AI explanation (R70); nothing on a phone that has none yet.
+    supabase.from('ai_texts').select('status, nudge, body').eq('kind', 'morning').eq('for_date', today).maybeSingle(),
   ])
   return {
     now,
     today,
+    aiText: ai.error ? null : (ai.data as AiTextRow | null),
     status: must(status) as StatusRow | null,
     recentUploads: must(recent) as UploadRow[],
     lastSync: must(last) as UploadRow | null,
