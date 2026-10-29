@@ -498,7 +498,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 
 **Goal:** turn Clarivi into evidence an AI product manager recruiter can understand in two minutes and inspect in ten, using the `portfolio-package` skill, built after week two's results are in.
 
-**Status:** Not started. Planned 29 October 2026 (Sabine's decisions: build after week two; interview notes private; the README replaced and the original brief kept as `docs/project-brief.md`; the repository name `Apple-Health` kept; the contact address in the consent text allowed through the pre-publish scan, every other email still flagged; Sabine then asked for a different contact address in the policy, changed with consent version 3 in 7b-5, so the scan allows the new one). Nothing public is pushed without her approval.
+**Status:** Not started. Planned 29 October 2026 (Sabine's decisions: build after week two; interview notes private; the README replaced and the original brief kept as `docs/project-brief.md`; the repository name `Apple-Health` kept; the contact address in the consent text allowed through the pre-publish scan, every other email still flagged; Sabine considered a different contact address and kept the present one, 29 October 2026). Nothing public is pushed without her approval.
 
 ### Tasks
 - [x] Move `interview-notes.md` into `private/` (done 29 October 2026, ahead of Phase 9 at Sabine's request) (ignored by Git), stop tracking it, and update `CLAUDE.md` to name the new place (Sabine, 29 October 2026). The earlier versions stay in the public history, which holds no secrets, passwords or readings; rewriting history is Sabine's call, never automatic
