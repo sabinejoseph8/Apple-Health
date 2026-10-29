@@ -221,7 +221,7 @@ System font throughout: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helv
 **Settings list (Default)**
 - Grouped rows: Notifications (on or off, last delivered), Upload token (create or reissue), Setup guide, Change password, Sign out everywhere, Delete my data.
 - Reissuing the token and deleting data ask for the password first. Delete uses red text and a confirmation step.
-- **From D94 (planned):** the consent screen gets a third box, unticked and required, for the AI (R68); there is no Settings switch for it. While the AI text is being written the whole card shows a neutral "Getting ready" state (grey pill, "Getting your day ready…", two placeholder lines), and the status, headline and explanation appear together (R70, Sabine, option B). No caption marks the AI's words on the card or the digest (Sabine, 29 October 2026).
+- **From D94 (released 29 October 2026):** the consent screen gets a third box, unticked and required, for the AI (R68); there is no Settings switch for it. While the AI text is being written the whole card shows a neutral "Getting ready" state (grey pill, "Getting your day ready…", two placeholder lines), and the status, headline and explanation appear together (R70, Sabine, option B). No caption marks the AI's words on the card or the digest (Sabine, 29 October 2026).
 
 **Notification text** (system surface, not a screen)
 - **Morning:** status and reason ("Ease off today: HRV well below your usual, sleep short").

@@ -145,6 +145,9 @@ RNG = random.Random(95)
 
 
 def day(i, status, nudge, followed, checkin, worse=None):
+    # No follow-through question is asked on a Ready day (R53), so there it is "not_asked".
+    if nudge in ('train_as_planned', 'none'):
+        followed = 'not_asked'
     w = worse or W(RNG.uniform(-0.6, 0.6), RNG.uniform(-0.6, 0.6), RNG.uniform(-0.6, 0.6))
     return dict(weekday=WEEKDAYS[i], status=status, nudge=nudge, followed=followed, checkin=checkin,
                 hrv=reading('hrv', w['hrv'])['value'], sleeping_hr=reading('sleeping_hr', w['sleeping_hr'])['value'],
@@ -152,7 +155,7 @@ def day(i, status, nudge, followed, checkin, worse=None):
 
 
 def none_day(i):
-    return dict(weekday=WEEKDAYS[i], status='none', nudge='none', followed='none', checkin='skipped',
+    return dict(weekday=WEEKDAYS[i], status='none', nudge='none', followed='not_asked', checkin='skipped',
                 hrv=None, sleeping_hr=None, sleep=None)
 
 
