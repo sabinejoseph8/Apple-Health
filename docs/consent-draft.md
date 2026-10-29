@@ -62,4 +62,4 @@ Version 1, 4 October 2026.
 
 ## Version 3 (planned, D94, 29 October 2026)
 
-The new "AI explanations" section, the changes to "Where it's kept" and "Who can see it", the third optional box and two corrected lines ("a small test run by Sabine Joseph"; "kept until you delete it or Sabine ends Clarivi, then deleted within 30 days") are drafted and approved in `docs/ai-draft.md`, section 4 and 5. They move into `wording.consent` as version 3 when the AI is built (7b-5), and everyone agrees again.
+The new "AI explanations" section, the changes to "Where it's kept" and "Who can see it", the third box, required (Sabine, 29 October 2026) and two corrected lines ("a small test run by Sabine Joseph"; "kept until you delete it or Sabine ends Clarivi, then deleted within 30 days") are drafted and approved in `docs/ai-draft.md`, section 4 and 5. They move into `wording.consent` as version 3 when the AI is built (7b-5), and everyone agrees again.

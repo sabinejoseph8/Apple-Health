@@ -2,7 +2,7 @@
 
 **Status:** draft, 29 October 2026 (D94, Phase 7b-4). Nothing here is built. When Sabine approves, the consent wording goes into `wording.consent` (version 3), the design into `tech-spec.md`, `product-spec.md` and `design.md`, and this file is kept as the record. The AI explains; it never sets the status (D94).
 
-**Model:** Claude Opus 5.5 (`claude-opus-5-5`), chosen by Sabine on 29 October 2026, kept as a setting so it can change. About 0.7 cents for a morning's text and 27 cents a month at Anthropic's published prices (Opus 5.5: $4 per million words in, $20 out).
+**Model:** Claude Opus 5.5 (`claude-opus-5-5`), Sabine's final decision on 29 October 2026, with no comparison against other models. About 0.7 cents for a morning's text and 27 cents a month at Anthropic's published prices (Opus 5.5: $4 per million words in, $20 out).
 
 ---
 
@@ -43,20 +43,20 @@ Why today keeps its fixed wording. **No caption marks the AI's words (decided by
 4. **If the filter rejects it, the AI gets one retry.** If that fails too, or the AI is slow (over 20 seconds), unavailable, or turned off, the card shows the existing fixed wording. A card is never blank because of the AI.
 5. **Nothing the AI says is acted on.** It does not change data, send notifications, or run anything.
 6. **A record of every text:** the text, the model, the instruction version, the date it is for, whether the filter passed. Not the input it was sent (the database already holds those values). Readable by you only. Deleted by "Delete my data" and "Withdraw consent".
-7. **Turned off by default until consent is given.** Without the AI tick box (section 4) nothing is sent, and the fixed wording is shown.
+7. **Everyone has agreed before anything is sent.** The AI box on the consent screen is required (Sabine, 29 October 2026): a person who has not agreed to consent version 3 cannot use the app, so nothing is ever sent for anyone who has not agreed. The fixed wording remains only as the fallback when the AI fails or is slow, never as a choice.
 8. **The key** lives only in Supabase's secret store, as for the other secrets (never in the repository or Vercel). Spending is capped on Anthropic's side.
 9. **Tests:** the filter with made-up good and bad answers (including a condition name, a wrong number, a wrong status, a long answer); the allow-list (a test fails if anything outside it reaches the AI's input, checked with a sentinel in each forbidden field); consent off sends nothing; the fallback on a timeout and on an error; deletion and withdrawal clear the records.
 
 ## 4. Consent version 3: the new words
 
-The consent screen keeps its two required boxes and gets a third, optional one. Clarivi works without it.
+The consent screen keeps its two required boxes and gets a third, also required (Sabine, 29 October 2026, changing the optional box first drafted). "I agree" works only when all three are ticked, or the person signs out. Note for the future: consent that is a condition of using the service is acceptable for a one-person test, but a stricter privacy regime (Quebec, Ontario) wants consent to each purpose to be separate and not a condition, so this is to revisit before other testers return.
 
 **New section, after "What Clarivi collects":**
 
 > **AI explanations**
 > Clarivi can use an AI service, Claude, made by Anthropic, to write the plain-words explanation of your morning, your weekly digest and a few patterns across your weeks. Each time, Clarivi sends it only your results: your three readings, your usual range, your status, and for the digest a summary of your week and the weeks before. It never sends your name, your email address or calendar dates.
 > The AI explains your results. It does not set your status, which comes from fixed arithmetic, and it gives no medical advice.
-> If you don't agree, Clarivi still works in full: you get the same status and Clarivi's own fixed wording, with no AI.
+> To use Clarivi you need to agree to this. If you don't, you can sign out and nothing is sent.
 
 **Addition to "Where it's kept"** (the region wording is Sabine's choice, 29 October 2026: Anthropic's processing location was not confirmed, so the text says "the United States or other countries where Anthropic operates"; to revisit if a tester under a stricter regime returns):
 
@@ -66,11 +66,11 @@ The consent screen keeps its two required boxes and gets a third, optional one. 
 
 > You, in the app. Sabine, who runs the test, can reach the database to run it and to help you. If you agree to AI explanations, Anthropic's AI service sees the results described above. Nobody else. Your data is never sold, and Clarivi has no ads or tracking.
 
-**The agreement box (optional, unticked, not needed to continue):**
+**The agreement box (required, unticked until the person ticks it):**
 
 - [ ] I agree to Clarivi sending my results, as described above, to an AI service run by Anthropic to write explanations.
 
-"I agree" still works once the first two boxes are ticked. Settings gets a row, "AI explanations", showing on or off, with a switch to change it later (turning it off stops sending and deletes the saved AI texts).
+"I agree" works only once all three boxes are ticked. There is no Settings switch for the AI: turning it off would be withdrawing consent, which deletes everything (D80). Settings' "Your consent" card still shows the date agreed.
 
 ## 5. Two older lines to decide
 
