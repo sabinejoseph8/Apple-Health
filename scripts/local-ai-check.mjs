@@ -90,7 +90,8 @@ addStatus(yes.id)
 ok(sql(`select count(*) from public.ai_jobs where user_id = '${yes.id}'`) === '1', 'a status queues one job for a person who agreed')
 ok(await until(() => sql(`select count(*) from public.ai_texts where user_id = '${yes.id}'`) === '1'), 'the text is written and saved')
 const saved = sql(`select model || '|' || instruction_version || '|' || tries || '|' || status || '|' || nudge || '|' || input_tokens || '|' || output_tokens from public.ai_texts where user_id = '${yes.id}'`)
-ok(saved === 'claude-opus-5-5|v1|1|ease_off|train_easy|700|80', `saved with the model, instruction version, tries, status, nudge and tokens (${saved})`)
+const version = fs.readFileSync('supabase/functions/_shared/ai-instruction.ts', 'utf8').match(/INSTRUCTION_VERSION = '([^']+)'/)[1]
+ok(saved === `claude-opus-5-5|${version}|1|ease_off|train_easy|700|80`, `saved with the model, instruction version, tries, status, nudge and tokens (${saved})`)
 ok(sql(`select status from public.ai_jobs where user_id = '${yes.id}'`) === 'done', 'and the job is done')
 ok(requests.length === 1, 'the fake model was asked once')
 const r = requests[0]
