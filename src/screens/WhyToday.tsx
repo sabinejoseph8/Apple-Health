@@ -233,7 +233,7 @@ function Decided({ row, zones, recorded, past }: { row: StatusRow; zones: Zones 
   return (
     <section className="card decided">
       <p className="body">
-        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {past ? p.adds[row.status] : d.adds[row.status]}
+        {d.intro} {order.length === 3 && d.order(capitalise(name(order[0])), name(order[1]), name(order[2]))} {row.sleep_floor ? `${past ? p.addsFloor : d.addsFloor} ${past ? p.floorRule : d.floorRule}` : past ? p.adds[row.status] : d.adds[row.status]}
       </p>
       {zones && (
         <>

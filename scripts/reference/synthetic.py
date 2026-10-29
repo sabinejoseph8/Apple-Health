@@ -46,6 +46,9 @@ def make(days: int = 75, seed: int = 7, start: date = date(2026, 6, 1)) -> Dict[
             continue
         t = evening
         wake = datetime(d.year, d.month, d.day, 6, 30) + timedelta(minutes=rnd.randint(-60, 90))
+        if i in (50, 62):
+            # Two very short nights, far below the usual: the sleep floor must fire (D96).
+            wake = datetime(d.year, d.month, d.day, 3, 15)
         long_break = i % 9 == 3
         while t < wake:
             stage = rnd.choice(['core', 'core', 'deep', 'rem'])

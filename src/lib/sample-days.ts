@@ -23,6 +23,24 @@ export function reading(r: Reading, value: number, normal: number, spread: numbe
   return { value, normal, range_low: low, range_high: high, verdict, spreads_worse: spreads, counted: true, points: WEIGHTS[r] * spreads }
 }
 
+// A night of very short sleep (D96): sleep 1.7 spreads below the usual but
+// still inside the usual range, the others usual. The points add up to Ready
+// (0.4), so the sleep floor makes it Ease off.
+export const sleepFloorDay: SampleDay = {
+  status: 'ease_off',
+  nudge: 'prioritise_sleep',
+  total: 0.43,
+  readings_used: 3,
+  reason_codes: ['sleep_worse_than_normal'],
+  composite_fired: false,
+  sleep_floor: true,
+  points: {
+    hrv: reading('hrv', 50, 52, 6),
+    sleep: reading('sleep', 372, 430, 34),
+    sleeping_hr: reading('sleeping_hr', 50, 50, 2.5),
+  },
+}
+
 export function notCounted(verdict: 'missing' | 'building', value: number | null = null): ReadingPoints {
   return { value, normal: null, range_low: null, range_high: null, verdict, spreads_worse: null, counted: false, points: null }
 }

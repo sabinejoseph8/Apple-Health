@@ -12,11 +12,55 @@ import {
   type Status,
   whySummary,
 } from '../supabase/functions/_shared/briefing'
-import { notCounted, reading, sampleDay } from './lib/sample-days'
+import { notCounted, reading, sampleDay, sleepFloorDay } from './lib/sample-days'
 import { FORBIDDEN_TERMS } from './lib/forbidden-terms'
 
 // The design canvas's words, except where Sabine's wording review (6 October
 // 2026) replaced "normal for you" with "your usual range".
+// D96, 29 October 2026: a night of sleep far below the usual cannot be Ready.
+describe('a night of very short sleep (the sleep floor, D96)', () => {
+  it('has its own headline', () => {
+    expect(headline(sleepFloorDay)).toBe('A very short night, so take it easier today')
+  })
+
+  it('says sleep set it, in three sentences with no numbers', () => {
+    expect(briefing(sleepFloorDay)).toEqual([
+      'You slept much less than usual.',
+      'A night that short is reason enough to go easier today, even when your other readings look fine.',
+      'Your heart rate variability and heart rate while you slept were both in your usual range, and there was no early sign of illness or heavy strain.',
+    ])
+  })
+
+  it('has a notification that says why', () => {
+    expect(morningNotification(sleepFloorDay)).toBe('Ease off today: sleep far below your usual')
+  })
+
+  it("has Why today's summary, without calling sleep usual", () => {
+    expect(whySummary(sleepFloorDay)).toEqual({
+      headline: 'Your sleep alone set Ease off today',
+      body: [
+        'You slept far less than usual. On their own, your other readings would have said ready, but a night this short sets ease off.',
+        'Your heart rate variability and sleeping heart rate were both in your usual range.',
+      ],
+    })
+  })
+
+  it('says it about that night on a past day', () => {
+    expect(whySummary(sleepFloorDay, true)).toEqual({
+      headline: "That night's sleep alone set Ease off",
+      body: [
+        'You slept far less than usual that night. On their own, your other readings would have said ready, but a night that short sets ease off.',
+        'Your heart rate variability and sleeping heart rate were both in your usual range.',
+      ],
+    })
+  })
+
+  it('does not change a day the points already made Ease off', () => {
+    expect(headline({ ...sampleDay, sleep_floor: false })).toBe("A short night, and your body hasn't fully recovered")
+    expect(headline({ ...sampleDay, sleep_floor: null })).toBe("A short night, and your body hasn't fully recovered")
+  })
+})
+
 describe('the design sample day (Tuesday 29 September)', () => {
   it('has the designed headline', () => {
     expect(headline(sampleDay)).toBe("A short night, and your body hasn't fully recovered")
@@ -228,6 +272,13 @@ describe('the wording rules hold for every day', () => {
       expect(text).not.toContain('—')
       for (const term of FORBIDDEN_TERMS) expect(text.toLowerCase()).not.toMatch(term)
     }
+  })
+
+  it('the sleep floor day is also free of conditions, numbers and em dashes', () => {
+    const text = `${headline(sleepFloorDay)} ${briefing(sleepFloorDay).join(' ')} ${morningNotification(sleepFloorDay)} ${whySummary(sleepFloorDay).body.join(' ')} ${whySummary(sleepFloorDay, true).body.join(' ')}`
+    expect(text).not.toContain('—')
+    expect(text).not.toMatch(/\d/)
+    for (const term of FORBIDDEN_TERMS) expect(text.toLowerCase()).not.toMatch(term)
   })
 
   it('only says "no early sign of illness" when the illness check ran and found nothing (R33)', () => {

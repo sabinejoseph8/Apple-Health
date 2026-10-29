@@ -155,6 +155,8 @@ export const wording = {
       sleeping_hr_worse_than_normal: 'heart rate a little up overnight',
     },
     reasonJoin: ', ',
+    // D96: a very short night set Ease off by itself.
+    sleepFloor: 'sleep far below your usual',
     reminderTitle: 'Clarivi',
     reminder: "No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.",
     followUpTitle: 'Clarivi',
@@ -301,6 +303,8 @@ export const wording = {
     thatNight: 'That night',
     decidedTitle: 'How the status was decided',
     adds: { ready: "That day's points added up to ready.", ease_off: "That day's points added up to ease off.", rest: "That day's points added up to rest." },
+    addsFloor: "That day's points added up to ready, but a very short night set ease off.",
+    floorRule: 'A night of sleep far below your usual always sets ease off, whatever the points.',
     nothing: 'Clarivi has no readings for this day.',
     back: 'Back',
     noStages: "Your Watch didn't record sleep stages that night, so this uses your total time asleep.",
@@ -327,6 +331,10 @@ export const wording = {
       summaryOff: (k: string, total: string, verb: string, dir: string) => `${k} of your ${total} recovery readings ${verb} ${dir} that night`,
       summaryAllIn: { 3: 'All three of your recovery readings were in your usual range that night', 2: 'Both readings Clarivi could use were in your usual range that night' },
       groupMissing: (name: string) => `Your Watch didn't record your ${name} that night.`,
+      floor: {
+        headline: "That night's sleep alone set Ease off",
+        body: 'You slept far less than usual that night. On their own, your other readings would have said ready, but a night that short sets ease off.',
+      },
     },
     alsoChecked: {
       resting: (v: string) => `the previous day's resting heart rate (${v} bpm)`,
@@ -446,6 +454,8 @@ export const wording = {
         hrv: "Your body hasn't fully recovered",
         sleeping_hr: 'Your heart rate stayed up overnight',
         small: 'A few readings were a little off',
+        // D96: sleep far below the usual set Ease off by itself.
+        sleepFloor: 'A very short night, so take it easier today',
       },
       rest: 'Your body needs to rest today',
     },
@@ -495,6 +505,7 @@ export const wording = {
       sleeping_hr: 'That can mean your body is working harder than usual to recover.',
       small: 'Together, they add up to a day to take it a little easier.',
       rest: 'Together, those mean your body needs time to recover today.',
+      sleepFloor: 'A night that short is reason enough to go easier today, even when your other readings look fine.',
     },
     // The illness check (R33). "No early sign" only when the check ran.
     illnessClear: 'there was no early sign of illness or heavy strain',
@@ -583,12 +594,19 @@ export const wording = {
       fired: 'Several of your overnight readings moved the wrong way together, so take note of how you feel today.',
       notRun: "There weren't enough readings to check how they moved together.",
     },
+    // D96: a night of sleep far below the usual set Ease off by itself.
+    floor: {
+      headline: 'Your sleep alone set Ease off today',
+      body: 'You slept far less than usual. On their own, your other readings would have said ready, but a night this short sets ease off.',
+    },
     // R40: how the status is decided. The weights are never shown.
     decided: {
       title: "How today's status is decided",
       intro: 'Each reading adds points when it is worse than usual. The further off it is, and the more that reading matters, the more points it adds.',
       order: (a: string, b: string, c: string) => `${a} matters most, then ${b}, then ${c}.`,
       adds: { ready: "Today's points add up to ready.", ease_off: "Today's points add up to ease off.", rest: "Today's points add up to rest." },
+      addsFloor: "Today's points add up to ready, but a very short night sets ease off.",
+      floorRule: 'A night of sleep far below your usual always sets ease off, whatever the points.',
       reading: 'Reading',
       points: 'Points',
       notCounted: 'Not counted',

@@ -14,7 +14,7 @@ import {
   whySummary,
 } from '../supabase/functions/_shared/briefing.ts'
 import { wording as w } from '../supabase/functions/_shared/wording.ts'
-import { notCounted, reading, type SampleDay, sampleDay } from '../src/lib/sample-days.ts'
+import { notCounted, reading, type SampleDay, sampleDay, sleepFloorDay } from '../src/lib/sample-days.ts'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -30,6 +30,16 @@ const day = (status: SampleDay['status'], nudge: SampleDay['nudge'], points: Par
 }
 
 const statusDays: { title: string; note: string; day: SampleDay }[] = [
+  {
+    title: 'A very short night (the sleep floor, D96)',
+    note: 'Sleep far below the usual but inside the usual range; the other readings usual. The points add up to Ready, so the floor sets Ease off.',
+    day: sleepFloorDay,
+  },
+  {
+    title: 'A very short night, one other reading a little off',
+    note: 'The floor again: sleep far below the usual, HRV a little lower than usual.',
+    day: { ...sleepFloorDay, points: { ...sleepFloorDay.points, hrv: reading('hrv', 45, 52, 6) } },
+  },
   { title: "The design's sample day", note: 'HRV 38 (normal 52), sleep 5h 52m (normal 7h 10m), sleeping heart rate 51 (normal 50).', day: sampleDay },
   { title: 'A normal night', note: 'Everything at normal.', day: day('ready', 'train_as_planned', {}) },
   {
@@ -212,6 +222,15 @@ ${(['hrv', 'sleep', 'sleeping_hr'] as const).map((r) => `<tr><td>${esc(w.why.tit
 <tr><td>${esc(w.why.showNumbers)}</td><td>${esc(w.why.titles.hrv)} 0.9 · ${esc(w.why.titles.sleep)} 0.6 · ${esc(w.why.titles.sleeping_hr)} 0.1 · ${esc(decided.total)} 1.6 (a missing reading: “${esc(decided.notCounted)}”)<br>
 ${esc(decided.zones.ready)} ${esc(decided.under(v2.ease))} · ${esc(decided.zones.ease_off)} ${esc(decided.between(v2.ease, v2.rest))} · ${esc(decided.zones.rest)} ${esc(decided.orMore(v2.rest))} · today’s box labelled “${esc(decided.today)}”</td></tr>
 <tr><td>Footnote</td><td>${esc(decided.footnote(v2.window, 42))}<br>${esc(decided.footnote(v2.window, 39))}</td></tr>
+</table>
+
+<h2>6b. The sleep floor (D96): the other places its words appear</h2>
+<table>
+<tr><td>Why today: summary (today)</td><td><b>${esc(whySummary(sleepFloorDay).headline)}</b><br>${esc(whySummary(sleepFloorDay).body.join(' '))}</td></tr>
+<tr><td>Why today: summary (a past day)</td><td><b>${esc(whySummary(sleepFloorDay, true).headline)}</b><br>${esc(whySummary(sleepFloorDay, true).body.join(' '))}</td></tr>
+<tr><td>How today's status is decided</td><td>${esc(decided.intro)} ${esc(decided.addsFloor)} ${esc(decided.floorRule)}</td></tr>
+<tr><td>How a past day's status was decided</td><td>${esc(w.pastDay.addsFloor)} ${esc(w.pastDay.floorRule)}</td></tr>
+<tr><td>Morning notification</td><td>${esc(morningNotification(sleepFloorDay) ?? '')}</td></tr>
 </table>
 
 <h2>7. Notifications (sent from Phase 4)</h2>

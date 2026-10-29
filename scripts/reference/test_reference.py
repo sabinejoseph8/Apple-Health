@@ -219,6 +219,35 @@ class Status(unittest.TestCase):
                              ref.SETTINGS[2]).set_index('date').loc[d]
         self.assertEqual((round(r['total'], 2), r['status']), (1.19, 'ready'))
 
+    def test_version_3_sleep_floor(self):
+        # D96: sleep counted and 1.5 or more spreads below usual cannot be Ready.
+        # Normals: sleep 430 with a spread of 34, so 379 is exactly 1.5 below.
+        def day(d, sleep, hrv=52, hr=50, settings=ref.SETTINGS[3], finished=True):
+            return ref.build_status(pd.DataFrame([night(d, sleep, hr, hrv, finished=finished)]), pd.DataFrame(normals(d)),
+                                    pd.DataFrame(), settings).set_index('date').loc[d]
+        d = date(2026, 9, 1)
+        r = day(d, 375)
+        self.assertEqual((r['status'], bool(r['sleep_floor']), r['nudge']), ('ease_off', True, 'prioritise_sleep'))
+        self.assertEqual(round(r['total'], 2), 0.40)  # the points are unchanged, only the status moved
+        self.assertEqual((day(d, 379)['status'], bool(day(d, 379)['sleep_floor'])), ('ease_off', True))   # exactly 1.5
+        self.assertEqual((day(d, 383)['status'], bool(day(d, 383)['sleep_floor'])), ('ready', False))     # 1.38
+        self.assertEqual((day(d, 375, hrv=40)['status'], bool(day(d, 375, hrv=40)['sleep_floor'])), ('ease_off', False))
+        self.assertEqual((day(d, 375, hrv=32, hr=58)['status'], bool(day(d, 375, hrv=32, hr=58)['sleep_floor'])), ('rest', False))
+        r = day(d, 375, hrv=None)  # two of three readings still fire it
+        self.assertEqual((r['status'], bool(r['sleep_floor']), r['readings_used']), ('ease_off', True, 2))
+        r = day(d, 375, settings=ref.SETTINGS[2])  # version 2 is unchanged
+        self.assertEqual((r['status'], bool(r['sleep_floor'])), ('ready', False))
+        r = ref.build_status(pd.DataFrame([night(d, 375, 50, 52)]),
+                             pd.DataFrame([dict(x, building=x['metric'] == 'sleep') for x in normals(d)]),
+                             pd.DataFrame(), ref.SETTINGS[3]).set_index('date').loc[d]
+        self.assertEqual((r['status'], bool(r['sleep_floor'])), ('ready', False))  # sleep not counted: no floor
+
+    def test_version_3_keeps_version_2_numbers(self):
+        v2, v3 = ref.SETTINGS[2], ref.SETTINGS[3]
+        self.assertEqual({k: v for k, v in v3.items() if k != 'sleep_floor_spreads'},
+                         {k: v for k, v in v2.items() if k != 'sleep_floor_spreads'})
+        self.assertEqual((v2['sleep_floor_spreads'], v3['sleep_floor_spreads']), (None, 1.5))
+
     def test_illness_check(self):
         d = date(2026, 10, 8)
         r = self.build([night(d, 430, 53, 45, rr=15.6)], normals(d)).loc[d]

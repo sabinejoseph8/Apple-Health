@@ -3,7 +3,8 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(9);
 
-select is((select version from public.score_settings where active), 2, 'version 2 is the active settings');
+-- Version 3 (D96) is now the active one; version 2 is checked here as it was.
+select is((select version from public.score_settings where active), 3, 'version 3 is the active settings');
 select is((select window_nights || '/' || min_valid_nights || '/' || ease_off_at || '/' || rest_at
              from public.score_settings where version = 2), '42/21/1.2/2.4',
   'normals from 42 nights with 21 valid; Ease off from 1.2, Rest from 2.4');
@@ -13,6 +14,7 @@ select is((select bool_and(frozen) from public.score_settings where version in (
 select throws_ok('update public.score_settings set ease_off_at = 1.1 where version = 2', 'P0001',
   'score settings version 2 is frozen', 'version 2''s numbers cannot change');
 select lives_ok('update public.score_settings set active = false where version = 2', 'but a later version could replace it');
+update public.score_settings set active = false where active;
 update public.score_settings set active = true where version = 2;
 
 -- The design's sample day under version 2, from made-up nights and normals.
