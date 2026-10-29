@@ -504,11 +504,12 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [x] Move `interview-notes.md` into `private/` (done 29 October 2026, ahead of Phase 9 at Sabine's request) (ignored by Git), stop tracking it, and update `CLAUDE.md` to name the new place (Sabine, 29 October 2026). The earlier versions stay in the public history, which holds no secrets, passwords or readings; rewriting history is Sabine's call, never automatic
 - [ ] Bring the project memory files up to date with what was built, and tick the website
 - [ ] Evaluation write-up (`docs/evaluation.md`): the targets as set before any result (with the date), week one and week two reported separately with every miss stated next to its number, the module check as a pre-registered negative result, and the AI feature's test set and its result on Opus 5.5 (7b-5a); a small script reproduces the numbers (`scripts/reference/measure.py` and the check scripts); only totals, never readings
+- [ ] Demo build on made-up data (D95, Sabine, 29 October 2026), so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (`e2e/fixtures/mock-app.ts`, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says "Demo with made-up data"; the demo build reads none of the project's keys or addresses
 - [ ] Architecture diagram as SVG, PNG and PDF (from the tech spec's overview, including the AI step and what is sent to it)
-- [ ] Recruiter README for AI product manager roles, replacing the current one; the original brief kept as `docs/project-brief.md`; discloses the AI feature and where data goes
+- [ ] Recruiter README for AI product manager roles, with a "Try it" section that offers the layers (read the case study, watch the video, open the demo, inspect the evaluation, run the checks), replacing the current one; the original brief kept as `docs/project-brief.md`; discloses the AI feature and where data goes
 - [ ] Simple automated checks (`checks/run_all.py`, Python standard library) and a short run guide (`docs/how-to-run.md`), runnable without real data through `scripts/reference/check.py --local-synthetic`; the config allows the one contact address in the consent text and the made-up test fixtures, and still flags every other email; the guide says the contact address is listed on purpose
 - [ ] One-page "AI product management case study" PDF, checked to be one page
-- [ ] Private portfolio kit PDF outside the repository (2-minute and 10-minute stories, likely interview questions, a reader test, a demo video script)
+- [ ] Private portfolio kit PDF outside the repository (2-minute and 10-minute stories, likely interview questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings)
 - [ ] Pre-publish scan including history; **Sabine:** approve before anything is pushed
 - [ ] After pushing, check every README link on GitHub
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run the full test suite
@@ -516,6 +517,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 ### Automated tests
 - `python3 checks/run_all.py` passes: required docs exist, README sections and links, no em dashes, headline numbers agree across README, case study and evaluation, the case study is one page, private files are ignored and untracked.
 - `python3 checks/prepublish_scan.py --history` reports nothing new.
+- The demo build: a screen test at iPhone size walks every demo screen; a test fails if the demo bundle holds the project's address or keys, or any data that is not from the made-up fixture file.
 - The evaluation script reproduces the numbers in `docs/evaluation.md`.
 
 ### Manual verification
@@ -525,5 +527,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
    *Expected:* each opens the right file or page.
 3. **Case study:** open the PDF.
    *Expected:* exactly one page, and its numbers match the evaluation.
-4. **Reader test:** give the README to someone who hasn't seen the project.
+4. **Demo:** open the demo address on a phone.
+   *Expected:* no sign-in, the "Demo with made-up data" banner, every screen opens, and nothing from your real account appears.
+5. **Reader test:** give the README to someone who hasn't seen the project.
    *Expected:* they answer most of the kit's questions correctly from it alone.
