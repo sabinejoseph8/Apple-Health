@@ -10,9 +10,9 @@
 import { adminClient, corsHeaders, json, userFromRequest } from '../_shared/http.ts'
 import { buildMorningInput, digestInputFrom, inputHash, type AiInput } from '../_shared/ai-input.ts'
 import { checkOutput } from '../_shared/ai-filter.ts'
-import { INSTRUCTION_VERSION } from '../_shared/ai-instruction.ts'
+import { INSTRUCTION_VERSION, VERIFY_VERSION } from '../_shared/ai-instruction.ts'
 import { type Deps, type Job, processJob } from './runner.ts'
-import { anthropicWriter, MODEL } from './writer.ts'
+import { anthropicVerifier, anthropicWriter, MODEL } from './writer.ts'
 
 const CLAIM_LIMIT = 5
 const EVAL_LIMIT = 60
@@ -24,9 +24,15 @@ function writerFromEnv() {
   return anthropicWriter(key, Deno.env.get('ANTHROPIC_BASE_URL') || undefined)
 }
 
+function verifierFromEnv() {
+  const key = Deno.env.get('ANTHROPIC_API_KEY')
+  if (!key) return null
+  return anthropicVerifier(key, Deno.env.get('ANTHROPIC_BASE_URL') || undefined)
+}
+
 // Reads and writes for one job, through the elevated client; only the
 // allow-listed input ever leaves for the model.
-function storeFor(admin: ReturnType<typeof adminClient>, write: NonNullable<ReturnType<typeof writerFromEnv>>): Deps {
+function storeFor(admin: ReturnType<typeof adminClient>, write: NonNullable<ReturnType<typeof writerFromEnv>>, verify: NonNullable<ReturnType<typeof verifierFromEnv>>): Deps {
   return {
     async loadInput(job) {
       if (job.kind === 'morning') {
@@ -48,6 +54,7 @@ function storeFor(admin: ReturnType<typeof adminClient>, write: NonNullable<Retu
       return data
     },
     write,
+    verify,
     hash: inputHash,
     async save(job, s) {
       const { error } = await admin.rpc('ai_save', {
@@ -66,15 +73,37 @@ function storeFor(admin: ReturnType<typeof adminClient>, write: NonNullable<Retu
   }
 }
 
-async function evaluate(cases: { id: string; input: AiInput }[], write: NonNullable<ReturnType<typeof writerFromEnv>>) {
+// Runs made-up cases through the writer, the word filter and (for digests)
+// the second check. A case may carry its own "output" to check without
+// writing (the second check's own test).
+async function evaluate(
+  cases: { id: string; input: AiInput; output?: unknown }[],
+  write: NonNullable<ReturnType<typeof writerFromEnv>>,
+  verify: NonNullable<ReturnType<typeof verifierFromEnv>>,
+) {
   const out: unknown[] = []
   for (let i = 0; i < cases.length; i += EVAL_PARALLEL) {
     const batch = cases.slice(i, i + EVAL_PARALLEL)
     out.push(...(await Promise.all(batch.map(async (c) => {
       try {
-        const w = await write(c.input)
+        const w = c.output
+          ? { output: c.output as never, latency_ms: 0, input_tokens: 0, output_tokens: 0 }
+          : await write(c.input)
         const fails = checkOutput(c.input, w.output)
-        return { id: c.id, ok: fails.length === 0, fails, output: w.output, latency_ms: w.latency_ms, input_tokens: w.input_tokens, output_tokens: w.output_tokens }
+        let verified: { ok: boolean; unsupported: string[] } | null = null
+        let extraIn = 0
+        let extraOut = 0
+        if (c.input.kind === 'digest' && (fails.length === 0 || c.output)) {
+          const v = await verify(c.input, w.output)
+          verified = { ok: v.ok, unsupported: v.unsupported }
+          extraIn = v.input_tokens
+          extraOut = v.output_tokens
+          if (!v.ok) fails.push('unverified')
+        }
+        return {
+          id: c.id, ok: fails.length === 0, fails, output: w.output, verified,
+          latency_ms: w.latency_ms, input_tokens: w.input_tokens + extraIn, output_tokens: w.output_tokens + extraOut,
+        }
       } catch (err) {
         return { id: c.id, ok: false, fails: ['error'], error: err instanceof Error ? err.message : String(err) }
       }
@@ -94,14 +123,15 @@ Deno.serve(async (req) => {
   }
   const admin = adminClient()
   const write = writerFromEnv()
+  const verify = verifierFromEnv()
 
   if (body.kind === 'run') {
     const { data: allowed } = await admin.rpc('cron_key_ok', { p_key: req.headers.get('x-clarivi-cron') ?? '' })
     if (allowed !== true) return json({ error: 'not_allowed' }, 401)
-    if (!write) return json({ error: 'no_key' }, 503)
+    if (!write || !verify) return json({ error: 'no_key' }, 503)
     const { data: jobs, error } = await admin.rpc('ai_claim_jobs', { p_limit: CLAIM_LIMIT })
     if (error) return json({ error: 'claim_failed' }, 500)
-    const deps = storeFor(admin, write)
+    const deps = storeFor(admin, write, verify)
     const outcomes = await Promise.all((jobs as Job[]).map((job) => processJob(job, deps)))
     const tally = { saved: 0, unchanged: 0, failed: 0 }
     for (const o of outcomes) tally[o]++
@@ -114,10 +144,10 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: 'not_signed_in' }, 401)
     const { data: profile } = await admin.from('profiles').select('is_owner').eq('user_id', user.id).maybeSingle()
     if (profile?.is_owner !== true) return json({ error: 'not_owner' }, 403)
-    if (!write) return json({ error: 'no_key' }, 503)
-    const cases = Array.isArray(body.cases) ? (body.cases as { id: string; input: AiInput }[]) : []
+    if (!write || !verify) return json({ error: 'no_key' }, 503)
+    const cases = Array.isArray(body.cases) ? (body.cases as { id: string; input: AiInput; output?: unknown }[]) : []
     if (cases.length === 0 || cases.length > EVAL_LIMIT) return json({ error: 'bad_cases' }, 400)
-    return json({ model: MODEL, instruction: INSTRUCTION_VERSION, results: await evaluate(cases, write) })
+    return json({ model: MODEL, instruction: INSTRUCTION_VERSION, verifier: VERIFY_VERSION, results: await evaluate(cases, write, verify) })
   }
 
   return json({ error: 'unknown_kind' }, 400)

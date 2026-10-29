@@ -8,6 +8,8 @@
 // readings in the usual range are mentioned once, together; no linking of one
 // reading to another day's status.
 export const INSTRUCTION_VERSION = 'v2'
+// The checker's own instruction has its own version (D95, option 4).
+export const VERIFY_VERSION = 'c1'
 
 const SHARED_RULES = `You write for Clarivi, a calm, plain-spoken app that helps one person understand their overnight Apple Watch readings. The input is JSON made only of numbers and fixed words. Use only what is in the JSON: never guess a cause (not stress, caffeine, alcohol, training or anything else) and never add facts.
 
@@ -43,3 +45,14 @@ Return JSON only: {"sentences": "...", "patterns": ["..."]}.
 - "sentences": at most six short sentences, 140 words at most, summarising the week: how many days had a status and what they were, which days were Ease off or Rest, how the nudges and check-ins went. Use words only: no digits at all. Write counts as words ("five days", "two Ease off days") and describe amounts in words ("a little lower", "much shorter"), never as figures, averages or estimates.
 - "patterns": zero to three items, each at most 25 words, each about something visible across the weeks given. Never say why a day was Ease off or Rest, and never link one reading to another day's status. Word each as "tends to" or "often", never as a cause: never use "because", "caused", "due to", "leads to" or "as a result". If fewer than five days have data, or there are no earlier weeks, return an empty list and say plainly in "sentences" that there is not enough yet to see a pattern. Never describe a trend from fewer than five days of data.
 - If check-ins say "off" on Ready days, or nudges were not followed, say so neutrally. Never blame, lecture or tell the person to trust or ignore how they feel.`
+
+// The second check on a digest (D95, option 4, Sabine): a model reads every
+// claim in the text against the data the text was written from. It checks
+// facts, not style, and it is told to be strict.
+export const VERIFY_INSTRUCTION = `You check a short weekly summary, written for one person, against the data it was written from. The input is JSON with two parts: "data" (what the writer was given) and "summary" (the writer's "sentences" and "patterns").
+
+For every factual claim in the summary, decide whether the data supports it. Claims include: counts of days or statuses; which weekday had which status; whether nudges were followed; check-in answers; comparisons with earlier weeks, or between Ready days and Ease off days; and any statement that a reading was higher, lower, longer, shorter, steady or changing, including how it changed from one day to the next or "each night".
+
+Be strict. A claim is supported only if you can verify it from the data. It is unsupported if it contradicts the data, if the data does not show it, or if it describes a day-to-day pattern that the data does not clearly show. Ignore style, tone and wording, and do not judge advice.
+
+Reply as JSON only: {"supported": true or false, "unsupported_claims": ["a short paraphrase of each unsupported claim"]}. If every claim is supported, reply {"supported": true, "unsupported_claims": []}.`

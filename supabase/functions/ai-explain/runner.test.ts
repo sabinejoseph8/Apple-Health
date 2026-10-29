@@ -2,7 +2,9 @@
 // nothing real is called. A text is saved only after the filter passes it;
 // a failed filter gets one more try; the input is never saved.
 import { assert, assertEquals } from 'jsr:@std/assert@1'
-import { type Deps, type Job, type Written, processJob } from './runner.ts'
+import { type Deps, type Job, type Verified, type Written, processJob } from './runner.ts'
+import type { DigestInput } from '../_shared/ai-input.ts'
+import type { DigestOutput } from '../_shared/ai-filter.ts'
 import type { MorningInput } from '../_shared/ai-input.ts'
 import type { MorningOutput } from '../_shared/ai-filter.ts'
 
@@ -93,4 +95,76 @@ Deno.test('a thrown error in the store is reported as a failure, not a crash', a
   const { deps, calls } = fake({ loadInput: () => Promise.reject(new Error('db down')) })
   assertEquals(await processJob(JOB, deps), 'failed')
   assertEquals(calls.failed, ['error: db down'])
+})
+
+// D95, option 4 (Sabine): a second model reads every claim in a digest against
+// the data before it is shown. Morning texts are not checked this way.
+const DIGEST_JOB: Job = { user_id: 'u1', kind: 'digest', for_date: '2026-08-03' }
+const DIGEST_INPUT: DigestInput = {
+  kind: 'digest',
+  days: [{ weekday: 'Monday', status: 'ready', nudge: 'train_as_planned', followed: 'yes', checkin: 'okay', hrv: 48, sleeping_hr: 56, sleep: 400 }],
+  prior_weeks: [],
+}
+const DIGEST_GOOD: DigestOutput = { sentences: 'Every day with a status was Ready this week.', patterns: [] }
+const verdict = (ok: boolean, unsupported: string[] = []): Verified => ({ ok, unsupported, input_tokens: 900, output_tokens: 40 })
+
+function digestFake(verifies: Verified[]) {
+  const calls = { saved: [] as { tries: number; input_tokens: number; output_tokens: number }[], failed: [] as string[], verified: 0, wrote: 0 }
+  const queue = [...verifies]
+  const deps: Deps = {
+    loadInput: () => Promise.resolve({ input: DIGEST_INPUT, status: null, nudge: null }),
+    existing: () => Promise.resolve(null),
+    write: () => { calls.wrote++; return Promise.resolve({ output: DIGEST_GOOD, input_tokens: 1000, output_tokens: 100, latency_ms: 3000 }) },
+    verify: () => { calls.verified++; return Promise.resolve(queue.shift() ?? verdict(true)) },
+    hash: () => Promise.resolve('h2'),
+    save: (_j, saved) => { calls.saved.push(saved); return Promise.resolve() },
+    finish: () => Promise.resolve(),
+    fail: (_j, error) => { calls.failed.push(error); return Promise.resolve() },
+  }
+  return { deps, calls }
+}
+
+Deno.test('a digest whose claims are all supported is saved, with the check counted in the tokens', async () => {
+  const { deps, calls } = digestFake([verdict(true)])
+  assertEquals(await processJob(DIGEST_JOB, deps), 'saved')
+  assertEquals([calls.wrote, calls.verified], [1, 1])
+  assertEquals(calls.saved[0], { ...calls.saved[0], tries: 1, input_tokens: 1900, output_tokens: 140 })
+})
+
+Deno.test('a digest with an unsupported claim is written again, and the second try can pass', async () => {
+  const { deps, calls } = digestFake([verdict(false, ['sleep got longer each night']), verdict(true)])
+  assertEquals(await processJob(DIGEST_JOB, deps), 'saved')
+  assertEquals([calls.wrote, calls.verified, calls.saved[0].tries], [2, 2, 2])
+})
+
+Deno.test('two unsupported digests fail the job, save nothing and never keep the claim', async () => {
+  const { deps, calls } = digestFake([verdict(false, ['sleep got longer each night']), verdict(false, ['another claim'])])
+  assertEquals(await processJob(DIGEST_JOB, deps), 'failed')
+  assertEquals(calls.saved.length, 0)
+  assertEquals(calls.failed, ['filtered:unverified'])
+  assert(!calls.failed[0].includes('longer'))
+})
+
+Deno.test('if the check itself fails, nothing is shown (it fails safe)', async () => {
+  const { deps, calls } = digestFake([])
+  deps.verify = () => Promise.reject(new Error('timeout after 25000ms'))
+  assertEquals(await processJob(DIGEST_JOB, deps), 'failed')
+  assertEquals(calls.saved.length, 0)
+  assertEquals(calls.failed, ['error: timeout after 25000ms'])
+})
+
+Deno.test('a text the word filter refuses is not sent to the checker', async () => {
+  const { deps, calls } = digestFake([])
+  deps.write = () => Promise.resolve({ output: { sentences: 'You may be getting sick.', patterns: [] }, input_tokens: 1000, output_tokens: 50, latency_ms: 2000 })
+  assertEquals(await processJob(DIGEST_JOB, deps), 'failed')
+  assertEquals(calls.verified, 0)
+})
+
+Deno.test('morning texts are not checked by a second model', async () => {
+  const { deps, calls } = fake({})
+  let verified = 0
+  deps.verify = () => { verified++; return Promise.resolve(verdict(true)) }
+  assertEquals(await processJob(JOB, deps), 'saved')
+  assertEquals(verified, 0)
+  assertEquals(calls.saved.length, 1)
 })

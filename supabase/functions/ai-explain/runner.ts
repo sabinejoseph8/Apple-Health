@@ -31,10 +31,21 @@ export interface Saved {
   output_tokens: number
 }
 
+// A second model's reading of a digest against the data it was written from
+// (D95, option 4): ok when every claim is supported.
+export interface Verified {
+  ok: boolean
+  unsupported: string[]
+  input_tokens: number
+  output_tokens: number
+}
+
 export interface Deps {
   loadInput(job: Job): Promise<{ input: AiInput; status: string | null; nudge: string | null } | null>
   existing(job: Job): Promise<{ input_hash: string; status: string | null; nudge: string | null } | null>
   write(input: AiInput): Promise<Written>
+  // Checks a text's claims against its input. Used for digests only.
+  verify?(input: AiInput, output: MorningOutput | DigestOutput): Promise<Verified>
   hash(input: AiInput): Promise<string>
   save(job: Job, saved: Saved): Promise<void>
   finish(job: Job): Promise<void>
@@ -61,9 +72,20 @@ export async function processJob(job: Job, deps: Deps): Promise<Outcome> {
     }
 
     let lastFails: string[] = []
+    let extraIn = 0
+    let extraOut = 0
     for (let tries = 1; tries <= TRIES; tries++) {
       const written = await deps.write(input)
+      extraIn += written.input_tokens
+      extraOut += written.output_tokens
       lastFails = checkOutput(input, written.output)
+      // A digest that passed the word filter has every claim read against the data.
+      if (lastFails.length === 0 && input.kind === 'digest' && deps.verify) {
+        const v = await deps.verify(input, written.output)
+        extraIn += v.input_tokens
+        extraOut += v.output_tokens
+        if (!v.ok) lastFails = ['unverified']
+      }
       if (lastFails.length === 0) {
         await deps.save(job, {
           body: written.output,
@@ -72,8 +94,8 @@ export async function processJob(job: Job, deps: Deps): Promise<Outcome> {
           nudge,
           tries,
           latency_ms: written.latency_ms,
-          input_tokens: written.input_tokens,
-          output_tokens: written.output_tokens,
+          input_tokens: extraIn,
+          output_tokens: extraOut,
         })
         return 'saved'
       }

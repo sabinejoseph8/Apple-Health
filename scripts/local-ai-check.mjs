@@ -25,7 +25,9 @@ sql(`delete from auth.users where email like 'ai-check-%@example.test';`)
 
 // ---- the fake Anthropic server: the Messages API's shape, scripted answers.
 const requests = []
+const verifyRequests = []
 let script = []
+let verifyScript = []
 const GOOD = (input) => input.kind === 'morning'
   ? { explanation: 'Your heart rate variability was below your usual range, which usually means your body is still recovering. Today is a day to take it a little easier. Your sleep and heart rate while you slept were in your usual range.' }
   : { sentences: 'A steady week.', patterns: [] }
@@ -34,9 +36,13 @@ const server = http.createServer((req, res) => {
   req.on('data', (c) => chunks.push(c))
   req.on('end', () => {
     const body = JSON.parse(Buffer.concat(chunks).toString() || '{}')
-    requests.push({ url: req.url, headers: req.headers, body })
+    // The second check has its own instruction (D95, option 4).
+    const checking = String(body.system).startsWith('You check a short weekly summary')
+    ;(checking ? verifyRequests : requests).push({ url: req.url, headers: req.headers, body })
     const input = JSON.parse(body.messages[0].content)
-    const next = script.length > 0 ? script.shift() : GOOD(input)
+    const next = checking
+      ? (verifyScript.length > 0 ? verifyScript.shift() : { supported: true, unsupported_claims: [] })
+      : script.length > 0 ? script.shift() : GOOD(input)
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(JSON.stringify({
       id: 'msg_fake', type: 'message', role: 'assistant', model: body.model, stop_reason: 'end_turn', stop_sequence: null,
@@ -123,7 +129,24 @@ addStatus(yes.id)
 ok(await until(() => sql(`select last_error from public.ai_jobs where user_id = '${yes.id}'`).startsWith('filtered:')), 'two refused texts fail the try with the reasons')
 ok(sql(`select count(*) from public.ai_texts where user_id = '${yes.id}'`) === '0', 'and nothing is saved, so the card shows the fixed wording')
 
-// 5. Someone who has not agreed gets no job and nothing is sent.
+// 5. A weekly digest is written, then read against the data by a second check.
+const week = '2026-08-03'
+sql(`insert into public.digests (user_id, week_start, facts) values ('${yes.id}', '${week}', '{}');`)
+ok(await until(() => sql(`select count(*) from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'`) === '1'), 'a digest is written and saved')
+ok(verifyRequests.length === 1, 'a second check read it against the data')
+const checked = JSON.parse(verifyRequests[0].body.messages[0].content)
+ok(Array.isArray(checked.data.days) && typeof checked.summary.sentences === 'string', 'the check was given the same input and the text, nothing more')
+ok(!JSON.stringify(verifyRequests[0].body).includes(yes.id) && !JSON.stringify(verifyRequests[0].body).includes(yes.email), 'and nothing identifying')
+ok(Number(sql(`select input_tokens from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'`)) === 1400, 'the saved tokens count the check too')
+
+// 6. A digest the check refuses twice is not saved, and the job waits to try again.
+verifyScript = [{ supported: false, unsupported_claims: ['sleep got longer each night'] }, { supported: false, unsupported_claims: ['another claim'] }]
+sql(`delete from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'; delete from public.digests where user_id = '${yes.id}';
+     insert into public.digests (user_id, week_start, facts) values ('${yes.id}', '${week}', '{}');`)
+ok(await until(() => sql(`select last_error from public.ai_jobs where user_id = '${yes.id}' and kind = 'digest'`) === 'filtered:unverified'), 'a digest with unsupported claims fails with a reason')
+ok(sql(`select count(*) from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'`) === '0', 'and nothing is saved, so the fixed digest shows')
+
+// 7. Someone who has not agreed gets no job and nothing is sent.
 const asked = requests.length
 addStatus(no.id)
 await wait(3000)
