@@ -25,7 +25,8 @@ const CONDITIONS: RegExp[] = [
   /\bconcussion/i, /\bpanic/i, /\bmental health/i, /\bsymptom/i, /\bchronic/i, /\binjur/i, /\bstress/i,
   // Added in the 7b-7 review: a condition named without one of the words above.
   /\bheart (problem|condition|issue|trouble|disease)/i, /\bhealth (problem|issue|concern|condition)/i, /\bcondition\b/i,
-  /\bunhealthy\b/i,
+  /\bunhealthy\b/i, /\bfatigue/i, /\binflammat/i, /\basthma/i, /\bmigraine/i, /\bblood pressure/i, /\bsore throat/i,
+  /\bailment/i, /\bunder the weather\b/i, /\bfighting (something|off)\b/i, /\bcoming down with\b/i, /\brun[- ]down\b/i,
 ]
 
 // No medical, medication or supplement advice, and no "see a doctor".
@@ -62,7 +63,11 @@ const TREND: RegExp = /\btrend|\bheading\b|\bgetting (better|worse)\b|\bimprov|\
 const BLAME: RegExp = /\byou should(n't| not)?\b|\btrust the app\b|\bignore (how|what|your)\b|\bfailed\b|\bneglect|\bshould have\b|\byou must\b|\bneed to\b|\bignored\b|\bbetter to\b/i
 const FLOOR_SAYS: RegExp = /(far|much) (less|shorter)|very short|far below|short(er)? night|far too little|barely slept/i
 const TWO_OF_THREE: RegExp = /\btwo of (your |the )?three\b|\btwo (of the |of your )?(three )?readings\b|\bonly two\b|\bbased on two\b/i
-const NUMBER_WORDS: RegExp = /\b(four|five|six|seven|eight|nine|ten|eleven|twelve|hundred|thousand|percent)\b/i
+const NUMBER_WORDS: RegExp = /\b(four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|percent)\b/i
+// An amount in other words ("about an hour shorter"): the texts say "much shorter", never how much.
+const AMOUNT_UNITS: RegExp = /\b(hours?|minutes?|mins?|bpm|beats|milliseconds?)\b|\bhalf an hour\b/i
+// The morning text names the plan, it doesn't give orders beyond the nudge (docs/ai-draft.md, section 3).
+const DIRECTIVE: RegExp = /\byou (need to|have to|must|should|ought to)\b|\bmake sure (you|to)\b|\bdon'?t forget\b/i
 
 const sentencesOf = (text: string) => text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)
 const wordsOf = (text: string) => text.split(/\s+/).filter(Boolean).length
@@ -93,7 +98,8 @@ function checkMorning(input: MorningInput, out: MorningOutput): string[] {
   const text = typeof out?.explanation === 'string' ? out.explanation.trim() : ''
   if (text === '') return ['length_ok']
   checkWords(text, input.status, input.nudge, fails)
-  if (/\d/.test(text) || NUMBER_WORDS.test(text)) fails.add('no_new_numbers')
+  if (/\d/.test(text) || NUMBER_WORDS.test(text) || AMOUNT_UNITS.test(text)) fails.add('no_new_numbers')
+  if (DIRECTIVE.test(text)) fails.add('no_blame')
   if (GUESSED_CAUSE.test(text)) fails.add('no_causal_claim')
   if (sentencesOf(text).length > 3 || wordsOf(text) > 60) fails.add('length_ok')
   if (input.flags.sleep_floor && !(/sleep/i.test(text) && FLOOR_SAYS.test(text))) fails.add('credits_sleep_floor')
@@ -112,7 +118,7 @@ function checkDigest(input: DigestInput, out: DigestOutput): string[] {
   if (!plainText(sentences) || patterns.some((p) => !plainText(p))) fails.add('plain_text')
 
   // Words only (Sabine, 29 October 2026): the digest holds no digits at all.
-  if (/\d/.test(all)) fails.add('no_new_numbers')
+  if (/\d/.test(all) || AMOUNT_UNITS.test(all)) fails.add('no_new_numbers')
   if (sentencesOf(sentences).length > 6 || wordsOf(sentences) > 140) fails.add('length_ok')
   if (patterns.length > 3 || patterns.some((p) => p === '' || wordsOf(p) > 25)) fails.add('length_ok')
   if (CAUSAL.test(all)) fails.add('no_causal_claim')

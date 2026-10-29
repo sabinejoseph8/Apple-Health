@@ -2,7 +2,7 @@
 -- blocks a status, and a text for a deleted job is dropped. Made-up values only.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(11);
 
 insert into auth.users (id, email) values
   ('d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 'ai-fix-a@example.test'),
@@ -42,6 +42,23 @@ select lives_ok($$insert into public.daily_status (user_id, date, status, no_sta
   'a status saves even when its job cannot be queued');
 select is((select count(*)::int from public.daily_status where user_id = 'd2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2'), 1,
   'and the status is there');
+
+-- 2 again: a failed start still leaves the job queued
+drop trigger ai_on_digest on public.digests;
+alter table public.ai_jobs drop constraint ai_jobs_test_block;
+create or replace function public.ai_start() returns bigint language plpgsql as $$ begin raise exception 'the writer cannot start'; end; $$;
+create trigger ai_on_digest after insert on public.digests for each row execute function public.ai_on_digest();
+select lives_ok($$insert into public.digests (user_id, week_start, facts) values ('d2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', date '2026-10-26', '{}')$$,
+  'a digest saves even when the writer cannot be started');
+select is((select status from public.ai_jobs where user_id = 'd2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2' and kind = 'digest'), 'pending',
+  'and its job is still queued for the every-minute job');
+
+-- 4: the "Getting ready" card view is counted
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1", "role": "authenticated"}', true);
+select lives_ok($$select public.log_usage('card_view', jsonb_build_object('date', (now() at time zone 'utc')::date::text, 'status_shown', false, 'state', 'writing'))$$,
+  'a card view while the card is getting ready is logged');
+reset role;
 
 select * from finish();
 rollback;

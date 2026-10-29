@@ -8,6 +8,8 @@
 --    (and of a digest). If the queue or the call to start the writer ever
 --    failed, the status itself would fail to save. The AI only explains the
 --    status, so a failure in the queue is now swallowed, and the status saves.
+--    Queueing and starting are separate, so a failed start still leaves the job
+--    queued for the every-minute job.
 -- 3. A text saved after the person deleted their data (or withdrew) while the
 --    model was still writing would have brought a row back. A text is now kept
 --    only while its job still exists.
@@ -77,17 +79,25 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_queued boolean := false;
 begin
+  -- Two separate blocks: if starting the writer fails, the job is still queued
+  -- and the every-minute job picks the day up.
   begin
     if new.status in ('ready', 'ease_off', 'rest') and new.date >= (now() at time zone 'utc')::date - 2 then
-      if public.ai_enqueue(new.user_id, 'morning', new.date) then
-        perform public.ai_start();
-      end if;
+      v_queued := public.ai_enqueue(new.user_id, 'morning', new.date);
     end if;
   exception when others then
-    -- The status matters more than its explanation; the every-minute job picks the day up.
     raise warning 'ai queue: % (%)', sqlerrm, sqlstate;
   end;
+  if v_queued then
+    begin
+      perform public.ai_start();
+    exception when others then
+      raise warning 'ai start: % (%)', sqlerrm, sqlstate;
+    end;
+  end if;
   return null;
 end;
 $$;
@@ -98,14 +108,21 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_queued boolean := false;
 begin
   begin
-    if public.ai_enqueue(new.user_id, 'digest', new.week_start) then
-      perform public.ai_start();
-    end if;
+    v_queued := public.ai_enqueue(new.user_id, 'digest', new.week_start);
   exception when others then
     raise warning 'ai queue: % (%)', sqlerrm, sqlstate;
   end;
+  if v_queued then
+    begin
+      perform public.ai_start();
+    exception when others then
+      raise warning 'ai start: % (%)', sqlerrm, sqlstate;
+    end;
+  end if;
   return null;
 end;
 $$;
@@ -135,5 +152,45 @@ begin
         created_at = now();
   update public.ai_jobs set status = 'done', finished_at = now(), last_error = null
    where user_id = p_user and kind = p_kind and for_date = p_date;
+end;
+$$;
+
+-- 4. The "Getting ready" card is a card view like the others; the usage log did
+--    not list that state, so the call failed and the view was never counted.
+--    Everything else in this function is as it was (20261016000000).
+create or replace function public.log_usage(p_event text, p_meta jsonb default '{}'::jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user uuid := (select auth.uid());
+  v_meta jsonb := coalesce(p_meta, '{}'::jsonb);
+begin
+  if v_user is null then
+    raise exception 'not signed in' using errcode = '42501';
+  end if;
+  if p_event is null or p_event not in ('card_view', 'why_today_open', 'checkin_skipped', 'trends_open', 'digest_open') then
+    raise exception 'unknown event' using errcode = '22023';
+  end if;
+  if jsonb_typeof(v_meta) <> 'object'
+     or exists (select 1 from jsonb_object_keys(v_meta) k where k not in ('date', 'status_shown', 'state'))
+     or (v_meta ? 'date' and coalesce(v_meta ->> 'date', '') !~ '^\d{4}-\d{2}-\d{2}$')
+     or (v_meta ? 'status_shown' and jsonb_typeof(v_meta -> 'status_shown') <> 'boolean')
+     or (v_meta ? 'state' and coalesce(v_meta ->> 'state', '') not in
+           ('status', 'waiting', 'analysing', 'night_unfinished', 'missed', 'no_sync', 'not_enough_data', 'learning',
+            'no_sleep_stages', 'writing'))
+  then
+    raise exception 'unexpected details' using errcode = '22023';
+  end if;
+  if v_meta ? 'date' then
+    perform (v_meta ->> 'date')::date;
+  end if;
+
+  if (select count(*) from public.usage_events where user_id = v_user and at > now() - interval '1 day') >= 500 then
+    return;
+  end if;
+  insert into public.usage_events (user_id, event, meta) values (v_user, p_event, v_meta);
 end;
 $$;

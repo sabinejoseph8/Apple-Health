@@ -168,3 +168,11 @@ Deno.test('morning texts are not checked by a second model', async () => {
   assertEquals(verified, 0)
   assertEquals(calls.saved.length, 1)
 })
+
+Deno.test('a digest is never saved without a checker', async () => {
+  const { deps, calls } = digestFake([])
+  delete deps.verify
+  assertEquals(await processJob(DIGEST_JOB, deps), 'failed')
+  assertEquals(calls.saved.length, 0)
+  assert(calls.failed[0].includes('no_verifier'))
+})

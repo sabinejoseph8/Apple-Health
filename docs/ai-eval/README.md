@@ -71,3 +71,7 @@ Each case has a `trap` that names what it tempts. The traps:
 - The cases are invented, so they say nothing about how real nights read.
 - The automated checks are rules in code; the judged checks depend on one grader's reading.
 - The AI's wording on Sabine's real nights is judged by her, on real days, at the release.
+
+## Changes to the filter after the results (7b-7 code review, 29 October 2026)
+
+The results above were measured with the first filter. The code review then tightened it: more condition words (fatigue, inflammation, asthma, migraine, blood pressure, "heart problem", "under the weather" and similar), more advice words ("healthcare professional", "getting checked out", drinking and diet), amounts in other words ("twenty", "an hour", "minutes", "bpm"), a morning text guessing a cause ("because you trained", "likely from a late dinner"), and orders beyond the nudge ("you need to", "you must"). The filter only got stricter, so a text it passed before may now be refused (the fixed wording shows instead), never the other way round. The 40 saved answers from the development run under instruction v2 all still pass. Because the filter was changed after the sealed set was graded, the sealed set's filter result is **in-sample** for these words; the instruction itself is unchanged.
