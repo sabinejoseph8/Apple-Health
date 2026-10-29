@@ -38,14 +38,14 @@ When Sabine says "update proj memory", review every one of the five files, even 
 
 ## Interview notes
 
-Maintain a file called `interview-notes.md` (in the project root). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
+Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
 
 - who the app is for and why
 - key decisions and tradeoffs
 - major bugs and how she fixed them
 - significant improvements
 
-Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
 
 ## How to work with Sabine
 
