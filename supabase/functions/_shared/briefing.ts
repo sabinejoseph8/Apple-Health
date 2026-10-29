@@ -29,6 +29,8 @@ export interface DayWords {
   readings_used: number
   reason_codes: string[]
   composite_fired: boolean | null
+  // D96: true when a night of sleep far below the usual set Ease off by itself.
+  sleep_floor?: boolean | null
 }
 
 // How each reading reads in a sentence ("You slept..." comes first), and
@@ -87,6 +89,7 @@ export function headline(day: DayWords): string {
   const slight = readingsOfKind(day, 'slight')
   const h = b.headline
   if (day.status === 'rest') return h.rest
+  if (day.sleep_floor) return h.ease_off.sleepFloor
   if (day.status === 'ready') {
     if (worse.length === 0 && slight.length === 0) return readingsOfKind(day, 'better').length > 0 ? h.ready.better : h.ready.allNormal
     if (worse.length === 0) return h.ready.small
@@ -123,13 +126,16 @@ function normalClause(readings: Reading[]): string | null {
 export function briefing(day: DayWords): string[] {
   const worse = readingsOfKind(day, 'worse')
   const slight = readingsOfKind(day, 'slight')
+  // D96: on a sleep floor day sleep is the reason, however its verdict reads.
+  const floor = day.sleep_floor === true
   const offClauses = NARRATIVE_ORDER.flatMap((r) => {
+    if (floor && r === 'sleep') return [b.worse.sleep]
     const kind = kindOf(r, day.points[r])
     if (kind === 'worse') return [b.worse[r]]
     if (kind === 'slight') return [b.slightlyWorse[r]]
     return []
   })
-  const normal = normalClause(readingsOfKind(day, 'normal'))
+  const normal = normalClause(readingsOfKind(day, 'normal').filter((r) => !(floor && r === 'sleep')))
   const better = readingsOfKind(day, 'better').map((r) => b.better[r])
   const rest = [
     ...readingsOfKind(day, 'missing').map((r) => b.missing[r]),
@@ -140,7 +146,7 @@ export function briefing(day: DayWords): string[] {
   const sentences: string[] = []
   if (offClauses.length > 0) {
     sentences.push(sentence(joinClauses(offClauses)))
-    sentences.push(meaning(day, worse, slight))
+    sentences.push(floor ? b.meaning.sleepFloor : meaning(day, worse, slight))
     const last = [...(normal ? [normal] : []), ...better, ...rest]
     if (last.length > 0) sentences.push(sentence(joinClauses(last)))
   } else {
@@ -164,6 +170,7 @@ export function morningNotification(day: DayWords): string | null {
       .filter(Boolean)
       .slice(0, 2)
       .join(wording.push.reasonJoin)
+  if (day.sleep_floor) return wording.push.morning(label, wording.push.sleepFloor)
   if (day.status === 'ready') {
     const outside = day.reason_codes.filter((code) => code.endsWith('_outside_range'))
     return wording.push.morning(label, outside.length > 0 ? wording.push.readyDespite(reasons(outside)) : wording.push.readyReason)
@@ -235,12 +242,16 @@ export function whySummary(day: DayWords, past = false): { headline: string; bod
   })
   const below = counted.filter((r) => day.points[r]?.verdict === 'below')
   const above = counted.filter((r) => day.points[r]?.verdict === 'above')
-  const inRange = counted.filter((r) => day.points[r]?.verdict === 'in_range')
+  const floor = day.sleep_floor === true
+  // D96: on a sleep floor day sleep is not "in your usual range", it set the status.
+  const inRange = counted.filter((r) => day.points[r]?.verdict === 'in_range' && !(floor && r === 'sleep'))
   const outside = [...below, ...above]
   const total = Math.max(2, Math.min(3, counted.length)) as 2 | 3
 
   let headline: string
-  if (outside.length === 0) {
+  if (floor) {
+    headline = w.floor.headline
+  } else if (outside.length === 0) {
     headline = w.summaryAllIn[total]
   } else {
     const dir = above.length === 0 ? w.low : below.length === 0 ? w.high : w.outside
@@ -249,6 +260,7 @@ export function whySummary(day: DayWords, past = false): { headline: string; bod
 
   const names = (rs: Reading[]) => joinNames(rs.map((r) => w.names[r]))
   const body: string[] = []
+  if (floor) body.push(w.floor.body)
   if (below.length > 0) body.push(w.groupBelow(names(below), w.verbFor(below.length)))
   if (above.length > 0) body.push(w.groupAbove(names(above), w.verbFor(above.length)))
   if (inRange.length > 0) body.push(w.groupNormal(names(inRange), w.verbFor(inRange.length)))

@@ -78,7 +78,15 @@ def local_synthetic() -> bool:
         print(f"Made-up history: {len(samples)} readings; the database built {body['nights']} nights, "
               f"{body['baselines']} normals and {body['status']} days.")
         data = api.load(url, admin, uid)
-        return compare.report(compare.run(data))
+        ok = compare.report(compare.run(data))
+        # The made-up history holds two very short nights on purpose (D96), so
+        # a match means the sleep floor was compared, not skipped.
+        floor_days = int(data['status']['sleep_floor'].sum())
+        print(f'The sleep floor fired on {floor_days} made-up days.')
+        if floor_days < 2:
+            print('FAIL the made-up history should fire the sleep floor at least twice.')
+            ok = False
+        return ok
     finally:
         api.call(f'{url}/auth/v1/admin/users/{uid}', admin, 'DELETE')
 

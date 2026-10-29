@@ -37,11 +37,15 @@ SETTINGS: Dict[int, dict] = {
         'min_spread': {'hrv': 1, 'sleeping_hr': 1, 'sleep': 10, 'resp_rate': 0.2, 'resting_hr': 1},
         'illness_spreads': 1.0, 'illness_min_markers': 3,
         'partial_cap': None,
+        'sleep_floor_spreads': None,
     },
 }
 # Version 2, the final numbers (D59): normals from 42 nights (21 valid);
 # Ease off from 1.2, Rest from 2.4; everything else as version 1.
 SETTINGS[2] = {**SETTINGS[1], 'window_nights': 42, 'ease_off_at': 1.2, 'rest_at': 2.4}
+# Version 3 (D96): version 2 plus a sleep floor. Sleep counted and 1.5 or more
+# spreads below the usual cannot be Ready: it is Ease off.
+SETTINGS[3] = {**SETTINGS[2], 'sleep_floor_spreads': 1.5}
 
 MINUTE = pd.Timedelta(minutes=1)
 DAY = pd.Timedelta(days=1)
@@ -330,6 +334,7 @@ def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.Data
             readings[m] = {'value': value, 'verdict': verdict, 'counted': counted, 'deviation': deviation,
                            'spreads_worse': max(0.0, WORSE[m] * deviation) if counted else None}
 
+        floor_fired = False
         used = [m for m in SCORE_METRICS if readings[m]['counted']]
         n_building = sum(readings[m]['verdict'] == 'building' for m in SCORE_METRICS)
         weight_used = sum(w[m] for m in used)
@@ -351,6 +356,9 @@ def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.Data
             status, reason = 'rest', None
         elif total >= settings['ease_off_at']:
             status, reason = 'ease_off', None
+        elif (settings.get('sleep_floor_spreads') is not None and readings['sleep']['counted']
+              and readings['sleep']['spreads_worse'] >= settings['sleep_floor_spreads']):
+            status, reason, floor_fired = 'ease_off', None, True
         else:
             status, reason = 'ready', None
 
@@ -361,7 +369,7 @@ def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.Data
             nudge = 'rest'
         elif status == 'ease_off':
             others = max([v for m, v in raw.items() if m != 'sleep'], default=0.0)
-            nudge = 'prioritise_sleep' if raw.get('sleep', 0.0) > others else 'train_easy'
+            nudge = 'prioritise_sleep' if (raw.get('sleep', 0.0) > others or floor_fired) else 'train_easy'
         else:
             nudge = None
 
@@ -378,11 +386,12 @@ def build_status(nights: pd.DataFrame, baselines: pd.DataFrame, uploads: pd.Data
         rows.append({
             'date': d, 'status': status, 'no_status_reason': reason, 'readings_used': len(used),
             'total': total if status != 'none' else None, 'nudge': nudge, 'reason_codes': reasons,
-            'composite_fired': fired, 'composite_inputs': inputs,
+            'composite_fired': fired, 'composite_inputs': inputs, 'sleep_floor': floor_fired,
             'points': {m: {'verdict': readings[m]['verdict'],
                            'points': (w[m] / weight_used * readings[m]['spreads_worse'])
                            if readings[m]['counted'] and len(used) >= 2 else None}
                        for m in SCORE_METRICS},
         })
     return pd.DataFrame(rows, columns=['date', 'status', 'no_status_reason', 'readings_used', 'total', 'nudge',
-                                       'reason_codes', 'composite_fired', 'composite_inputs', 'points'])
+                                       'reason_codes', 'composite_fired', 'composite_inputs', 'sleep_floor',
+                                       'points'])
