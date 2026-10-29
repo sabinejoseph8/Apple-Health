@@ -63,3 +63,7 @@ Version 1, 4 October 2026.
 ## Version 3 (planned, D94, 29 October 2026)
 
 The new "AI explanations" section, the changes to "Where it's kept" and "Who can see it", the third box, required (Sabine, 29 October 2026) and two corrected lines ("a small test run by Sabine Joseph"; "kept until you delete it or Sabine ends Clarivi, then deleted within 30 days") are drafted and approved in `docs/ai-draft.md`, section 4 and 5. They move into `wording.consent` as version 3 when the AI is built (7b-5), and everyone agrees again.
+
+## Version 4 (D98, 29 October 2026)
+
+One sentence in "AI explanations" changes, because the weekly digest sends more than the morning text does. Before: "Each time, Clarivi sends it only your results: your three readings, your usual range, your status, and for the digest a summary of your week and the weeks before." After: "Each time, Clarivi sends it only your results: your three readings, your usual range and your status. For the weekly digest it also sends a summary of your week and the weeks before, including how you said you felt each day and whether you followed each day's suggestion." Found by the Phase 7b code review (the digest input carries the check-in answer and the follow-through answer for each day). The rest of the text is as in version 3. Everyone agrees again once.

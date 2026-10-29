@@ -77,7 +77,7 @@ const today = sql(`select (now() at time zone 'utc')::date`)
 async function person(tag, agreed) {
   const { data } = await admin.auth.admin.createUser({ email: `ai-check-${tag}-${Date.now()}@example.test`, password: 'local-ai-check-1', email_confirm: true })
   const id = data.user.id
-  if (agreed) sql(`insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai) values ('${id}', 3, true, true, true);`)
+  if (agreed) sql(`insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai) values ('${id}', 4, true, true, true);`)
   return { id, email: data.user.email }
 }
 const yes = await person('yes', true)

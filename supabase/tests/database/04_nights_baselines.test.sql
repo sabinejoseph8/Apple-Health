@@ -10,9 +10,9 @@ insert into auth.users (id, email) values
   ('66666666-6666-6666-6666-666666666666', 'user-f@example.test');
 -- Phase 6: uploads need consent (D79), so these made-up people have agreed.
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai) values
-  ('44444444-4444-4444-4444-444444444444', 3, true, true, true),
-  ('55555555-5555-5555-5555-555555555555', 3, true, true, true),
-  ('66666666-6666-6666-6666-666666666666', 3, true, true, true);
+  ('44444444-4444-4444-4444-444444444444', 4, true, true, true),
+  ('55555555-5555-5555-5555-555555555555', 4, true, true, true),
+  ('66666666-6666-6666-6666-666666666666', 4, true, true, true);
 
 -- One accepted upload to hang readings on, received now.
 create table pg_temp.up as

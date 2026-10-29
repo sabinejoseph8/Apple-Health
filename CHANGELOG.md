@@ -10,6 +10,7 @@ Made after the one-week test, before the second week (D94 to D96).
 - **A sleep floor in the score (version 3):** a night of sleep far below your usual (1.5 or more spreads) can't be Ready: it is Ease off, and the card, the notification and Why today say sleep set it. Older versions are untouched.
 - **AI explanations:** Claude Opus 5.5 writes the morning explanation and the weekly digest from your readings, sent without your name, email or dates. The score still sets the status. The card waits for the text ("Getting ready"), a tested filter checks every text, and the fixed wording shows if the AI is slow or refused. A second check reads each digest's claims against the data.
 - **Consent version 3:** a third box for the AI, required. Everyone agrees again.
+- **Consent version 4:** the AI paragraph now says the weekly digest also sends how you said you felt each day and whether you followed each suggestion. Everyone agrees again once.
 - **Fixed on the way:** a test that failed from 29 October on, and a digest that read "no answer" on Ready days as "not followed".
 
 ## v1.0.0
