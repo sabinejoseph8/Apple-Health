@@ -14,7 +14,8 @@
 --             counted when D94 recorded it, and the number stays as recorded.
 --     sync_b  days the morning's status was worked out and shown (by notification or on the card)
 --             before noon. This is what a successful morning sync is for (R28, R29).
---             Whether a or b is the headline for week two is Sabine's to confirm before it starts.
+--             sync_b is week two's headline (D99, Sabine, 29 October 2026). Week one's recorded
+--             4 of 7 (D94) used sync_a and stays as recorded.
 --     sync_c  days with an accepted post that carried the whole night.
 --   Notifications (90%). Of the days a status was shown, the days its morning notification was
 --             sent without error. Taps are not part of this target.
