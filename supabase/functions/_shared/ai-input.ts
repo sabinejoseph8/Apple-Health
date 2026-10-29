@@ -136,6 +136,8 @@ const ASKED_ON = new Set(['train_easy', 'rest', 'prioritise_sleep'])
 const WORDS_CHECKIN = new Set(['great', 'okay', 'off', 'skipped'])
 const rounded = (v: unknown) => (num(v) === null ? null : Math.round(num(v)!))
 const count = (v: unknown) => (num(v) === null ? 0 : Math.max(0, Math.round(num(v)!)))
+// The labels ai_digest_input writes: "last week", then "2 weeks ago" to "8 weeks ago".
+const LABEL = /^(last week|[2-8] weeks ago)$/
 const word = (v: unknown, fallback: string) => (typeof v === 'string' && /^[a-z_ ]{1,20}$/i.test(v) ? v : fallback)
 
 // The follow-through question is asked only on change days (R53), so a day
@@ -165,7 +167,7 @@ export function digestInputFrom(raw: unknown): DigestInput | null {
   const prior_weeks: PriorWeek[] = prior.map((w: Record<string, unknown>) => {
     const c = (w.checkins ?? {}) as Record<string, unknown>
     return {
-      label: word(w.label, ''),
+      label: typeof w.label === 'string' && LABEL.test(w.label) ? w.label : '',
       ready: count(w.ready),
       ease_off: count(w.ease_off),
       rest: count(w.rest),
@@ -184,17 +186,4 @@ export async function inputHash(input: AiInput): Promise<string> {
   const bytes = new TextEncoder().encode(JSON.stringify(input))
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
-}
-
-// Every number in an input, for the filter's "no new numbers" rule.
-export function numbersIn(input: unknown, into = new Set<string>()): Set<string> {
-  if (typeof input === 'number' && Number.isFinite(input)) {
-    into.add(String(input))
-    into.add(String(Math.round(input)))
-  } else if (Array.isArray(input)) {
-    for (const x of input) numbersIn(x, into)
-  } else if (input && typeof input === 'object') {
-    for (const x of Object.values(input)) numbersIn(x, into)
-  }
-  return into
 }

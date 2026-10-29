@@ -141,3 +141,33 @@ Deno.test('a digest with nothing to say about patterns may return none', () => {
     [],
   )
 })
+
+// Added in the 7b-7 review: wordings that slipped past the first lists.
+Deno.test('advice and conditions in other words are refused', () => {
+  const m = (t: string) => fails('M04', morning(t))
+  assert(m('Your heart rate variability was below your usual range. If this keeps up, speak to a healthcare professional.').includes('no_medical_advice'))
+  assert(m('Your heart rate variability was below your usual range. It may be worth getting checked out.').includes('no_medical_advice'))
+  assert(m('Your heart rate variability was below your usual range. Take it easier and drink plenty of water.').includes('no_medical_advice'))
+  assert(m('Your heart rate variability was below your usual range, which can point to a heart problem.').includes('no_condition_words'))
+  assertEquals(m('Your heart rate variability was below your usual range. Today is a day to take it a little easier.'), [])
+})
+
+Deno.test('the morning text never guesses a cause', () => {
+  const m = (t: string) => fails('M04', morning(t))
+  assert(m('Your heart rate variability was below your usual range because you trained hard. Take it easier today.').includes('no_causal_claim'))
+  assert(m('Your heart rate variability was below your usual range, likely from a late dinner. Take it easier today.').includes('no_causal_claim'))
+  assert(m('Your heart rate variability was below your usual range, probably due to a busy week. Take it easier today.').includes('no_causal_claim'))
+  assertEquals(m('Your heart rate variability was below your usual range, which usually means your body is still recovering. Take it easier today.'), [])
+})
+
+Deno.test('more conditions, amounts in words and orders are refused', () => {
+  const m = (t: string) => fails('M04', morning(t))
+  for (const word of ['fatigue', 'inflammation', 'asthma', 'a migraine', 'high blood pressure', 'a sore throat', 'fighting something off', 'coming down with something', 'under the weather']) {
+    assert(m(`Your heart rate variability was below your usual range, which can mean ${word}. Take it easier today.`).includes('no_condition_words'), word)
+  }
+  assert(m('You slept about twenty minutes less than usual. Take it easier today.').includes('no_new_numbers'))
+  assert(m('You slept an hour less than usual. Take it easier today.').includes('no_new_numbers'))
+  assert(m('Your heart rate variability was below your usual range. You need to take it easy today.').includes('no_blame'))
+  assert(m('Your heart rate variability was below your usual range. You must sleep more tonight.').includes('no_blame'))
+  assert(checkOutput(input('D01'), { sentences: 'Your sleep was about an hour shorter on Monday.', patterns: [] }).includes('no_new_numbers'))
+})

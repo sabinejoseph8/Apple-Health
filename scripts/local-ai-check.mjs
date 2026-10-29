@@ -146,7 +146,9 @@ sql(`delete from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'
 ok(await until(() => sql(`select last_error from public.ai_jobs where user_id = '${yes.id}' and kind = 'digest'`) === 'filtered:unverified'), 'a digest with unsupported claims fails with a reason')
 ok(sql(`select count(*) from public.ai_texts where user_id = '${yes.id}' and kind = 'digest'`) === '0', 'and nothing is saved, so the fixed digest shows')
 
-// 7. Someone who has not agreed gets no job and nothing is sent.
+// 7. Someone who has not agreed gets no job and nothing is sent. (The refused digest above is still
+// waiting to try again; end it so the every-minute job cannot count as a call made for them.)
+sql(`update public.ai_jobs set status = 'failed' where user_id = '${yes.id}'`)
 const asked = requests.length
 addStatus(no.id)
 await wait(3000)

@@ -80,7 +80,9 @@ export async function processJob(job: Job, deps: Deps): Promise<Outcome> {
       extraOut += written.output_tokens
       lastFails = checkOutput(input, written.output)
       // A digest that passed the word filter has every claim read against the data.
-      if (lastFails.length === 0 && input.kind === 'digest' && deps.verify) {
+      if (lastFails.length === 0 && input.kind === 'digest') {
+        // A digest is never saved unchecked: without a checker the job fails (7b-7 review).
+        if (!deps.verify) throw new Error('no_verifier')
         const v = await deps.verify(input, written.output)
         extraIn += v.input_tokens
         extraOut += v.output_tokens
