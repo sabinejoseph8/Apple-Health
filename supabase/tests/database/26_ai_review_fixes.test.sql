@@ -8,8 +8,8 @@ insert into auth.users (id, email) values
   ('d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 'ai-fix-a@example.test'),
   ('d2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', 'ai-fix-b@example.test');
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai) values
-  ('d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 3, true, true, true),
-  ('d2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', 3, true, true, true);
+  ('d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 4, true, true, true),
+  ('d2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', 4, true, true, true);
 
 -- 1: stuck jobs
 insert into public.ai_jobs (user_id, kind, for_date, status, attempts, started_at) values

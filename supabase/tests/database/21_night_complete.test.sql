@@ -8,7 +8,7 @@ select plan(7);
 
 insert into auth.users (id, email) values ('94949494-9494-9494-9494-949494949494', 'stages@example.test');
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai)
-values ('94949494-9494-9494-9494-949494949494', 3, true, true, true);
+values ('94949494-9494-9494-9494-949494949494', 4, true, true, true);
 select public.issue_upload_token('94949494-9494-9494-9494-949494949494', repeat('e', 64));
 
 -- A time zone offset that makes the phone's local time 11am right now, so
@@ -59,7 +59,7 @@ select is((select bool_and(x) from (
 -- A different person whose only stage ended under 10 minutes ago.
 insert into auth.users (id, email) values ('95959595-9595-9595-9595-959595959595', 'still-asleep@example.test');
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai)
-values ('95959595-9595-9595-9595-959595959595', 3, true, true, true);
+values ('95959595-9595-9595-9595-959595959595', 4, true, true, true);
 select public.issue_upload_token('95959595-9595-9595-9595-959595959595', repeat('f', 64));
 select is((public.ingest_upload(repeat('f', 64), jsonb_build_object('schema_version', 1, 'kind', 'daily',
   'device_tz_offset_min', pg_temp.off(), 'trigger', 'charger', 'samples', jsonb_build_array(

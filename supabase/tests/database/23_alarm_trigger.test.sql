@@ -5,7 +5,7 @@ select plan(2);
 
 insert into auth.users (id, email) values ('94949494-9494-9494-9494-949494949494', 'alarm@example.test');
 insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai)
-values ('94949494-9494-9494-9494-949494949494', 3, true, true, true);
+values ('94949494-9494-9494-9494-949494949494', 4, true, true, true);
 select public.issue_upload_token('94949494-9494-9494-9494-949494949494', repeat('e', 64));
 
 select is(public.ingest_upload(repeat('e', 64), '{"schema_version": 1, "kind": "ping", "device_tz_offset_min": -300, "trigger": "alarm"}'::jsonb) ->> 'error',

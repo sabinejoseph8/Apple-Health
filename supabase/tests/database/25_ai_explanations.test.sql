@@ -5,7 +5,7 @@ create extension if not exists pgtap with schema extensions;
 select plan(33);
 
 -- ---------------------------------------------------------------- consent v3
-select is(public.consent_version(), 3, 'the consent text is version 3');
+select is(public.consent_version(), 4, 'the consent text is version 4');
 select is((select provolatile::text from pg_proc where oid = 'public.consent_version()'::regprocedure), 's',
   'and the version function is marked stable, not immutable');
 select is((select count(*)::int from pg_proc where proname = 'give_consent' and pronargs = 3), 0,
@@ -18,13 +18,13 @@ insert into auth.users (id, email) values
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1", "role": "authenticated"}', true);
-select throws_ok($$select public.give_consent(3, true, true, false)$$, '22023', 'all three agreements are needed',
+select throws_ok($$select public.give_consent(4, true, true, false)$$, '22023', 'all three agreements are needed',
   'agreeing without the AI box is refused');
 select throws_ok($$select public.give_consent(2, true, true, true)$$, '22023', 'that consent text is out of date',
   'an out-of-date text is refused');
-select lives_ok($$select public.give_consent(3, true, true, true)$$, 'agreeing to all three works');
+select lives_ok($$select public.give_consent(4, true, true, true)$$, 'agreeing to all three works');
 select set_config('request.jwt.claims', '{"sub": "c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c2", "role": "authenticated"}', true);
-select lives_ok($$select public.give_consent(3, true, true, true)$$, 'a second person agrees too');
+select lives_ok($$select public.give_consent(4, true, true, true)$$, 'a second person agrees too');
 reset role;
 
 select is((select agreed_ai from public.consents where user_id = 'c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1' and ended_at is null),

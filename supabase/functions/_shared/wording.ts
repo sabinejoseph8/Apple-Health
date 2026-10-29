@@ -647,8 +647,8 @@ export const wording = {
   // Changing these words means a new version, which asks everyone again
   // (public.consent_version() in the database).
   consent: {
-    version: 3,
-    versionLine: 'Version 3, 29 October 2026.',
+    version: 4,
+    versionLine: 'Version 4, 29 October 2026.',
     title: 'How Clarivi uses your data',
     sections: [
       {
@@ -670,7 +670,7 @@ export const wording = {
         // D94, D95: the AI explanations; agreeing to them is required (R68).
         title: 'AI explanations',
         paragraphs: [
-          'Clarivi uses an AI service, Claude, made by Anthropic, to write the plain-words explanation of your morning, your weekly digest and a few patterns across your weeks. Each time, Clarivi sends it only your results: your three readings, your usual range, your status, and for the digest a summary of your week and the weeks before. It never sends your name, your email address or calendar dates.',
+          'Clarivi uses an AI service, Claude, made by Anthropic, to write the plain-words explanation of your morning, your weekly digest and a few patterns across your weeks. Each time, Clarivi sends it only your results: your three readings, your usual range and your status. For the weekly digest it also sends a summary of your week and the weeks before, including how you said you felt each day and whether you followed each day\'s suggestion. It never sends your name, your email address or calendar dates.',
           'The AI explains your results. It does not set your status, which comes from fixed arithmetic, and it gives no medical advice.',
           "To use Clarivi you need to agree to this. If you don't, you can sign out and nothing is sent.",
         ],
