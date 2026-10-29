@@ -34,7 +34,9 @@ export interface DayInput {
   weekday: string
   status: string
   nudge: string
-  followed: 'yes' | 'no' | 'none'
+  // yes or no: the person answered. unanswered: a question was asked (a change day) and not answered.
+  // not_asked: no question that day (a Ready day, or a day with no status).
+  followed: 'yes' | 'no' | 'unanswered' | 'not_asked'
   checkin: 'great' | 'okay' | 'off' | 'skipped'
   hrv: number | null
   sleeping_hr: number | null
@@ -130,11 +132,19 @@ export function buildMorningInput(
   }
 }
 
-const WORDS_FOLLOWED = new Set(['yes', 'no', 'none'])
+const ASKED_ON = new Set(['train_easy', 'rest', 'prioritise_sleep'])
 const WORDS_CHECKIN = new Set(['great', 'okay', 'off', 'skipped'])
 const rounded = (v: unknown) => (num(v) === null ? null : Math.round(num(v)!))
 const count = (v: unknown) => (num(v) === null ? 0 : Math.max(0, Math.round(num(v)!)))
 const word = (v: unknown, fallback: string) => (typeof v === 'string' && /^[a-z_ ]{1,20}$/i.test(v) ? v : fallback)
+
+// The follow-through question is asked only on change days (R53), so a day
+// with no answer is "unanswered" when a question was due and "not_asked"
+// otherwise. Reading both as "not followed" misled a real digest (D95).
+function followedOf(answer: unknown, nudge: unknown): DayInput['followed'] {
+  if (answer === 'yes' || answer === 'no') return answer
+  return ASKED_ON.has(String(nudge)) ? 'unanswered' : 'not_asked'
+}
 
 // The digest input from ai_digest_input's answer, copying only the allowed
 // fields and refusing any other shape.
@@ -145,7 +155,7 @@ export function digestInputFrom(raw: unknown): DigestInput | null {
     weekday: word(d.weekday, ''),
     status: word(d.status, 'none'),
     nudge: word(d.nudge, 'none'),
-    followed: (WORDS_FOLLOWED.has(String(d.followed)) ? d.followed : 'none') as DayInput['followed'],
+    followed: followedOf(d.followed, d.nudge),
     checkin: (WORDS_CHECKIN.has(String(d.checkin)) ? d.checkin : 'skipped') as DayInput['checkin'],
     hrv: rounded(d.hrv),
     sleeping_hr: rounded(d.sleeping_hr),

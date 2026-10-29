@@ -19,7 +19,7 @@ Morning (`kind: "morning"`):
 - `flags`: `late_sync`, `no_sleep_stages`, `illness_pattern`, `sleep_floor` (true when the sleep floor, D96, made the status Ease off), all yes or no.
 
 Digest (`kind: "digest"`):
-- `days`: the last 7 days, each with `weekday`, `status` (or `none`), `nudge`, `followed` (`yes`, `no`, `none`), `checkin` (`great`, `okay`, `off`, `skipped`), `hrv`, `sleeping_hr`, `sleep`.
+- `days`: the last 7 days, each with `weekday`, `status` (or `none`), `nudge`, `followed` (`yes`, `no`, `unanswered`, `not_asked`: no question is asked on Ready days; the sealed set was written with the earlier `none` and is left as it was), `checkin` (`great`, `okay`, `off`, `skipped`), `hrv`, `sleeping_hr`, `sleep`.
 - `prior_weeks`: up to 8, each with `label` ("last week", "2 weeks ago", ...), counts of each status, the average of each reading, and check-in counts.
 
 ## The checks
