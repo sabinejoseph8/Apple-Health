@@ -41,6 +41,9 @@ It can be, if the screen and the button are built for it.
 - Schedule 4 lists transfers the principle doesn't apply to. The first is: "The data subject has consented to the transfer." So the consent text must say plainly that the data is stored and processed in the United States (Supabase, on Amazon's servers in US East), and the person must agree to that too.
 - Supabase's data processing terms include standard contractual clauses, written for EU law. That is a useful extra safeguard, though not one the Ombudsman has approved for Cayman.
 
+### AI explanations (D94, 29 October 2026)
+- If a person ticks the optional AI box, a further transfer happens: their results (not their name, email or dates) go to Anthropic, which processes them for up to 30 days. Under the eighth principle the same Schedule 4 route applies, the person's consent, so the consent names it separately and plainly and the box is not ticked in advance. Anthropic's processing location was not confirmed; the consent says so. It cannot delete this on request, which the consent states. See `docs/privacy-impact-assessment.md`, section 7.
+
 ## 5. Other duties that apply
 
 | Duty | Where in the Act | Clarivi |
