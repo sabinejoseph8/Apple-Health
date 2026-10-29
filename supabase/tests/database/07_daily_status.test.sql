@@ -198,7 +198,7 @@ select throws_ok('delete from public.score_settings where version = 99', 'P0001'
 
 -- The whole chain from readings: recompute builds the status too.
 insert into public.uploads (id, user_id, schema_version, kind, device_tz_offset_min, local_date, status)
-values ('cccccccc-0000-0000-0000-000000000001', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 1, 'daily', -300, current_date, 'accepted');
+values ('cccccccc-0000-0000-0000-000000000001', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 1, 'daily', -300, (now() - interval '5 hours')::date, 'accepted');  -- the user's day at UTC-5, not the database's UTC day (which is a day ahead from 7pm to midnight)
 insert into public.samples (user_id, upload_id, type, start_at, end_at, tz_offset_min, stage, value, sample_hash)
 values ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'cccccccc-0000-0000-0000-000000000001', 'sleep_stage',
         '2026-09-28 23:00-05', '2026-09-29 06:30-05', -300, 'core', null, sha256(convert_to('c1', 'UTF8'))),
