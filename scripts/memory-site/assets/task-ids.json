@@ -316,12 +316,14 @@
  "p4-05": {
   "phase": "4",
   "texts": [
+   "Build the 8pm card state: follow-through card with equal Yes and No, folded briefing, recorded states with Change (built as FollowThroughCard and tested in follow-through.spec.ts and follow.test.ts; ticked when manual checks 3 and 4 pass on a real change day)",
    "Build the 8pm card state: follow-through card with equal Yes and No, folded briefing, recorded states with Change"
   ]
  },
  "p4-06": {
   "phase": "4",
   "texts": [
+   "Build next-morning carry-over for unanswered questions (built in Today, D68, and tested in follow-through.spec.ts; ticked when manual check 5 passes)",
    "Build next-morning carry-over for unanswered questions"
   ]
  },
