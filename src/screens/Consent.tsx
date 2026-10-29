@@ -8,16 +8,17 @@ import { supabase } from '../lib/supabase'
 const w = wording.consent
 
 // Shown once, after the first sign-in and new password, before anything else
-// (D79). Two separate statements, neither ticked in advance; "I agree" works
-// only with both. Signing out is always there, so not agreeing costs nothing.
+// (D79). Three separate statements (the third, the AI, from version 3, D95),
+// none ticked in advance; "I agree" works only with all three. Signing out is always there, so not agreeing costs nothing.
 export default function Consent({ onAgreed }: { onAgreed: () => void }) {
   const [use, setUse] = useState(false)
   const [us, setUs] = useState(false)
+  const [ai, setAi] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function agree() {
-    if (!use || !us) return setError(w.needBoth)
+    if (!use || !us || !ai) return setError(w.needAll)
     setBusy(true)
     setError(null)
     try {
@@ -53,6 +54,10 @@ export default function Consent({ onAgreed }: { onAgreed: () => void }) {
         <label className="check">
           <input type="checkbox" checked={us} onChange={(e) => (setUs(e.target.checked), setError(null))} />
           <span>{w.agreeUs}</span>
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={ai} onChange={(e) => (setAi(e.target.checked), setError(null))} />
+          <span>{w.agreeAi}</span>
         </label>
         <button className="primary" type="button" onClick={agree} disabled={busy}>
           {busy ? w.agreeing : w.agree}

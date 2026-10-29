@@ -1,4 +1,4 @@
--- Phase 6: consent (D79, D80). A person agrees to two statements before
+-- Phase 6: consent (D79, D80), version 3 from D94. A person agrees to three statements before
 -- anything is collected; uploads are refused without it; withdrawing
 -- deletes everything and keeps the record. Made-up accounts only.
 begin;
@@ -12,7 +12,7 @@ select public.issue_upload_token('91919191-9191-9191-9191-919191919191', repeat(
 select public.issue_upload_token('92929292-9292-9292-9292-929292929292', repeat('b', 64));
 
 select ok((select relrowsecurity from pg_class where oid = 'public.consents'::regclass), 'consents has row-level security');
-select is(public.consent_version(), 2, 'the consent text is at version 2 (D85)');
+select is(public.consent_version(), 3, 'the consent text is at version 3 (D94: the AI agreement is part of it)');
 
 -- Before agreeing, nothing is accepted.
 select is(public.ingest_upload(repeat('b', 64), '{"schema_version": 1, "kind": "ping", "device_tz_offset_min": -300}'::jsonb) ->> 'error',
@@ -23,18 +23,18 @@ select is((select error from public.uploads where user_id = '92929292-9292-9292-
 -- Agreeing, as the person.
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "91919191-9191-9191-9191-919191919191", "role": "authenticated"}';
-select throws_ok($$select public.give_consent(2, true, false)$$, '22023', 'both agreements are needed',
-                 'agreeing needs both statements, the use and the US storage');
-select throws_ok($$select public.give_consent(1, true, true)$$, '22023', 'that consent text is out of date',
+select throws_ok($$select public.give_consent(3, true, false, true)$$, '22023', 'all three agreements are needed',
+                 'agreeing needs all three statements, the use, the US storage and the AI');
+select throws_ok($$select public.give_consent(2, true, true, true)$$, '22023', 'that consent text is out of date',
                  'and the current text');
-select isnt(public.give_consent(2, true, true), null, 'agreeing records the time');
+select isnt(public.give_consent(3, true, true, true), null, 'agreeing records the time');
 create temp table first_time as select agreed_at from public.consents;
-select is(public.give_consent(2, true, true), (select agreed_at from first_time), 'agreeing again changes nothing');
+select is(public.give_consent(3, true, true, true), (select agreed_at from first_time), 'agreeing again changes nothing');
 select is((select count(*)::int from public.consents), 1, 'one agreement in force');
-select results_eq($$select version, agreed_use, agreed_us_storage, ended_at from public.consents$$,
-                  $$values (2, true, true, null::timestamptz)$$, 'with its version and both statements');
-select throws_ok($$insert into public.consents (user_id, version, agreed_use, agreed_us_storage)
-                   values ('91919191-9191-9191-9191-919191919191', 2, true, true)$$, '42501', null,
+select results_eq($$select version, agreed_use, agreed_us_storage, agreed_ai, ended_at from public.consents$$,
+                  $$values (3, true, true, true, null::timestamptz)$$, 'with its version and all three statements');
+select throws_ok($$insert into public.consents (user_id, version, agreed_use, agreed_us_storage, agreed_ai)
+                   values ('91919191-9191-9191-9191-919191919191', 3, true, true, true)$$, '42501', null,
                  'nobody writes the record directly');
 select throws_ok($$update public.consents set agreed_at = now()$$, '42501', null, 'or changes it');
 select throws_ok($$select public.withdraw_consent('91919191-9191-9191-9191-919191919191')$$, '42501', null,
@@ -44,7 +44,7 @@ set local request.jwt.claims = '{"sub": "92929292-9292-9292-9292-929292929292", 
 select is((select count(*)::int from public.consents), 0, 'nobody sees someone else''s agreement');
 reset role;
 set local role anon;
-select throws_ok($$select public.give_consent(2, true, true)$$, '42501', null, 'someone signed out cannot agree');
+select throws_ok($$select public.give_consent(3, true, true, true)$$, '42501', null, 'someone signed out cannot agree');
 reset role;
 
 -- After agreeing, uploads are accepted.
@@ -72,10 +72,10 @@ select is((select count(*)::int from public.profiles where user_id = '91919191-9
 -- A newer text replaces the agreement in force.
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "92929292-9292-9292-9292-929292929292", "role": "authenticated"}';
-select public.give_consent(2, true, true);
-select public.give_consent(3, true, true);
+select public.give_consent(3, true, true, true);
+select public.give_consent(4, true, true, true);
 select results_eq($$select version, ended_why from public.consents order by id$$,
-                  $$values (2, 'new_version'::text), (3, null)$$, 'agreeing to a newer text replaces the older agreement');
+                  $$values (3, 'new_version'::text), (4, null)$$, 'agreeing to a newer text replaces the older agreement');
 reset role;
 set local role anon;
 select throws_ok($$select count(*) from public.consents$$, '42501', null, 'and someone signed out cannot read any agreement');

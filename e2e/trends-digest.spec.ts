@@ -152,6 +152,41 @@ test.describe('the weekly digest (R57, R58)', () => {
   })
 })
 
+test.describe('the AI-written digest (R71)', () => {
+  const facts = {
+    week_start: '2026-09-21', week_end: '2026-09-27', days_with_data: 6,
+    statuses: { ready: 4, ease_off: 2, rest: 0, none: 1 }, flagged: [{ date: '2026-09-22', status: 'ease_off' }],
+    readings: {
+      hrv: { nights: 6, below: 1, above: 0, average: 47, normal: 50 },
+      sleep: { nights: 6, below: 0, above: 0, average: 400, normal: 410 },
+      sleeping_hr: { nights: 6, below: 0, above: 0, average: 52, normal: 51 },
+    },
+    pattern_nights: 0, nudges: { change_days: 2, followed: 2, not_followed: 0, unanswered: 0 },
+  }
+  const written = { body: { sentences: 'Four days were Ready and two were Ease off. Your check-ins were mostly okay.', patterns: ['Your sleep tends to be shorter on the weekend.'] } }
+
+  test('shows the AI sentences and patterns in place of the fixed cards', async ({ page }) => {
+    await openApp(page, { at: MORNING, tables: { ...tables, digests: [{ week_start: '2026-09-21', facts }], ai_texts: [written] }, path: '/#/digest' })
+    await expect(page.getByRole('heading', { name: d.aiHeading })).toBeVisible()
+    await expect(page.getByText('Four days were Ready and two were Ease off.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: d.patternsHeading })).toBeVisible()
+    await expect(page.getByText('Your sleep tends to be shorter on the weekend.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: d.statusHeading })).toHaveCount(0)
+  })
+
+  test('without a text, the fixed digest shows as before', async ({ page }) => {
+    await openApp(page, { at: MORNING, tables: { ...tables, digests: [{ week_start: '2026-09-21', facts }], ai_texts: [] }, path: '/#/digest' })
+    await expect(page.getByRole('heading', { name: d.statusHeading })).toBeVisible()
+    await expect(page.getByRole('heading', { name: d.aiHeading })).toHaveCount(0)
+  })
+
+  test('a text with no patterns shows only the sentences', async ({ page }) => {
+    await openApp(page, { at: MORNING, tables: { ...tables, digests: [{ week_start: '2026-09-21', facts }], ai_texts: [{ body: { sentences: 'Not enough yet to see a pattern.', patterns: [] } }] }, path: '/#/digest' })
+    await expect(page.getByText('Not enough yet to see a pattern.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: d.patternsHeading })).toHaveCount(0)
+  })
+})
+
 // The digest row must not push the morning card past one screen (R23).
 test.describe('one screen in the morning, with the digest row', () => {
   test.use({ viewport: { width: 390, height: 763 } })

@@ -103,6 +103,13 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
     return () => window.clearInterval(timer)
   }, [watch, shownDay, load])
 
+  // While the AI writes this morning's explanation, look again every few seconds.
+  useEffect(() => {
+    if (kind !== 'writing') return
+    const timer = window.setInterval(() => document.visibilityState === 'visible' && load(), 8_000)
+    return () => window.clearInterval(timer)
+  }, [kind, load])
+
   // Each card view is logged once per kind of card, never with health values
   // (R43); a card showing a status also records what it showed (D61).
   const onCard = !checkin && !askingYesterday
@@ -222,6 +229,8 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
   switch (state.kind) {
     case 'status':
       return <StatusCard state={state} now={now} folded={folded} />
+    case 'writing':
+      return <Writing />
     case 'waiting':
       return (
         <NoStatus
@@ -295,7 +304,7 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
       <h2 id="card-headline" className="card-headline">
         {headline(row)}
       </h2>
-      {showBriefing && <p className="body">{briefing(row).join(' ')}</p>}
+      {showBriefing && <p className="body">{state.ai ?? briefing(row).join(' ')}</p>}
       {folded && (
         <button className="text-link" type="button" aria-expanded={unfolded} onClick={() => setUnfolded(!unfolded)}>
           {unfolded ? wording.followThrough.hideBriefing : wording.followThrough.showBriefing}
@@ -312,6 +321,26 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
         <span>{c.why[row.status]}</span>
         <ChevronRightIcon className="chevron" />
       </AppLink>
+    </section>
+  )
+}
+
+// The whole card waits for the AI's explanation (D95, option B): a neutral
+// pill, a headline and two quiet placeholder lines. It lasts a minute or so;
+// after 3 minutes the card shows with the fixed briefing (R70).
+function Writing() {
+  return (
+    <section className="card briefing" aria-labelledby="card-headline" aria-busy="true">
+      <div className="status-row">
+        <span className="pill pill-neutral">{s.writing.pill}</span>
+      </div>
+      <h2 id="card-headline" className="card-headline">
+        {s.writing.headline}
+      </h2>
+      <div className="skeleton-lines" aria-hidden="true">
+        <span className="skeleton" />
+        <span className="skeleton short" />
+      </div>
     </section>
   )
 }

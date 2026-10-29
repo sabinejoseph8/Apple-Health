@@ -38,6 +38,49 @@ function inputs(extra: Partial<CardInputs>): CardInputs {
   }
 }
 
+// D95, R70: the whole card waits for the AI's explanation, for up to 3 minutes.
+describe("the AI's explanation (R70, option B)", () => {
+  const sync = upload(at(6, 42))
+  const written = (extra: Partial<StatusRow> = {}) => statusRow({ computed_at: at(6, 48).toISOString(), ...extra })
+  const text = (extra = {}) => ({ status: 'ease_off', nudge: 'train_easy', body: { explanation: 'Written by the AI.' }, ...extra })
+
+  it('waits when the status is minutes old and no text has arrived', () => {
+    expect(selectCard(inputs({ now: at(6, 50), status: written(), recentUploads: [sync] })).state).toEqual({ kind: 'writing' })
+  })
+
+  it('shows the status with the AI text once it has arrived', () => {
+    const { state } = selectCard(inputs({ now: at(6, 50), status: written(), recentUploads: [sync], aiText: text() }))
+    expect(state.kind === 'status' && state.ai).toBe('Written by the AI.')
+  })
+
+  it('falls back to the fixed briefing after 3 minutes without a text', () => {
+    const { state } = selectCard(inputs({ now: at(6, 52), status: written(), recentUploads: [sync] }))
+    expect(state.kind === 'status' && state.ai).toBe(null)
+  })
+
+  it('ignores a text written for a different status or nudge', () => {
+    const rest = selectCard(inputs({ now: at(6, 50), status: written(), recentUploads: [sync], aiText: text({ status: 'rest' }) }))
+    expect(rest.state.kind).toBe('writing')
+    const old = selectCard(inputs({ now: at(6, 55), status: written(), recentUploads: [sync], aiText: text({ nudge: 'rest' }) }))
+    expect(old.state.kind === 'status' && old.state.ai).toBe(null)
+  })
+
+  it('ignores an empty text', () => {
+    const { state } = selectCard(inputs({ now: at(6, 55), status: written(), recentUploads: [sync], aiText: text({ body: { explanation: '  ' } }) }))
+    expect(state.kind === 'status' && state.ai).toBe(null)
+  })
+
+  it('does not wait when the row has no time (an older row), and never waits on a card without a status', () => {
+    expect(selectCard(inputs({ status: statusRow(), recentUploads: [sync] })).state.kind).toBe('status')
+    expect(selectCard(inputs({ recentUploads: [sync] })).state.kind).toBe('analysing')
+  })
+
+  it('never waits when the status was written long before (a text that never came)', () => {
+    const { state } = selectCard(inputs({ now: at(9, 0), status: written(), recentUploads: [sync] }))
+    expect(state.kind).toBe('status')
+  })
+})
+
 describe('which card shows (R25 to R32)', () => {
   it('waits for the sync, with the last sync time, before 11:30 (R25)', () => {
     const yesterday = upload(at(6, 51, 28))

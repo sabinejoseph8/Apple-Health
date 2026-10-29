@@ -440,6 +440,10 @@ verify_jwt = false
 [functions.owner-reset-password]
 verify_jwt = false
 
+# The AI writer checks the cron key (or the owner's session) itself.
+[functions.ai-explain]
+verify_jwt = false
+
 # The Shortcut sends an upload token, not a session, so the gateway can't
 # check it; the function checks the token's hash in the database itself.
 [functions.ingest]

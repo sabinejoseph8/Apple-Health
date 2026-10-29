@@ -2,6 +2,7 @@
 // and the database's answers made up, so the screens can be tested at iPhone
 // size without a database. Nothing here is anyone's real data.
 import type { Page, Route } from '@playwright/test'
+import { wording } from '../../supabase/functions/_shared/wording'
 
 export const TZ = 'America/Cayman' // UTC-5 all year, like the design's sample day
 
@@ -45,7 +46,7 @@ export async function openApp(
   const app: MockApp = { calls: [], reads: [] }
   // The made-up tester has agreed to the consent text (D79), unless a test
   // gives its own "consents" rows (an empty list: not agreed yet).
-  tables = { consents: [{ version: 2, agreed_at: '2026-09-01T12:00:00Z' }], ...tables }
+  tables = { consents: [{ version: wording.consent.version, agreed_at: '2026-09-01T12:00:00Z' }], ...tables }
   if (ticking) await page.clock.install({ time: new Date(at) })
   else await page.clock.setFixedTime(new Date(at))
   await page.addInitScript((session) => localStorage.setItem('clarivi-auth', session), JSON.stringify(SESSION))

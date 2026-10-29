@@ -20,7 +20,7 @@ export function consentCurrent(consent: Consent): boolean {
   return consent !== null && consent.version >= CONSENT_VERSION
 }
 
-// Both statements, as ticked on the consent screen.
+// All three statements, as ticked on the consent screen (the AI one from version 3).
 export async function giveConsent(): Promise<void> {
-  must(await supabase.rpc('give_consent', { p_version: CONSENT_VERSION, p_use: true, p_us_storage: true }))
+  must(await supabase.rpc('give_consent', { p_version: CONSENT_VERSION, p_use: true, p_us_storage: true, p_ai: true }))
 }
