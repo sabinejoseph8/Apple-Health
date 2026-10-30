@@ -158,7 +158,7 @@ export const wording = {
     // D96: a very short night set Ease off by itself.
     sleepFloor: 'sleep far below your usual',
     reminderTitle: 'Clarivi',
-    reminder: "No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.",
+    reminder: "Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge.",
     followUpTitle: 'Clarivi',
     followUp: "Did you follow today's nudge?",
   },
@@ -801,8 +801,8 @@ export const wording = {
         title: 'Set up the three morning automations',
         steps: [
           'In the Shortcuts app, tap Automation, then the + button.',
-          // D94: the alarm run waits 10 minutes before it reads Health, so the Watch has time to send the night.
-          'The first runs when you stop your alarm: choose Alarm, pick your alarm, then Is Stopped, and Run Immediately. Add a Text action holding exactly alarm, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text. The sync then waits 10 minutes, so your Watch can send last night.',
+          // D103: the alarm run tries straight away (the 10-minute wait of D94 was dropped after its first real morning).
+          'The first runs when you stop your alarm: choose Alarm, pick your alarm, then Is Stopped, and Run Immediately. Add a Text action holding exactly alarm, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text. It tries straight away, so if your Watch has not sent last night yet, the next two catch up.',
           'The second runs when you unplug your charger: choose Charger, then Is Disconnected, and Run Immediately. Add a Text action holding exactly charger, then a Run Shortcut action: choose Clarivi Sync and set its input to the Text.',
           'The third runs when you open an app you use every morning, such as Messages or Mail: choose App, pick it, then Is Opened, and Run Immediately. Add a Text action holding exactly app, then Run Shortcut with Clarivi Sync and the Text as input.',
           'They act only between 4am and noon, and stop once today is synced, so they do nothing the rest of the day.',
@@ -811,10 +811,10 @@ export const wording = {
       {
         title: 'Each morning',
         steps: [
-          'Stop your alarm: the sync runs by itself about 10 minutes later. If your phone was locked, unplugging it or opening your morning app catches up.',
+          'Stop your alarm: the sync tries straight away. If your phone is locked or last night is not in yet, unplugging it or opening your morning app catches up.',
           // Seen on Sabine's lock screen on 5 and 7 October 2026 (a locked run waits for a tap); words approved by her.
           'If your lock screen shows "Find Health Samples Where: Tap to run", unlock your iPhone and tap Continue.',
-          "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If no sync has arrived by 11:30, Clarivi reminds you.",
+          "Open Clarivi, say how you feel, then read your status. If last night isn't in yet, tap Sync now. If today's status isn't in by 11:30, Clarivi reminds you.",
           // Seen on Sabine's iPhone at the first Sync now (6 October 2026); words approved by her.
           'The first time you tap Sync now, Shortcuts asks "Allow Clarivi Sync to output 1 text item?". Tap Always Allow. The item is only today\'s date.',
         ],

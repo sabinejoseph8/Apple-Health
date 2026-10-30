@@ -109,29 +109,18 @@ class ShortcutTests(unittest.TestCase):
         flat = json.dumps(self.wf, default=str)
         self.assertNotRegex(flat, r'clv_[A-Za-z0-9_-]{43}')
 
-    def test_the_alarm_run_waits_ten_minutes_but_never_past_noon(self):
-        # D94: stopping the alarm can come before the Watch has sent the night
-        # (Clarivi counts a night once its last stage is 10 minutes old, D86).
-        # The only wait is 600 seconds, between the "already synced today" ping
-        # and the Health reads, and it is skipped from 11:45 so it can't push
-        # the post past noon (R29).
-        waits = [i for i, a in enumerate(self.actions) if a['WFWorkflowActionIdentifier'].endswith('delay')]
-        self.assertEqual(len(waits), 1)
-        self.assertEqual(self.actions[waits[0]]['WFWorkflowActionParameters']['WFDelayTime'], 600)
+    def test_no_run_waits(self):
+        # D103: the alarm run's 10-minute wait (D94) was dropped after its first real
+        # morning: iOS ended the run at a locked phone, and the night had not reached
+        # Health anyway. Every trigger now reads Health straight after the "already
+        # synced today" ping, and the next trigger catches up.
+        waits = [a for a in self.actions if a['WFWorkflowActionIdentifier'].endswith('delay')]
+        self.assertEqual(waits, [], 'no wait action anywhere')
         urls = [i for i, a in enumerate(self.actions) if a['WFWorkflowActionIdentifier'].endswith('downloadurl')]
         reads = [i for i, a in enumerate(self.actions) if a['WFWorkflowActionIdentifier'].endswith('filter.health.quantity')]
         # The posts in order: the import's two parts, then the ping, then the daily post.
-        self.assertGreater(waits[0], urls[2], 'the wait comes after the ping')
-        self.assertLess(waits[0], urls[3], 'and before the daily post')
-        after = [r for r in reads if r > waits[0]]
-        self.assertEqual(len(after), len(bs.HEALTH_TYPES), 'so each morning reading is read after waiting')
-        conditions = [a['WFWorkflowActionParameters'] for a in self.actions[:waits[0]]
-                      if a['WFWorkflowActionIdentifier'].endswith('conditional')
-                      and a['WFWorkflowActionParameters'].get('WFControlFlowMode') == 0]
-        strings = [c.get('WFConditionalActionString') for c in conditions]
-        self.assertIn('alarm', strings, 'only the alarm run waits')
-        numbers = [c.get('WFNumberValue') for c in conditions if c.get('WFNumberValue')]
-        self.assertIn('45', numbers, 'and not from 11:45')
+        after = [r for r in reads if urls[2] < r < urls[3]]
+        self.assertEqual(len(after), len(bs.HEALTH_TYPES), 'each morning reading is read between the ping and the daily post')
 
     def test_posts_go_to_the_ingest_function_with_the_token(self):
         posts = [a['WFWorkflowActionParameters'] for a in self.actions
