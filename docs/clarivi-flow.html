@@ -153,7 +153,7 @@ q { quotes: "\201C" "\201D"; color: var(--fg); }
 
   <figure>
     <div class="fig-scroll">
-      <svg class="flow" viewBox="0 0 1296 480" role="img" aria-label="Swimlane flow of the daily morning loop: the iPhone Shortcut syncs on unplug or on a catch-up app open, with an 11:30am reminder if nothing arrives; the server stores the night, scores it and sends the nudge; the tester opens the card, checks in, reviews why today's status was set and the trend view, acts on the nudge and, from 8pm, marks whether they followed it, on the card or from the 8pm push.">
+      <svg class="flow" viewBox="0 0 1296 480" role="img" aria-label="Swimlane flow of the daily morning loop: the iPhone Shortcut syncs on unplug or on a catch-up app open, with an 11:30am reminder if today's status isn't in; the server stores the night, scores it and sends the nudge; the tester opens the card, checks in, reviews why today's status was set and the trend view, acts on the nudge and, from 8pm, marks whether they followed it, on the card or from the 8pm push.">
         <defs>
           <marker id="h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
           <marker id="hx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head-exc" d="M0,0 L10,5 L0,10 z"/></marker>
@@ -200,8 +200,8 @@ q { quotes: "\201C" "\201D"; color: var(--fg); }
 
         <!-- Lane 2: Server -->
         <rect class="note" x="268" y="170" width="124" height="50" rx="6"/>
-        <text class="t-exc" x="330" y="191" text-anchor="middle">No sync by 11:30</text>
-        <text class="s" x="330" y="208" text-anchor="middle">reminder: run by hand</text>
+        <text class="t-exc" x="330" y="191" text-anchor="middle">Status not in by 11:30</text>
+        <text class="s" x="330" y="208" text-anchor="middle">reminder: tap Sync now</text>
 
         <rect class="box" x="416" y="170" width="124" height="50" rx="6"/>
         <text class="t" x="478" y="191" text-anchor="middle">3  Store and check</text>
@@ -296,7 +296,7 @@ q { quotes: "\201C" "\201D"; color: var(--fg); }
       <span><svg viewBox="0 0 34 8" aria-hidden="true"><line class="l2" x1="0" y1="4" x2="34" y2="4"/></svg>Exception or fallback</span>
       <span><svg viewBox="0 0 34 8" aria-hidden="true"><line class="l3" x1="0" y1="4" x2="34" y2="4"/></svg>Optional detour</span>
     </div>
-    <figcaption>Twelve steps across three places. The iPhone only reads and posts; the server decides whether the night is finished, scores it and sends the morning push, plus an 8pm follow-up on days the nudge asked for a change, or an 11:30am reminder on a morning with no sync, after which a sync before noon still brings a late nudge; the tester's part starts at the notification and ends when they mark whether they followed the nudge, from 8pm on the card or from the 8pm push, or at step 11 on a train-as-planned day. Every exception either waits for a later run or explains itself on the card.</figcaption>
+    <figcaption>Twelve steps across three places. The iPhone only reads and posts; the server decides whether the night is finished, scores it and sends the morning push, plus an 8pm follow-up on days the nudge asked for a change, or an 11:30am reminder on a morning when the status isn't in yet (no sync, or a night still unfinished), after which a sync before noon still brings a late nudge; the tester's part starts at the notification and ends when they mark whether they followed the nudge, from 8pm on the card or from the 8pm push, or at step 11 on a train-as-planned day. Every exception either waits for a later run or explains itself on the card.</figcaption>
   </figure>
 
   <section class="outcome" aria-labelledby="done-h">
@@ -317,7 +317,7 @@ q { quotes: "\201C" "\201D"; color: var(--fg); }
     <div class="views">
       <div class="view">
         <div><h3>Push notification</h3><p class="role core">Main path · system surface</p></div>
-        <div><p>A lock-screen message with status and reason in one line; tapping it opens today's card in the home-screen app. On change days, a second push at 8pm asks whether they followed the nudge and opens the card on the question. On a morning with no sync by 11:30am, a reminder push asks the tester to run the Shortcut before noon; the nudge follows if it syncs. None of the follow-up or reminder wording carries health detail; all three need wording, not screens.</p></div>
+        <div><p>A lock-screen message with status and reason in one line; tapping it opens today's card in the home-screen app. On change days, a second push at 8pm asks whether they followed the nudge and opens the card on the question. On a morning when the status isn't in by 11:30am, a reminder push asks the tester to tap Sync now before noon; the nudge follows if it syncs. None of the follow-up or reminder wording carries health detail; all three need wording, not screens.</p></div>
       </div>
       <div class="view">
         <div><h3>Daily check-in</h3><p class="role core">Main path · first each day</p></div>
@@ -353,7 +353,7 @@ q { quotes: "\201C" "\201D"; color: var(--fg); }
         <div class="srow"><span class="chip c-ok">Success</span><span class="when">Analysis finished after a sync</span><span>One message with status and reason, e.g. <q>Ease off today: HRV well below your usual, sleep short.</q></span></div>
         <div class="srow"><span class="chip c-empty">Not sent</span><span class="when">No sync yet, night unfinished, nothing synced by noon, already sent today, or no status (two or more readings missing or still building their baseline)</span><span>Nothing on the lock screen, by design. The card explains why when opened.</span></div>
         <div class="srow"><span class="chip c-ok">Evening</span><span class="when">8pm on a change day</span><span><q>Did you follow today's nudge?</q> Tapping it opens the card on the question.</span></div>
-        <div class="srow"><span class="chip c-pend">Reminder</span><span class="when">No successful sync by 11:30am</span><span>One push: <q>No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.</q> A sync before noon then brings the nudge, marked as late.</span></div>
+        <div class="srow"><span class="chip c-pend">Reminder</span><span class="when">Status not in by 11:30am (no sync, or the night still unfinished, D103)</span><span>One push: <q>Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge.</q> A sync before noon then brings the nudge, marked as late.</span></div>
         <div class="srow"><span class="chip c-empty">No evening</span><span class="when">Train-as-planned day, or no morning nudge</span><span>Nothing at 8pm.</span></div>
         <div class="srow"><span class="chip c-err">Error</span><span class="when">Delivery failed or notifications turned off</span><span>Failure is logged; the card shows that notifications are off and how to turn them back on.</span></div>
       </div>
