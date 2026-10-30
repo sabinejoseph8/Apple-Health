@@ -604,7 +604,8 @@ def build(url=INGEST_URL):
     b.stop()
     b.end_if(already)
 
-
+    # D103: no run waits. The alarm run tried a 10-minute wait (D94) and iOS ended it at a locked phone on its
+    # first real morning, with the night not in Health yet. Each trigger tries straight away; the next one catches up.
     b.comment('Read yesterday\'s and today\'s readings, one list per column. Clarivi keeps heart rate '
               'from 6pm to noon.')
     series = []
