@@ -3,7 +3,7 @@
 -- D67). Made-up accounts in UTC-5; times are given as moments for the tests.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(48);
+select plan(57);
 
 insert into auth.users (id, email) values
   ('41414141-4141-4141-4141-414141414141', 'tester-r@example.test'),
@@ -61,9 +61,44 @@ select is(public.plan_notifications('2026-09-20 11:35-05'), 0, 'and only one eac
 select is((select expires_at from public.notifications where kind = 'reminder' and user_id = '41414141-4141-4141-4141-414141414141'),
   '2026-09-20 12:00-05'::timestamptz, 'it is not sent after noon');
 select pg_temp.sync('42424242-4242-4242-4242-424242424242', '2026-09-21 07:00-05');
-select is(public.plan_notifications('2026-09-21 11:31-05'), 1, 'someone who synced that morning gets no reminder');
+insert into public.daily_status (user_id, date, status, readings_used, points, total, nudge, settings_version)
+values ('42424242-4242-4242-4242-424242424242', '2026-09-21', 'ready', 3, '{}', 0.2, 'train_as_planned', 2);
+select is(public.plan_notifications('2026-09-21 11:31-05'), 1, 'someone whose status is in gets no reminder');
 select is((select user_id from public.notifications where kind = 'reminder' and date = '2026-09-21'),
   '41414141-4141-4141-4141-414141414141'::uuid, 'only the one who did not');
+
+-- D103: the reminder goes when today's status is not in and a sync could still give it,
+-- not only when no post at all has arrived: a partial post (the night not finished)
+-- no longer silences it. Tester R, who has synced in the last 14 days.
+create function pg_temp.no_status(p_date date, p_reason text) returns void language sql as $$
+  insert into public.daily_status (user_id, date, status, no_status_reason, readings_used, points, total, nudge, settings_version)
+  values ('41414141-4141-4141-4141-414141414141', p_date, 'none', p_reason, 0, '{}', null, null, 2)
+$$;
+-- 5 October: a post at 11:26 with the night not finished, so no status.
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-05 11:26-05', false);
+select pg_temp.no_status('2026-10-05', 'night_unfinished');
+select is(public.plan_notifications('2026-10-05 11:30-05'), 1, 'a partial post with the night unfinished still gets the reminder');
+select is((select expires_at from public.notifications where kind = 'reminder' and date = '2026-10-05'),
+  '2026-10-05 12:00-05'::timestamptz, 'and it is not sent after noon');
+-- 6 October: a post two minutes ago, status not worked out yet: wait, then remind.
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-06 11:28-05', false);
+select is(public.plan_notifications('2026-10-06 11:30-05'), 0, 'a sync from two minutes ago is still being worked out: no reminder yet');
+select is(public.plan_notifications('2026-10-06 11:35-05'), 1, 'but if there is still no status five minutes later, the reminder goes');
+-- 7 and 8 October: a sync cannot change these, so no reminder.
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-07 07:00-05');
+select pg_temp.no_status('2026-10-07', 'learning');
+select is(public.plan_notifications('2026-10-07 11:30-05'), 0, 'no reminder while the normals are still being learned');
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-08 07:00-05');
+select pg_temp.no_status('2026-10-08', 'not_enough_data');
+select is(public.plan_notifications('2026-10-08 11:30-05'), 0, 'nor when too many readings are missing for a sync to help');
+-- 9 and 10 October: no sync at all, with and without a row for the day.
+select pg_temp.no_status('2026-10-09', 'no_sync');
+select is(public.plan_notifications('2026-10-09 11:30-05'), 1, 'a day marked no sync gets the reminder');
+select is(public.plan_notifications('2026-10-10 11:30-05'), 1, 'and so does a day with nothing at all (as before)');
+-- 11 October: the status is in.
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-11 07:00-05');
+select pg_temp.status('2026-10-11', 'ease_off', 'train_easy');
+select is(public.plan_notifications('2026-10-11 11:30-05'), 0, 'a day with a status gets none');
 
 -- The 8pm question (R50, D32): from what was shown, on change days only.
 insert into public.shown_status (user_id, date, via, status, nudge, readings_used, settings_version)
@@ -97,7 +132,7 @@ select is(public.followthrough_open('42424242-4242-4242-4242-424242424242', '202
 -- The sender claims due notifications once; anything past its time expires.
 select is((select count(*)::int from public.claim_due_notifications()), 0,
   'everything queued for those days is past its time');
-select is((select count(*)::int from public.notifications where status = 'expired'), 6, 'so it is marked expired, not sent');
+select is((select count(*)::int from public.notifications where status = 'expired'), 10, 'so it is marked expired, not sent');
 insert into public.notifications (user_id, date, kind, expires_at)
 values ('41414141-4141-4141-4141-414141414141', current_date + 1, 'morning', now() + interval '1 hour');
 select is((select count(*)::int from public.claim_due_notifications()), 1, 'a due notification is claimed');

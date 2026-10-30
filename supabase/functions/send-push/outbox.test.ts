@@ -52,7 +52,7 @@ Deno.test('the morning notification says the status and reason, and opens the ca
 })
 
 Deno.test('the reminder and the 8pm question carry no health detail (R49, R50)', () => {
-  assertEquals(messageFor(row(8, 'reminder'), null)?.body, "No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.")
+  assertEquals(messageFor(row(8, 'reminder'), null)?.body, "Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge.")
   assertEquals(messageFor(row(9, 'followup'), null)?.body, "Did you follow today's nudge?")
 })
 

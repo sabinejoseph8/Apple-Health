@@ -53,7 +53,7 @@ describe('wording', () => {
   })
 
   it('uses the agreed reminder and follow-up text (R49, R50)', () => {
-    expect(wording.push.reminder).toBe("No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge.")
+    expect(wording.push.reminder).toBe("Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge.")
     expect(wording.push.followUp).toBe("Did you follow today's nudge?")
   })
 })

@@ -137,7 +137,7 @@
 - **R24** Ready, Ease off and Rest are set from the readings by the score. A day without enough data is never shown as Ready. From score version 3 (D96, 29 October 2026) a night whose sleep is 1.5 or more spreads below the person's usual cannot be Ready: it is Ease off, and the card, notification and Why today say sleep set it.
 - **R25 Waiting.** Before this morning's sync arrives, the card says it's waiting for the sync and shows the last sync time. Yesterday's status is never shown as today's.
 - **R26 Night not finished.** If the night isn't finished in the data, the card says sleep is still in progress, shows no status and sends no notification.
-- **R27 Missed sync.** If nothing has synced by 11:30am, the card says so and explains how to run the Shortcut by hand before noon.
+- **R27 Missed sync.** If nothing has synced by 11:30am, the card says so and explains how to run the Shortcut by hand before noon. (From D103, 30 October 2026, the card's waiting and sleep-in-progress states already offer Sync now, and the 11:30 reminder, R49, also covers a night that is still unfinished.)
 - **R28 Late.** A sync between 11:30am and noon produces the normal card, marked as late.
 - **R29 No sync by noon.** The card says there is no status today. No nudge and no 8pm question follow.
 - **R30 Partial.** If one reading is missing or still building its baseline, the status comes from the other two, and the card says "Based on 2 of 3 readings".
@@ -171,7 +171,7 @@
 ### Notifications
 - **R47** After install, the app asks for notification permission once, from a tap. Settings shows whether notifications are on and when the last one was delivered.
 - **R48** At most one morning notification per day. It carries the status and reason, for example "Ease off today: HRV well below your usual, sleep short", and tapping it opens the card. It isn't sent on days without a status.
-- **R49** If nothing has synced by 11:30am, one reminder is sent: "No sync yet this morning. Run your readiness Shortcut before noon to get today's nudge." It contains no health detail.
+- **R49** If today's status is not in by 11:30am and a sync could still give it, one reminder is sent: "Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge." It contains no health detail. (Changed 30 October 2026, D103: it used to go only when no sync at all had arrived, so a partial post, with the night unfinished, silenced it. It is not sent when the day has a status, nor when a sync cannot help: still learning the normals, or too many readings missing, nor within 3 minutes of a sync that is still being worked out.)
 - **R50** On days the nudge asked for a change, a notification at 8pm local time asks "Did you follow today's nudge?" and opens the card on the question. It contains no health detail, and isn't sent on train-as-planned days or days without a morning nudge.
 - **R51** Every notification's delivery and tap is logged.
 
