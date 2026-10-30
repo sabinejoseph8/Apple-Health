@@ -6,7 +6,8 @@ All notable changes to Clarivi. Releases are tagged in this repository (tech-spe
 
 Made after the one-week test, before the second week (D94 to D96).
 
-- **A third way to start the morning sync:** when you stop your alarm. The Shortcut waits 10 minutes so your Watch can send the night (skipped from 11:45).
+- **A third way to start the morning sync:** when you stop your alarm. It first waited 10 minutes for your Watch to send the night; that wait was dropped on 30 October after its first real morning, so it tries straight away and the other two catch up.
+- **A better 11:30 reminder (30 October):** it now also goes when today's status isn't in yet because last night isn't finished, not only when nothing has synced. New words: "Today's status isn't in yet. Open Clarivi and tap Sync now before noon to get today's nudge."
 - **A sleep floor in the score (version 3):** a night of sleep far below your usual (1.5 or more spreads) can't be Ready: it is Ease off, and the card, the notification and Why today say sleep set it. Older versions are untouched.
 - **AI explanations:** Claude Opus 5.5 writes the morning explanation and the weekly digest from your readings, sent without your name, email or dates. The score still sets the status. The card waits for the text ("Getting ready"), a tested filter checks every text, and the fixed wording shows if the AI is slow or refused. A second check reads each digest's claims against the data.
 - **Consent version 3:** a third box for the AI, required. Everyone agrees again.
