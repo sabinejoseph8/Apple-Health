@@ -6,11 +6,11 @@
     "docs/architecture.svg",
     "docs/architecture.png",
     "docs/architecture.pdf",
-    "docs/evaluation.md"
+    "docs/evaluation.md",
+    "docs/case-study.html",
+    "docs/case-study.pdf"
   ],
-  "_still_to_add_to_required": "docs/case-study.html and docs/case-study.pdf are added here when Phase 9 builds them (docs/progress.md, Phase 9).",
-  "readme_sections": [],
-  "_readme_sections_to_restore": [
+  "readme_sections": [
     "problem",
     "how it works|how a run works|architecture",
     "design|decision|tradeoff",
@@ -18,7 +18,6 @@
     "limitation",
     "skills"
   ],
-  "_readme_note": "The README is still the original project brief, which Phase 9 replaces. The section list above is restored when it is replaced; until then the section check is off on purpose.",
   "evaluation": "docs/evaluation.md",
   "evaluation_sections": [
     "what good looks like",
@@ -35,26 +34,35 @@
   "_style_note": "docs/design-screens.html is left out of the dash check: it is a saved copy of the Clarivi Screens canvas, and the dashes sit in its own script and style comments, not in anything written for a reader.",
   "case_study_pdf": "docs/case-study.pdf",
   "headline_numbers": {
-    "_note": "Numbers that must read the same wherever they appear. The README and the case study are added to these lists when they are written, after week two.",
+    "_note": "Numbers that must read the same wherever they appear. The README (31 October 2026) and the case study (31 October 2026) are listed; week two's numbers are added to every list after it ends.",
     "52 of 231": [
       "docs/mvp.md",
-      "docs/evaluation.md"
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
     ],
     "29 of 231": [
       "docs/mvp.md",
-      "docs/evaluation.md"
+      "docs/evaluation.md",
+      "README.md"
     ],
     "261 nights": [
       "docs/mvp.md",
-      "docs/evaluation.md"
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
     ],
     "4 of 7": [
       "docs/mvp.md",
-      "docs/evaluation.md"
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
     ],
     "38 of 40": [
       "docs/ai-eval/README.md",
-      "docs/evaluation.md"
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
     ]
   },
   "private_paths": [
