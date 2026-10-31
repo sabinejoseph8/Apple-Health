@@ -345,6 +345,7 @@ Each call carries the user's session.
 - **Live project (created 2 October 2026):** Supabase project "Clarivi", ref `vuynnnrijdbvamwfauog`, address `https://vuynnnrijdbvamwfauog.supabase.co`, Pro plan since 9 October 2026 (D90; free until then), US East. It replaced a project created in US West by mistake (ref `pupxkjhhhgeeoqyvtsst`), which is no longer used.
 - **Repository:** `github.com/sabinejoseph8/Apple-Health`, public. It must never hold secrets or backups.
 - **Vercel and Supabase:** first connected through Vercel's official Supabase integration (D21); since 5 October 2026 (D81) not connected at all: the web app's three public values are set by hand in Vercel for Production and Preview.
+- **Demo address (D105, 31 October 2026):** https://apple-health-rust.vercel.app, a second Vercel project (`apple-health`) that builds the `demo-build` branch with `npm run build:demo` into `dist-demo`, with no environment variables and no Supabase. It shows made-up data only. Never connect the Supabase integration to it. The production project `clarivi` is untouched.
 - **Production address:** https://clarivi-zeta.vercel.app (Vercel project `clarivi`). It is also the push contact address (`VAPID_SUBJECT`).
 - Vercel previews talk to the same live project, so preview checks are done signed in as the owner or a test account, never as a tester.
 - A dedicated test account (created 3 October 2026; its email is kept out of this public repository) holds made-up data for checking previews.
