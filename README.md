@@ -91,16 +91,17 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 
 - **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
 - **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
-- **One-page case study:** being added. It will show week one's results, with week two marked as in progress.
+- **One-page case study:** [docs/case-study.pdf](docs/case-study.pdf) (source: [docs/case-study.html](docs/case-study.html)). Week one's results, with week two marked as next.
 
 ## Try it
 
 Pick how deep to go:
 
-1. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
-2. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
-3. **Browse** the Project Memory website linked above.
-4. Coming next: a one-page case study and a demo on made-up data. A short video follows after week two.
+1. **Read** the [one-page case study](docs/case-study.pdf).
+2. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
+3. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
+4. **Browse** the Project Memory website linked above.
+5. Coming next: a demo on made-up data. A short video follows after week two.
 
 ## Where the data goes
 
