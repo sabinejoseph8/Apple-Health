@@ -3,7 +3,7 @@
 -- D67). Made-up accounts in UTC-5; times are given as moments for the tests.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(57);
+select plan(62);
 
 insert into auth.users (id, email) values
   ('41414141-4141-4141-4141-414141414141', 'tester-r@example.test'),
@@ -84,21 +84,40 @@ select is((select expires_at from public.notifications where kind = 'reminder' a
 select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-06 11:28-05', false);
 select is(public.plan_notifications('2026-10-06 11:30-05'), 0, 'a sync from two minutes ago is still being worked out: no reminder yet');
 select is(public.plan_notifications('2026-10-06 11:35-05'), 1, 'but if there is still no status five minutes later, the reminder goes');
--- 7 and 8 October: a sync cannot change these, so no reminder.
+-- 7 October: a sync cannot change this, so no reminder.
 select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-07 07:00-05');
 select pg_temp.no_status('2026-10-07', 'learning');
 select is(public.plan_notifications('2026-10-07 11:30-05'), 0, 'no reminder while the normals are still being learned');
+-- 8 October: a finished night with too few readings (the sleep arrived, the heart readings did not yet):
+-- a later sync can bring the rest, so it gets the reminder (D103, refined in 7b-1c).
 select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-08 07:00-05');
 select pg_temp.no_status('2026-10-08', 'not_enough_data');
-select is(public.plan_notifications('2026-10-08 11:30-05'), 0, 'nor when too many readings are missing for a sync to help');
--- 9 and 10 October: no sync at all, with and without a row for the day.
-select pg_temp.no_status('2026-10-09', 'no_sync');
-select is(public.plan_notifications('2026-10-09 11:30-05'), 1, 'a day marked no sync gets the reminder');
+select is(public.plan_notifications('2026-10-08 11:30-05'), 1, 'too few readings still gets the reminder, since a later sync can bring the rest');
+-- 9 and 10 October: no sleep stages (a real reason), and no row at all.
+select pg_temp.no_status('2026-10-09', 'no_sleep_stages');
+select is(public.plan_notifications('2026-10-09 11:30-05'), 1, 'a night without sleep stages gets the reminder');
 select is(public.plan_notifications('2026-10-10 11:30-05'), 1, 'and so does a day with nothing at all (as before)');
 -- 11 October: the status is in.
 select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-11 07:00-05');
 select pg_temp.status('2026-10-11', 'ease_off', 'train_easy');
 select is(public.plan_notifications('2026-10-11 11:30-05'), 0, 'a day with a status gets none');
+-- The 3-minute wait for a sync that is still being worked out: exactly 3 minutes old no longer holds the
+-- reminder back, 2 minutes 59 seconds does, the last check before noon ignores it, and pings and
+-- refused posts never count.
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-12 11:33:00-05', false);
+select is(public.plan_notifications('2026-10-12 11:36-05'), 1, 'a sync exactly 3 minutes old no longer holds the reminder back');
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-13 11:33:01-05', false);
+select is(public.plan_notifications('2026-10-13 11:36-05'), 0, 'a sync 2 minutes 59 seconds old still does');
+select pg_temp.sync('41414141-4141-4141-4141-414141414141', '2026-10-14 11:54:30-05', false);
+select is(public.plan_notifications('2026-10-14 11:55-05'), 1, 'at the last check before noon the wait stands down, so the reminder is not lost');
+insert into public.uploads (user_id, received_at, schema_version, kind, device_tz_offset_min, local_date, night_complete, status)
+values ('41414141-4141-4141-4141-414141414141', '2026-10-15 11:29:30-05', 1, 'ping', -300, '2026-10-15', false, 'accepted');
+insert into public.uploads (user_id, received_at, schema_version, kind, device_tz_offset_min, local_date, night_complete, status, error)
+values ('41414141-4141-4141-4141-414141414141', '2026-10-15 11:29:40-05', 1, 'daily', -300, '2026-10-15', false, 'rejected', 'token_revoked');
+select is(public.plan_notifications('2026-10-15 11:30-05'), 1, 'a ping and a refused post a moment ago do not hold the reminder back');
+-- Tester S last synced on 21 September, more than 14 days before these dates, so is not asked at all.
+select is((select count(*)::int from public.notifications where user_id = '42424242-4242-4242-4242-424242424242' and kind = 'reminder' and date >= '2026-10-05'), 0,
+  'someone who has not synced for 14 days gets no reminder');
 
 -- The 8pm question (R50, D32): from what was shown, on change days only.
 insert into public.shown_status (user_id, date, via, status, nudge, readings_used, settings_version)
@@ -132,7 +151,7 @@ select is(public.followthrough_open('42424242-4242-4242-4242-424242424242', '202
 -- The sender claims due notifications once; anything past its time expires.
 select is((select count(*)::int from public.claim_due_notifications()), 0,
   'everything queued for those days is past its time');
-select is((select count(*)::int from public.notifications where status = 'expired'), 10, 'so it is marked expired, not sent');
+select is((select count(*)::int from public.notifications where status = 'expired'), 14, 'so it is marked expired, not sent');
 insert into public.notifications (user_id, date, kind, expires_at)
 values ('41414141-4141-4141-4141-414141414141', current_date + 1, 'morning', now() + interval '1 hour');
 select is((select count(*)::int from public.claim_due_notifications()), 1, 'a due notification is claimed');

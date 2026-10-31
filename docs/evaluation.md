@@ -50,6 +50,12 @@ Statuses are the ones she was shown (score version 2). The score had not changed
 
 Also from week one: check-ins were answered on 3 of the 3 days the card was opened, and no day rested on fewer than three readings.
 
+### Before week two: the alarm trigger's first real morning (30 October 2026)
+
+The alarm trigger is the one change made after week one to help the sync target, so it was tried on a real morning before week two. **It started but did not sync.** The log shows its ping at 11:06am; its run then ended without a post, because Shortcuts timed out the 10-minute wait and met a locked phone, which cannot read Health. The night was not in Health anyway: its sleep stages first reached the server in a post at 11:38am, more than two hours after the Watch's sleep had ended. The app-open run at 11:38am completed the sync, and the status was worked out and sent before noon. This is a pre-week-two check, not a week-two result, and it is one morning.
+
+A second try on 31 October tested nothing: the Watch was not worn, so there was no night to sync, and the 11am alarm was not set, so no alarm run could start. The 11:30 reminder was still sent, because the server cannot tell a night without the Watch from a night that has not reached Health yet. The try is repeated on 1 November.
+
 ### Week two
 
 To be added after it ends, using the same file and the same rules. Its sync target is counted as the status worked out and shown before noon (D99).
@@ -79,8 +85,10 @@ None was built (decided 29 October 2026).
 - **Sample size.** One person for one week. Two days had a status shown, three had a check-in, and no day was a change day. This can say whether the pipeline works; it cannot say whether the tool changes behaviour.
 - **Blindness.** The same author built the system and counted the results. The counting rules were written first and the counts can be rerun, but nobody else checked them.
 - **In-sample results.** The AI instruction and filter were tuned on the development cases. The filter was tightened after the held-out set was graded, so the held-out result is partly in-sample.
+- **One shown status rested on a night without stages.** Of the two statuses shown in week one, the 20 October one (Ready) was built from a short night the Watch recorded without stages (D92); under score version 3 the same night is Ease off. The rule stays through week two (D104).
 - **No outside user.** Nobody but the owner used it, so engagement and retention say nothing about other people.
 - **Signal evidence is thin.** The owner's year has no calendar illness or major events, so the Signal check rests on one trip and on workouts far below her usual.
+- **The Watch decides when the night arrives.** The Watch's sleep reached the iPhone's Health hours after waking on 30 October, and week one's log showed the same on 20 October. Clarivi cannot see that moment, so any sync target depends on something it does not control, and a fixed wait cannot fix it.
 - **Not measured yet.** Week two. The quality of the AI's wording on real nights, which the owner judges by reading it in week two. Isolation between two real people.
 
 ## 5. What the results changed
@@ -90,10 +98,12 @@ None was built (decided 29 October 2026).
 - Counting the sync three ways showed that "4 of 7" counted any post and only 2 of 7 days had a status before noon, which led to D99 for week two.
 - The held-out set's one slip, a digest describing a day-to-day change the data did not show, led to a second model checking every claim in each digest before it is shown (D95).
 - The module check led to dropping all three modules (D94, 29 October).
+- The alarm trigger's first real morning, which started but did not sync because the 10-minute wait ended at a locked phone and the night had not reached Health, led to dropping the wait and to a reminder that also covers a night that is still unfinished (D103). The earlier reminder was silenced by a partial post, as on 22 and 30 October.
 - Her account, that she would not keep using it as it was, points at the sync and the noon rule; the noon rule is reopened only if week two shows syncs still arriving after noon (D94).
 
 ## 6. Next
 
+- Try the changed alarm run and reminder on a real morning with the Watch worn (31 October could not test them: no Watch worn and no alarm set; next try 1 November, then week two), and add what the log shows here.
 - Run week two with the same targets and rules, and add its results here.
 - Read the week-two digests for slips like the one the held-out set found, and report what is found.
 - A second real user, for isolation, engagement and Signal on a body other than the owner's.
