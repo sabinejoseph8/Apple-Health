@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clarivi Case Study</title>
+<!--
+  One-page "AI product management case study". Letter size, print-ready.
+  Render:  python3 ~/.claude/skills/portfolio-package/scripts/render.py pdf docs/case-study.html docs/case-study.pdf
+  Check:   python3 checks/run_all.py   (fails unless the PDF is exactly one page)
+  If it spills to two pages, cut words before shrinking type below 8pt.
+  Every number comes from docs/evaluation.md and the README.
+-->
+<style>
+  @page { size: Letter; margin: 0.38in 0.5in; }
+  :root { --brand: #1F3A5F; --accent: #2A9D8F; --warm: #B5491F; --note: #FFF8E6; --note-edge: #E5B53C; --ink: #1F2430; --muted: #5B6170; --line: #D9DDE5; --mist: #F3F5F8; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0 auto; max-width: 7.5in; background: #FFFFFF; color: var(--ink); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 8.6pt; line-height: 1.34; }
+  h1, h2 { color: var(--brand); margin: 0; line-height: 1.15; }
+  .head { border-left: 7px solid var(--brand); padding: 1pt 0 1pt 12pt; margin-bottom: 8pt; }
+  .eyebrow { font-size: 7.4pt; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase; color: var(--warm); margin-bottom: 3pt; }
+  h1 { font-size: 21pt; }
+  .sub { font-size: 11.5pt; font-weight: 600; color: var(--brand); margin: 2pt 0 5pt; }
+  .lede { font-size: 9pt; margin: 0; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 0 0 9pt; }
+  .kpi { background: var(--mist); border-top: 3px solid var(--accent); border-radius: 3px; padding: 5pt 7pt; }
+  .kpi.miss { border-top-color: var(--warm); }
+  .kpi b { display: block; font-size: 15pt; color: var(--brand); line-height: 1.05; }
+  .kpi span { display: block; font-size: 7.6pt; color: var(--muted); margin-top: 2pt; line-height: 1.25; }
+  .cols { display: grid; grid-template-columns: 1.08fr 1fr; gap: 14pt; }
+  h2 { font-size: 10.2pt; padding-bottom: 2pt; border-bottom: 1.5px solid var(--brand); margin: 0 0 4pt; }
+  section { margin-bottom: 7pt; }
+  p { margin: 0 0 4pt; }
+  ul { margin: 0; padding-left: 13pt; }
+  li { margin: 0 0 2pt; }
+  strong { color: var(--brand); }
+  .figure { border: 1px solid var(--line); border-radius: 3px; padding: 4pt; margin-bottom: 7pt; }
+  .figure img { display: block; width: 100%; height: auto; }
+  .figure .cap { font-size: 7.2pt; color: var(--muted); margin-top: 2pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 7.8pt; margin-bottom: 5pt; }
+  th, td { text-align: left; padding: 2pt 4pt; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 700; }
+  td.no { color: var(--warm); font-weight: 700; }
+  td.yes { color: #1F7A4D; font-weight: 700; }
+  .note { background: var(--note); border-left: 3px solid var(--note-edge); padding: 5pt 8pt; font-size: 7.9pt; margin: 2pt 0 6pt; }
+  .foot { border-top: 1px solid var(--line); padding-top: 5pt; font-size: 7.6pt; color: var(--muted); display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
+  .foot strong { color: var(--ink); }
+  @media screen and (max-width: 700px) {
+    body { padding: 16px; font-size: 11pt; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .cols, .foot { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <header class="head">
+    <div class="eyebrow">AI product management case study &middot; Week one done, week two next &middot; October 2026</div>
+    <h1>Clarivi</h1>
+    <div class="sub">A plain-words morning answer from my own Apple Watch data</div>
+    <p class="lede">For Apple Watch users who train and sleep with the watch on. It says what last night's readings mean against your own normal, why the day's status was set, and one thing to do today. I built it and tested it on myself, and I report what missed next to what worked.</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><b>261 nights</b><span>My year's nights, usual ranges and daily status agree with an independent check: 0 values differ. Same author, so independent code, not an independent person.</span></div>
+    <div class="kpi"><b>38 of 40</b><span>Invented cases passed the AI's safety filter on one live attempt. The filter was tuned on these cases.</span></div>
+    <div class="kpi miss"><b>4 of 7</b><span>Days with a sync in week one, against a target of 6: missed. Only 2 of 7 had a status before noon.</span></div>
+    <div class="kpi miss"><b>2 of 13</b><span>Disrupted mornings the score flagged, against a target of 2 in 3: missed. One person, thin evidence.</span></div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <section>
+        <h2>The problem</h2>
+        <p>The Health app shows each number alone. I would wake up to a heart rate variability figure and not know whether it was bad for me or a normal wobble. People who train need the answer before they decide how hard to go, not a chart to read.</p>
+      </section>
+      <section>
+        <h2>What I built</h2>
+        <ul>
+          <li><strong>The card:</strong> Ready, Ease off or Rest in a few plain sentences, one action for the day, and a "Why today" screen that shows how it was decided.</li>
+          <li><strong>The score:</strong> fixed arithmetic in SQL against my own last 42 nights, checked by separate pandas code. A night with sleep far below my usual cannot be Ready.</li>
+          <li><strong>The AI:</strong> Claude Opus 5.5 writes the wording and never sets the status. It sees an allow-list of results only, and its text goes through a filter, a retry and a fixed fallback.</li>
+          <li><strong>The sync:</strong> an iPhone Shortcut on three triggers (alarm stopped, charger unplugged, app opened), with an 11:30 reminder if the status is missing.</li>
+          <li><strong>Private by default:</strong> row-level security on every table, no third-party scripts, three separate consent boxes.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Key decisions</h2>
+        <ul>
+          <li><strong>A fixed score, not a learned model:</strong> every status is explainable and checkable. The cost: it cannot adapt to me.</li>
+          <li><strong>The AI explains, never decides:</strong> a wrong sentence cannot change what the card says. The cost: a short wait, and a US AI provider that needs its own consent.</li>
+          <li><strong>A smaller test, set before any result:</strong> four people for 28 days became one person for a week. The cost: it cannot speak for anyone else.</li>
+          <li><strong>Test before building:</strong> I tried three planned analysis modules on my own year first. Two found nothing the data could support (0 of 12 each), so I built none.</li>
+        </ul>
+      </section>
+    </div>
+    <div>
+      <div class="figure">
+        <img src="architecture.png" alt="Architecture diagram">
+        <div class="cap">Readings flow in from an iPhone Shortcut, are scored on the server, and the AI only writes the words.</div>
+      </div>
+      <section>
+        <h2>How I measured quality</h2>
+        <p>Ten targets, set on 29 September 2026, before any result. Week one, 19 to 25 October:</p>
+        <table>
+          <tr><th>Measure</th><th>Target</th><th>Result</th></tr>
+          <tr><td>Sync</td><td>6 of 7 days</td><td class="no">4 of 7</td></tr>
+          <tr><td>Correctness</td><td>Match the reference</td><td class="yes">0 differ</td></tr>
+          <tr><td>Isolation</td><td>No tolerance</td><td class="yes">Held</td></tr>
+          <tr><td>Signal, my year</td><td>2 in 3</td><td class="no">2 of 13</td></tr>
+          <tr><td>Quiet by default</td><td>About 1 in 7</td><td class="no">52 of 231 days</td></tr>
+          <tr><td>Engagement</td><td>5 of 7 days</td><td class="no">3 of 7</td></tr>
+        </table>
+      </section>
+      <section>
+        <h2>What I learned</h2>
+        <ul>
+          <li>The sync miss was partly the Watch: its sleep can reach Health hours after waking. A fixed wait failed on its first real morning, so I dropped it and made the reminder cover an unfinished night.</li>
+          <li>A Ready on a very short night led to a sleep floor. It made the score louder than my "quiet" target (52 of 231 days, against 29 of 231 before it), and I report that as a miss.</li>
+          <li>Counting the sync three ways showed that "4 of 7" counted any post, so week two counts the status shown before noon.</li>
+        </ul>
+      </section>
+      <div class="note"><strong>Limits:</strong> one person, one week so far. The same author built the system and counted the results. Week two is not included yet.</div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div><strong>In the repository:</strong> README, docs/evaluation.md, Project Memory (specs and plan), the architecture diagram and the checks.</div>
+    <div><strong>Skills:</strong> AI product management (specs, phased plan, success targets set first, evaluation, iteration from data), responsible AI and data protection.</div>
+  </footer>
+</body>
+</html>
