@@ -85,6 +85,7 @@ None was built (decided 29 October 2026).
 - **Sample size.** One person for one week. Two days had a status shown, three had a check-in, and no day was a change day. This can say whether the pipeline works; it cannot say whether the tool changes behaviour.
 - **Blindness.** The same author built the system and counted the results. The counting rules were written first and the counts can be rerun, but nobody else checked them.
 - **In-sample results.** The AI instruction and filter were tuned on the development cases. The filter was tightened after the held-out set was graded, so the held-out result is partly in-sample.
+- **One shown status rested on a night without stages.** Of the two statuses shown in week one, the 20 October one (Ready) was built from a short night the Watch recorded without stages (D92); under score version 3 the same night is Ease off. The rule stays through week two (D104).
 - **No outside user.** Nobody but the owner used it, so engagement and retention say nothing about other people.
 - **Signal evidence is thin.** The owner's year has no calendar illness or major events, so the Signal check rests on one trip and on workouts far below her usual.
 - **The Watch decides when the night arrives.** The Watch's sleep reached the iPhone's Health hours after waking on 30 October, and week one's log showed the same on 20 October. Clarivi cannot see that moment, so any sync target depends on something it does not control, and a fixed wait cannot fix it.
