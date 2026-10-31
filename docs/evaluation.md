@@ -54,6 +54,8 @@ Also from week one: check-ins were answered on 3 of the 3 days the card was open
 
 The alarm trigger is the one change made after week one to help the sync target, so it was tried on a real morning before week two. **It started but did not sync.** The log shows its ping at 11:06am; its run then ended without a post, because Shortcuts timed out the 10-minute wait and met a locked phone, which cannot read Health. The night was not in Health anyway: its sleep stages first reached the server in a post at 11:38am, more than two hours after the Watch's sleep had ended. The app-open run at 11:38am completed the sync, and the status was worked out and sent before noon. This is a pre-week-two check, not a week-two result, and it is one morning.
 
+A second try on 31 October tested nothing: the Watch was not worn, so there was no night to sync, and no alarm run reached the server. The 11:30 reminder was still sent, because the server cannot tell a night without the Watch from a night that has not reached Health yet. The try is repeated on 1 November.
+
 ### Week two
 
 To be added after it ends, using the same file and the same rules. Its sync target is counted as the status worked out and shown before noon (D99).
@@ -100,7 +102,7 @@ None was built (decided 29 October 2026).
 
 ## 6. Next
 
-- Try the changed alarm run and reminder on a real morning (31 October, then week two), and add what the log shows here.
+- Try the changed alarm run and reminder on a real morning with the Watch worn (31 October could not test them; next try 1 November, then week two), and add what the log shows here.
 - Run week two with the same targets and rules, and add its results here.
 - Read the week-two digests for slips like the one the held-out set found, and report what is found.
 - A second real user, for isolation, engagement and Signal on a body other than the owner's.
