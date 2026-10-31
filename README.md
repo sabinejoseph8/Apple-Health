@@ -2,7 +2,7 @@
 
 **A small iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
 
-> **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. The demo (added after week two) uses made-up data only.
+> **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. A demo on made-up data is being added, and it will never hold real readings.
 
 ![Architecture](docs/architecture.png)
 
@@ -13,7 +13,7 @@
 - **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
 - **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
 - **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
-- **Status:** built and in use by one person. Week one is done. Week two starts after I have checked the changed alarm sync on a real morning.
+- **Status:** built and in use by one person. Week one is done. Week two, the same test again after a change to the sync, starts on 2 November 2026 at the earliest, once I have checked the changed alarm sync on a real morning. Its results are added when it ends.
 
 ## The problem
 
@@ -91,17 +91,16 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 
 - **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
 - **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
-- **One-page case study:** added after week two.
+- **One-page case study:** being added. It will show week one's results, with week two marked as in progress.
 
 ## Try it
 
 Pick how deep to go:
 
-1. **Read** the one-page case study (added after week two).
-2. **Watch** the short video (added after week two).
-3. **Open** the demo on made-up data (added after week two).
-4. **Inspect** the [evaluation](docs/evaluation.md).
-5. **Run** the checks: [how to run](docs/how-to-run.md).
+1. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
+2. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
+3. **Browse** the Project Memory website linked above.
+4. Coming next: a one-page case study and a demo on made-up data. A short video follows after week two.
 
 ## Where the data goes
 
