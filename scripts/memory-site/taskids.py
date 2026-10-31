@@ -15,6 +15,7 @@ TASK_RE = re.compile(r'\[( |x)\]\s+(.*)', re.S)
 # A task whose words changed too much to match automatically: new text prefix -> old id.
 OVERRIDES = {
     'Build in-app consent': 'p6-06',
+    '(live 31 October 2026, D105: deployed': 'p9-04',
 }
 
 
