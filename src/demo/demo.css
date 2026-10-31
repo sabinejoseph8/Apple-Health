@@ -1,0 +1,42 @@
+/* The demo banner (D95). Classes only: the site's security headers allow no inline styles. */
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 16px 8px;
+  background: #fff4d6;
+  color: #3b2f00;
+  border-bottom: 1px solid #e8d79a;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.demo-banner strong {
+  font-weight: 700;
+}
+.demo-banner label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.demo-banner select {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #d3bf7a;
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.demo-banner p {
+  flex-basis: 100%;
+  margin: 0;
+}
+/* The phone-notification notice is about a real phone's settings, which the demo does not have. */
+.card.notice[aria-labelledby='notify-headline'] {
+  display: none;
+}

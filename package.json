@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run typecheck && vite build && node scripts/check-build-secrets.mjs",
+    "build:demo": "npm run typecheck && vite build --mode demo && node scripts/check-demo-bundle.mjs demo dist-demo",
+    "dev:demo": "vite --mode demo",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:functions": "deno test --no-lock --allow-read=docs/ai-eval supabase/functions",

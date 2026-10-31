@@ -30,6 +30,7 @@ node_modules/
 dist/
 dist-ssr/
 dist-e2e/
+dist-demo/
 *.local
 npm-debug.log*
 

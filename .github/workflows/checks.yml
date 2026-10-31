@@ -36,6 +36,18 @@ jobs:
           echo 'const k="sb_secret_PLANTEDFAKEVALUE123"' > dist/planted.js
           if node scripts/check-build-secrets.mjs; then echo "The secret check missed a planted secret."; exit 1; fi
           rm dist/planted.js
+      # The demo build (D95): made-up data only. The live build holds none of it, and the demo holds
+      # none of the project's address or keys, which the second check proves it would catch.
+      - name: The live build holds none of the demo
+        run: node scripts/check-demo-bundle.mjs live dist
+      - name: The demo build holds none of the project's address or keys
+        run: npm run build:demo
+      - name: The demo check catches a planted project address
+        run: |
+          cp -r dist-demo planted-demo
+          echo 'const a="https://vuynnnrijdbvamwfauog.supabase.co"' > planted-demo/assets/planted.js
+          if node scripts/check-demo-bundle.mjs demo planted-demo; then echo "The demo check missed a planted address."; exit 1; fi
+          rm -r planted-demo
 
   # On a Mac, so WebKit draws text in Apple's system font, as the iPhone does:
   # the one-screen check (R23) depends on it. Linux's stand-in font is taller.
