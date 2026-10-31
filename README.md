@@ -2,7 +2,7 @@
 
 **A small iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
 
-> **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. A demo on made-up data is being added, and it will never hold real readings.
+> **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
 
 ![Architecture](docs/architecture.png)
 
@@ -97,11 +97,12 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 
 Pick how deep to go:
 
-1. **Read** the [one-page case study](docs/case-study.pdf).
-2. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
-3. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
-4. **Browse** the Project Memory website linked above.
-5. Coming next: a demo on made-up data. A short video follows after week two.
+1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
+2. **Read** the [one-page case study](docs/case-study.pdf).
+3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
+4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
+5. **Browse** the Project Memory website linked above.
+6. Coming next: a short video, after week two.
 
 ## Where the data goes
 

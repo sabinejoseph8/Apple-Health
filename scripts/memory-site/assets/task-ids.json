@@ -741,6 +741,7 @@
  "p9-04": {
   "phase": "9",
   "texts": [
+   "Demo build on made-up data (D95, Sabine, 29 October 2026), so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses",
    "Demo build on made-up data, so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses"
   ]
  },
