@@ -16,6 +16,7 @@ TASK_RE = re.compile(r'\[( |x)\]\s+(.*)', re.S)
 OVERRIDES = {
     'Build in-app consent': 'p6-06',
     '(live 31 October 2026, D105: deployed': 'p9-04',
+    'Week two: seven days, Monday 2 to Sunday 8 November': 'p7-19',
 }
 
 

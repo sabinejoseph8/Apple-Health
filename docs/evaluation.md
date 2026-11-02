@@ -54,7 +54,9 @@ Also from week one: check-ins were answered on 3 of the 3 days the card was open
 
 The alarm trigger is the one change made after week one to help the sync target, so it was tried on a real morning before week two. **It started but did not sync.** The log shows its ping at 11:06am; its run then ended without a post, because Shortcuts timed out the 10-minute wait and met a locked phone, which cannot read Health. The night was not in Health anyway: its sleep stages first reached the server in a post at 11:38am, more than two hours after the Watch's sleep had ended. The app-open run at 11:38am completed the sync, and the status was worked out and sent before noon. This is a pre-week-two check, not a week-two result, and it is one morning.
 
-A second try on 31 October tested nothing: the Watch was not worn, so there was no night to sync, and the 11am alarm was not set, so no alarm run could start. The 11:30 reminder was still sent, because the server cannot tell a night without the Watch from a night that has not reached Health yet. The try is repeated on 1 November.
+A second try on 31 October tested nothing: the Watch was not worn, so there was no night to sync, and the 11am alarm was not set, so no alarm run could start. The 11:30 reminder was still sent, because the server cannot tell a night without the Watch from a night that has not reached Health yet. The try was repeated on 1 November.
+
+**The third try, on 1 November, passed after one fix.** The first alarm stop (the alarm was set for 10am for the test) started the alarm run, but the server refused its post as a replaced token: the alarm automation was still running the renamed old copy of the Shortcut, which held the retired token, while the charger and app automations already used the new one. That was a setup mistake, not a fault in the changed run. After the alarm automation was pointed at the new Shortcut, a second stop at 10:45 started the run, which sent its ping and the full post two seconds apart with the night complete. The status was worked out by 10:46, the explanation was saved seconds later and the notification was sent at 10:47, all well before noon. Limits: it is one morning; the night was already in Health, so it does not test a night that arrives late (the 11:30 reminder and the charger, app and Sync now runs cover that case); and the new reminder rule was not seen on a real morning, only in tests. Week two starts on Monday 2 November 2026.
 
 ### Week two
 
@@ -103,7 +105,7 @@ None was built (decided 29 October 2026).
 
 ## 6. Next
 
-- Try the changed alarm run and reminder on a real morning with the Watch worn (31 October could not test them: no Watch worn and no alarm set; next try 1 November, then week two), and add what the log shows here.
+- The changed alarm run passed on a real morning on 1 November (above). The new 11:30 reminder rule has not yet been seen on a real morning; note here if it fires in week two.
 - Run week two with the same targets and rules, and add its results here.
 - Read the week-two digests for slips like the one the held-out set found, and report what is found.
 - A second real user, for isolation, engagement and Signal on a body other than the owner's.

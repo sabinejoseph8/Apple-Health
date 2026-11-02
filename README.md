@@ -13,7 +13,7 @@
 - **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
 - **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
 - **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
-- **Status:** built and in use by one person. Week one is done. Week two, the same test again after a change to the sync, starts on 2 November 2026 at the earliest, once I have checked the changed alarm sync on a real morning. Its results are added when it ends.
+- **Status:** built and in use by one person. Week one is done. Week two, the same test again after a change to the sync, starts on 2 November 2026; the changed alarm sync passed its check on a real morning on 1 November, after one setup fix. Its results are added when it ends.
 
 ## The problem
 
