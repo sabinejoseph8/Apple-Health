@@ -715,6 +715,12 @@
    "(moved to 7b-5, the next release's database change) Mark consent_version() stable instead of immutable, in the next release's database change"
   ]
  },
+ "p8-03": {
+  "phase": "8",
+  "texts": [
+   "Dark mode for the app and the demo. First a design step, with her approval before any code: a dark set of the colour tokens in docs/design.md, contrast checked as the light set was, how it is chosen (following the phone's light or dark setting, or a switch in Settings), the status, chart and icon colours on dark. Then the build on a branch with tests (the colour variables, theme-color and the manifest, the demo's frame and banner), and a new requirement in docs/product-spec.md once the design settles what it does. The demo gets it from the same code. The live app is released only after Sabine approves the timing, because week two's mornings run on the live app; then a check on her iPhone"
+  ]
+ },
  "p8-07": {
   "phase": "8",
   "texts": [
