@@ -8,6 +8,10 @@ from taskids import TASK_RE, group_key, assign
 T = 'plan'
 DATE = rf'\d{{1,2}} (?:{MONTHS}) 2026'
 
+# Phases left off the published site (Phase 9, the portfolio package: Sabine's decision, 3 November 2026, D109).
+# Their tasks still get ids and stay in assets/task-ids.json, so ticks and ids are safe if one is shown again.
+HIDDEN_PHASES = {'9'}
+
 
 def _balanced(text, start):
     depth = 0
@@ -258,7 +262,7 @@ def build(doc, old_ids):
     phases = []
     toc = []
     for s in doc['secs']:
-        if s['name'].startswith('Phase'):
+        if s['name'].startswith('Phase') and re.match(r'Phase (\d)', s['name']).group(1) not in HIDDEN_PHASES:
             h, sid, label, ph, name, status = phase_section(s)
             phases_html.append(h)
             phases.append((ph, name, status))
