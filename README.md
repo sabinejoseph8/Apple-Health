@@ -3,7 +3,7 @@
 **An iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
 
 > [!IMPORTANT]
-> **Work in progress: testing is not finished.** Week one of the test (19 to 25 October 2026) is done. Week two is running now and finishes on Sunday 8 November 2026. Its results and a review are added after that, so every result on this page is from week one only.
+> **Project in progress:** Testing is ongoing. Week one (19–25 October 2026) is complete, and week two is underway until Sunday, 8 November 2026. Week two results and a review will be added after testing ends. All results currently shown on this page are from week one.
 
 > **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
 

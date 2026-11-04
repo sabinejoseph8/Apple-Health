@@ -68,6 +68,8 @@ CSS = """
   td.no { color: var(--warm); font-weight: 700; }
   td.yes { color: var(--yes); font-weight: 700; }
   .note { background: var(--note); border-left: 4px solid var(--note-edge); padding: 12px 14px; font-size: 15px; margin: 4px 0 8px; }
+  .status { background: var(--note); border-left: 4px solid var(--note-edge); padding: 12px 16px; margin: 0 0 22px; max-width: 76ch; }
+  .status strong { color: var(--ink); }
   .foot { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; font-size: 14px; color: var(--muted); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 32px; }
   .foot strong { color: var(--ink); }
   .more { margin-top: 18px; font-size: 15px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
@@ -84,6 +86,11 @@ CSS = """
     .foot { grid-template-columns: minmax(0, 1fr); }
   }
 """
+
+# The same words as the README's note at the top. Rewrite both when week two's results are added.
+STATUS = ('<strong>Project in progress:</strong> Testing is ongoing. Week one (19–25 October 2026) is complete, and week two is '
+          'underway until Sunday, 8 November 2026. Week two results and a review will be added after testing ends. '
+          'All results currently shown on this page are from week one.')
 
 LINKS = [
     ('The repository', 'https://github.com/sabinejoseph8/Apple-Health'),
@@ -120,7 +127,7 @@ def build():
 
     title = re.search(r'<title>(.*?)</title>', src).group(1)
     return (f'<title>{title}</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>{CSS}</style>\n'
-            f'<div class="page">\n{head}\n{kpis}\n{figure}\n{cols}\n{foot}\n{links}\n</div>\n')
+            f'<div class="page">\n{head}\n<p class="status" role="note">{STATUS}</p>\n{kpis}\n{figure}\n{cols}\n{foot}\n{links}\n</div>\n')
 
 
 if __name__ == '__main__':
