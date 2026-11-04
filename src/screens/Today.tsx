@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
+import { isNative } from '../lib/native'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
@@ -347,8 +348,10 @@ function Writing() {
 
 // A card without a status: a neutral pill, a headline and a plain line (R25 to R32).
 // The no-status card. Before noon, while last night isn't in, it offers Sync
-// now (D84): one tap runs the Shortcut while the phone is unlocked.
+// now (D84): one tap runs the Shortcut while the phone is unlocked. Inside the
+// native app there is no Shortcut (D115): its own Health sync takes over in 10b.
 function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; headline: string; lines: string[]; syncNow?: boolean }) {
+  const runShortcut = syncNow && !isNative()
   return (
     <section className="card briefing" aria-labelledby="card-headline">
       <div className="status-row">
@@ -362,7 +365,7 @@ function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; he
           {line}
         </p>
       ))}
-      {syncNow && (
+      {runShortcut && (
         <>
           <a className="primary button-link" href={SYNC_NOW_URL}>
             {wording.card.syncNow}

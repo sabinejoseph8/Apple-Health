@@ -3,6 +3,7 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import { ChevronRightIcon } from '../components/Icons'
 import { callFunction } from '../lib/functions'
 import { SHORTCUT_URL } from '../lib/links'
+import { isNative } from '../lib/native'
 import AppLink from '../components/AppLink'
 import { supabase } from '../lib/supabase'
 import { formatWhen } from '../lib/when'
@@ -122,10 +123,13 @@ export default function UploadToken() {
         </>
       )}
 
-      <a className="link-row" href={SHORTCUT_URL} target="_blank" rel="noopener noreferrer">
-        <span>{w.getShortcut}</span>
-        <ChevronRightIcon className="chevron" />
-      </a>
+      {/* The native app syncs Health itself (D115), so it has no Shortcut to get. */}
+      {!isNative() && (
+        <a className="link-row" href={SHORTCUT_URL} target="_blank" rel="noopener noreferrer">
+          <span>{w.getShortcut}</span>
+          <ChevronRightIcon className="chevron" />
+        </a>
+      )}
       {/* Not while a new token is on screen: it's shown only once, and leaving
           Settings for the guide would lose it. */}
       {!token && (

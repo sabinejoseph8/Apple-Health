@@ -1,9 +1,13 @@
+import { isNative } from './native'
 import { supabase } from './supabase'
 
-export type PushSupport = 'ready' | 'not-installed' | 'not-supported' | 'blocked'
+export type PushSupport = 'ready' | 'not-installed' | 'not-supported' | 'blocked' | 'native-later'
 
-// iOS only allows web push for apps opened from the Home Screen.
+// iOS only allows web push for apps opened from the Home Screen. The native
+// app (D115) has no web push at all: its notifications come through Apple's
+// push service in a later version (10c), so it gets its own state.
 export function pushSupport(env: {
+  native: boolean
   hasServiceWorker: boolean
   hasPushManager: boolean
   hasNotification: boolean
@@ -11,6 +15,7 @@ export function pushSupport(env: {
   isIOS: boolean
   permission: NotificationPermission | 'unavailable'
 }): PushSupport {
+  if (env.native) return 'native-later'
   if (env.isIOS && !env.standalone) return 'not-installed'
   if (!env.hasServiceWorker || !env.hasPushManager || !env.hasNotification) return 'not-supported'
   if (env.permission === 'denied') return 'blocked'
@@ -20,6 +25,7 @@ export function pushSupport(env: {
 export function currentPushSupport(): PushSupport {
   const nav = navigator as Navigator & { standalone?: boolean }
   return pushSupport({
+    native: isNative(),
     hasServiceWorker: 'serviceWorker' in navigator,
     hasPushManager: 'PushManager' in window,
     hasNotification: 'Notification' in window,

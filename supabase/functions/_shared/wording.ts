@@ -70,6 +70,8 @@ export const wording = {
     title: 'Notifications',
     notInstalled: 'To get notifications, add Clarivi to your Home Screen, then open it from there.',
     notSupported: "This browser can't show Clarivi notifications. Use Clarivi from your iPhone's Home Screen.",
+    // The native iPhone app (D115): its notifications come in a later version (10c).
+    nativeLater: "Notifications aren't in this version of the iPhone app yet. Open Clarivi in the morning to see today's status.",
     blocked: 'Notifications are turned off for Clarivi. Turn them on in Settings, then Notifications, then Clarivi.',
     turnOn: 'Turn on notifications',
     turningOn: 'Turning on…',

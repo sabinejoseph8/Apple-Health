@@ -103,6 +103,7 @@ export default function Settings({ session }: { session: Session }) {
         <h2 id="notif-h" className="card-headline">{w.title}</h2>
         {support === 'not-installed' && <p className="body">{w.notInstalled}</p>}
         {support === 'not-supported' && <p className="body">{w.notSupported}</p>}
+        {support === 'native-later' && <p className="body">{w.nativeLater}</p>}
         {support === 'blocked' && <p className="body">{w.blocked}</p>}
         {support === 'ready' && !subscribed && (
           <button className="primary" type="button" onClick={onTurnOn} disabled={busy}>

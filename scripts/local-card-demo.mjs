@@ -34,9 +34,13 @@ if (!user) {
   user = data.user
 }
 const uid = user.id
-// The demo account has agreed to the consent text (D79), so the card opens.
+// The demo account has agreed to the current consent text (D79, D98), so the
+// card opens instead of the consent screen.
+const { wording } = await import('../supabase/functions/_shared/wording.ts')
 await admin.from('consents').delete().eq('user_id', uid)
-await admin.from('consents').insert({ user_id: uid, version: 2, agreed_use: true, agreed_us_storage: true })
+await admin
+  .from('consents')
+  .insert({ user_id: uid, version: wording.consent.version, agreed_use: true, agreed_us_storage: true, agreed_ai: true })
 
 const pad = (n) => String(n).padStart(2, '0')
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`

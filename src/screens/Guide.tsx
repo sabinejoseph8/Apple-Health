@@ -1,6 +1,7 @@
 import { wording } from '../../supabase/functions/_shared/wording'
 import NavBar from '../components/NavBar'
 import { SHORTCUT_URL } from '../lib/links'
+import { isNative } from '../lib/native'
 import AppLink from '../components/AppLink'
 
 const w = wording.guide
@@ -29,7 +30,7 @@ export default function Guide() {
               {wording.consent.guideLink}
             </AppLink>
           )}
-          {'withShortcutLink' in section && (
+          {'withShortcutLink' in section && !isNative() && (
             <a className="primary button-link" href={SHORTCUT_URL} target="_blank" rel="noopener noreferrer">
               {wording.uploadToken.getShortcut}
             </a>
