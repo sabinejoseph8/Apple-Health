@@ -90,9 +90,10 @@ CSS = """
 """
 
 # The same words as the README's note at the top. Rewrite both when week two's results are added.
-STATUS = ('<strong>Project in progress:</strong> Testing is ongoing. Week one (19–25 October 2026) is complete, and week two is '
-          'underway until Sunday, 8 November 2026. Week two results and a review will be added after testing ends. '
-          'All results currently shown on this page are from week one.')
+STATUS = ('<strong>Project in progress.</strong> Week one (19 to 25 October 2026) is done: the calculations matched an independent check '
+          'on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test '
+          'with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. '
+          'Every result on this page is from week one.')
 
 LINKS = [
     ('The repository', 'https://github.com/sabinejoseph8/Apple-Health'),
