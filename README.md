@@ -20,7 +20,13 @@
 
 ## The problem
 
-Apple Watch records the numbers, and the Health app shows each as an isolated daily card. It does not say whether today's reading is unusual for you, or why. People who train regularly need that answer before they decide how hard to go, not a chart to interpret.
+Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep, workouts, weight and gait), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personalised, longitudinal picture of their own recovery, sleep and training patterns.
+
+- **Who it is for:** Apple Watch users who train consistently (strength training, general fitness) and already track workouts and sleep, but want to understand the patterns behind their numbers rather than just seeing isolated daily readings.
+- **What problem it solves:** Apple Health has no way to detect drift against a person's own baseline, surface relationships between metrics (for example sleep and next-day recovery), or tell a normal day from an unusual one.
+- **Why it matters:** without that visibility, early signs of under-recovery, overtraining or illness go unnoticed until performance or health has already suffered, and users cannot tell whether a change they made (more sleep, a deload week) actually worked.
+- **What the user should be able to do:** wake up and get a plain-words answer from their own data: whether last night, set against their own normal, is meaningfully off, why, and one action for the day, with the past weeks of each reading one tap away.
+- **The outcome:** earlier, evidence-based awareness of their own recovery and readiness, so training and lifestyle adjustments are driven by their own data rather than generic guidance.
 
 Clarivi gives the answer first, in plain words, and keeps the working one tap away. It never names a medical condition and never gives medical advice.
 
