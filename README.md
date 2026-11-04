@@ -17,7 +17,7 @@
 - **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
 - **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
 - **Status:** built and in use by one person. Week one is done. Week two, the same test after a change to the sync, runs 2 to 8 November 2026; its results are added when it ends.
-- **How it was built:** I am not a developer. I wrote the problem, the specs and every decision in the log, and Claude Code wrote the code, tests and queries to them. I reviewed every screen and every word, ran every manual check on my own iPhone, and decided what to cut.
+- **How it was built:** I wrote the problem, the specs and every decision in the log, and Claude Code wrote the code, tests and queries to them. I reviewed every screen and every word, ran every manual check on my own iPhone, and decided what to cut.
 
 ## The problem
 
