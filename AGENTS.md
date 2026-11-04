@@ -38,14 +38,23 @@ When Sabine says "update proj memory", review every one of the five files, even 
 
 ## Interview notes
 
-Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
+Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as the story of the project in Sabine's own words. Include:
 
 - who the app is for and why
 - key decisions and tradeoffs
 - major bugs and how she fixed them
 - significant improvements
+- how quality was defined and measured, and what the results changed
 
-Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+Update this file whenever there is a significant new feature, a major bug resolved, a meaningful design change or a new evaluation result. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+
+## Evaluation rules
+
+Success criteria are set before any result and never moved quietly. A session that has seen an evaluation's expected answers doesn't edit the thing being evaluated.
+
+## Public writing
+
+Public files describe the work, never who it might be shown to. `python3 checks/run_all.py` checks every tracked file for that; the words it looks for are in `checks/run_all.py`, and the one sentence allowed in `docs/product-spec.md`'s overview is named in `checks/portfolio.json`. A review is a first-time reader's or a signed-out visitor's. Private files (`private/`) may say anything.
 
 ## How to work with Sabine
 

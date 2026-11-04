@@ -13,7 +13,7 @@
 
 **What it is.** An iPhone web app that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today.
 
-**The core value.** Apple Watch records the numbers; this tool explains them. Apple's own features don't explain how their results were reached.
+**The core value.** Apple Watch records the numbers; this tool explains them. Apple's own features don't explain how their results were reached. It is also a portfolio piece demonstrating how an AI feature on sensitive data can be specified, measured and reported honestly, misses included.
 
 **Who it is for.** Apple Watch users who train regularly, wear the watch overnight, and want to understand their numbers rather than read isolated daily values.
 

@@ -11,6 +11,11 @@
 # Real data: keep anything holding real readings, exports or event notes in private/
 private/
 
+# Private: kept on this computer, never committed (the notes live in private/; these cover the older places)
+interview-notes.md
+portfolio-private/
+*Portfolio-Kit*
+
 # Apple Health exports
 export.zip
 export.xml
