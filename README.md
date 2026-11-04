@@ -11,7 +11,7 @@
 
 ## At a glance
 
-- **The user and the problem:** Apple Watch users who train and wear the watch overnight. The Health app shows each number on its own, so I would wake up to a heart rate variability figure and not know whether it was bad for me or a normal wobble.
+- **The user and the problem:** The Apple Watch provides a lot of data points with no guidance as to how to interpret them. Using only their own Apple Watch data, a user learns each morning whether their recovery has drifted from their personal baseline, and gets one data-backed action for the day.
 - **What it does:** each morning a card says Ready, Ease off or Rest, in a few plain sentences, with one action for the day. A "Why today" screen shows exactly how the status was decided.
 - **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
 - **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
