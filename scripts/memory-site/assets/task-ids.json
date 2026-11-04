@@ -775,6 +775,7 @@
  "p9-08": {
   "phase": "9",
   "texts": [
+   "(published 31 October 2026, D105: docs/case-study.html and .pdf, one page, week one's results with week two next; updated with week two's numbers after week two, and ticked then; 3 November 2026: Sabine could not open the PDF in GitHub's preview on her browser (a signed-out visitor could, after a few seconds), so the same case study is also published as a readable web page, https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC, built from docs/case-study.html and docs/architecture.svg by scripts/case-study-page.py (after week two, update docs/case-study.html first, run the script, and publish to the same address; Sabine shares the page with \"Anyone with the link\" from its Share menu) One-page \"AI product management case study\" PDF, checked to be one page",
    "One-page \"AI product management case study\" PDF, checked to be one page"
   ]
  },
