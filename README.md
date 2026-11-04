@@ -136,6 +136,7 @@ The app is served by Vercel, which never sees readings. Readings and results are
 ```
 src/        the React and TypeScript app
 public/     the web app manifest, icons and the service worker
+ios/        the iPhone app: the same web build in a native shell, with the Health sync in Swift (in progress)
 supabase/   database migrations, server functions and database tests
 e2e/        Playwright screen tests
 scripts/    the pandas reference check, the AI test set, the Shortcut builder, the Project Memory site builder
