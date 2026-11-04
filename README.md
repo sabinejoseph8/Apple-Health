@@ -98,7 +98,7 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 Pick how deep to go:
 
 1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
-2. **Read** the one-page case study, as a [web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) or a [PDF](docs/case-study.pdf).
+2. **Read** the [one-page case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
 4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
 5. **Browse** the Project Memory website linked above.
