@@ -186,7 +186,8 @@ def summary(s, phases):
         lab, rest, _ = split_label(it['text'])
         items[lab] = (rest, it)
         order.append(lab)
-    cur = items.get('Current phase', ('', None))[0]
+    cur_key = next((k for k in order if k.startswith('Current phase')), None)
+    cur = items[cur_key][0] if cur_key else ''
     nxt_key = next((k for k in order if k.startswith('Next action')), None)
     nxt = items[nxt_key][0] if nxt_key else ''
     out = ['<div class="plan-hero card"><div class="ph-top"><div><div class="eyebrow">Current phase</div>'
@@ -239,7 +240,7 @@ def summary(s, phases):
     # progress log
     log = []
     for lab in order:
-        if lab in ('Current phase', 'Known issues') or lab == nxt_key:
+        if lab in ('Known issues', cur_key) or lab == nxt_key:
             continue
         rest, it = items[lab]
         body = (f'<p>{inl(rest, T)}</p>' if rest.strip() else '') + ''.join(
