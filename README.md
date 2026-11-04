@@ -9,6 +9,15 @@
 
 ![Architecture](docs/architecture.png)
 
+## Watch the iPhone app (under 2 minutes)
+
+
+https://github.com/user-attachments/assets/b49f8721-7d24-4163-85a5-753b05a20791
+
+
+Clarivi for iPhone (in progress, released after the second test week), recorded on the iPhone simulator with made-up data.
+
+
 ## At a glance
 
 - **The user and the problem:** The Apple Watch provides a lot of data points with no guidance as to how to interpret them. Using only their own Apple Watch data, a user learns each morning whether their recovery has drifted from their personal baseline, and gets one data-backed action for the day.
