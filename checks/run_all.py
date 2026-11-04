@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Portfolio package checks. Python standard library only.
+"""Packaging checks. Python standard library only.
 
 Copy this file and prepublish_scan.py into the project's checks/ folder, with a
-checks/portfolio.json (template in the portfolio-package skill). Then:
+checks/portfolio.json (template in the packaging skill). Then:
 
   python3 checks/run_all.py                      every check
   python3 checks/run_all.py --github owner/repo  also check README links on GitHub (needs the gh CLI)
@@ -10,6 +10,7 @@ checks/portfolio.json (template in the portfolio-package skill). Then:
 
 It checks: required files, README sections and links, evaluation sections,
 no em dashes, headline numbers agree across files, the case study PDF is within its page limit,
+public files describe the work and never its audience,
 private files are not tracked, and no secrets or personal emails in
 tracked files. It never changes anything.
 """
@@ -341,9 +342,46 @@ def check_no_personal_emails(root: Path, cfg: dict) -> Result:
     return ("fail" if problems else "pass", problems)
 
 
+# Public files describe the work, not its audience: these words stay out of
+# every tracked file, apart from file and folder names and the one sentence in
+# the product spec's overview that may say "portfolio".
+AUDIENCE_RE = re.compile(r"recruit\w*|hiring manager\w*|interview\w*|job application\w*|target role\w*|portfolio\w*", re.I)
+AUDIENCE_NAME_TOKENS = ("interview-notes", "interview notes", "portfolio-private", "portfolio.json", "Portfolio-Kit")
+# The checks themselves have to spell the words; nothing else may.
+AUDIENCE_SKIP_PREFIX = "checks/"
+
+
+def scan_text_for_audience_words(text: str, allowed_portfolio_lines: int = 0) -> Tuple[List[str], int]:
+    hits = []
+    portfolio_lines = 0
+    for n, line in enumerate(text.splitlines(), 1):
+        words = [m.group(0) for m in AUDIENCE_RE.finditer(line)
+                 if not any(tok.lower() in line[max(0, m.start() - 24):m.end() + 24].lower() for tok in AUDIENCE_NAME_TOKENS)]
+        if not words:
+            continue
+        if all(w.lower().startswith("portfolio") for w in words) and portfolio_lines < allowed_portfolio_lines:
+            portfolio_lines += 1
+            continue
+        hits.append(f"line {n}: {', '.join(sorted(set(w.lower() for w in words)))}")
+    return hits, portfolio_lines
+
+
+def check_no_audience_words(root: Path, cfg: dict) -> Result:
+    if tracked_files(root) is None:
+        return "skip", ["not a Git repository"]
+    allowed = cfg.get("portfolio_sentence_file", "")
+    problems = []
+    for rel, text in tracked_text_files(root, cfg):
+        if rel.startswith(AUDIENCE_SKIP_PREFIX):
+            continue
+        hits, _ = scan_text_for_audience_words(text, 1 if rel == allowed else 0)
+        problems += [f"{rel}: {h}" for h in hits]
+    return ("fail" if problems else "pass", problems)
+
+
 CHECKS: List[Tuple[str, Callable[[Path, dict], Result]]] = [
     ("Required files exist", check_required),
-    ("README has the recruiter sections", check_readme_sections),
+    ("README has the expected sections", check_readme_sections),
     ("README links resolve in the repository", check_readme_links),
     ("Evaluation has its sections in order of evidence", check_evaluation_sections),
     ("No em dashes in public writing", check_em_dashes),
@@ -352,6 +390,7 @@ CHECKS: List[Tuple[str, Callable[[Path, dict], Result]]] = [
     ("Private files are ignored and untracked", check_private_untracked),
     ("No secrets in tracked files", check_no_secrets),
     ("No personal email addresses in tracked files", check_no_personal_emails),
+    ("Public files describe the work, not its audience", check_no_audience_words),
 ]
 
 
@@ -395,7 +434,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         checks.append(("README links work on GitHub", lambda r, c: check_github_links(r, c, args.github)))
 
     failed = skipped = 0
-    print(f"Portfolio checks for {root}\n")
+    print(f"Checks for {root}\n")
     for name, fn in checks:
         status, messages = fn(root, cfg)
         failed += status == "fail"
