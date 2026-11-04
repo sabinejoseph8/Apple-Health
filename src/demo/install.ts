@@ -6,6 +6,7 @@ import './demo.css'
 import { answerRequest, SESSION, withConsent, type MockState } from './answer'
 import { DEMO_URL } from './constants'
 import { DEFAULT_SCENARIO, SCENARIOS, scenarioNow, type Scenario } from './scenarios'
+import { demoWording as w } from './wording'
 
 export const demo: boolean = true
 
@@ -23,7 +24,8 @@ class DemoDate extends RealDate {
     return RealDate.now() + offset
   }
 }
-globalThis.Date = DemoDate as unknown as DateConstructor
+// A plain call, Date(), gives the time as text, as the real Date does; a class alone would throw.
+globalThis.Date = new Proxy(DemoDate, { apply: () => new DemoDate().toString() }) as unknown as DateConstructor
 
 const state: MockState = {
   tables: withConsent(scenario.tables(new Date())),
@@ -44,6 +46,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   if (!url.startsWith(DEMO_URL)) return realFetch(input, init)
   let text: string | undefined = typeof init?.body === 'string' ? init.body : undefined
+  if (text === undefined && init?.body != null) text = await new Response(init.body).text()
   if (text === undefined && input instanceof Request) text = await input.clone().text()
   const reply = answerRequest(state, { url, body: () => (text ? JSON.parse(text) : null) })
   if (reply.abort) throw new TypeError('Failed to fetch')
@@ -69,13 +72,13 @@ function mountBanner() {
   const bar = document.createElement('div')
   bar.className = 'demo-banner'
   bar.setAttribute('role', 'region')
-  bar.setAttribute('aria-label', 'Demo')
+  bar.setAttribute('aria-label', w.region)
   const title = document.createElement('strong')
-  title.textContent = 'Demo with made-up data'
+  title.textContent = w.title
   const label = document.createElement('label')
-  label.append('Morning ')
+  label.append(w.morning)
   const select = document.createElement('select')
-  select.setAttribute('aria-label', 'Choose a morning')
+  select.setAttribute('aria-label', w.choose)
   for (const s of SCENARIOS) {
     const option = document.createElement('option')
     option.value = s.id
@@ -88,7 +91,7 @@ function mountBanner() {
   })
   label.append(select)
   const note = document.createElement('p')
-  note.textContent = 'Nothing here is real. The AI texts are fixed examples, and nothing leaves your browser.'
+  note.textContent = w.note
   bar.append(title, label, note)
   document.body.prepend(bar)
 }

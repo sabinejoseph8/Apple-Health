@@ -115,11 +115,27 @@ export function answerRequest(state: MockState, req: MockRequest): MockReply {
     rows = rows.filter((row) => {
       if (!(column in row)) return true
       const have = String(row[column])
+      if (op === 'is') return want === 'null' ? row[column] === null || row[column] === undefined : have === want
       if (op === 'eq') return have === want
+      if (op === 'neq') return have !== want
+      if (op === 'gt') return have > want
       if (op === 'gte') return have >= want
+      if (op === 'lt') return have < want
       if (op === 'lte') return have <= want
       if (op === 'in') return want.replace(/[()"]/g, '').split(',').includes(have)
       return true
+    })
+  }
+  // order=column.desc (or .asc): newest first where the app asks for it, so limit(1) is the newest.
+  const order = url.searchParams.get('order')
+  if (order) {
+    const [column, direction] = order.split('.')
+    const sign = direction === 'desc' ? -1 : 1
+    rows = [...rows].sort((a, b) => {
+      if (!(column in a) || !(column in b)) return 0
+      const x = String(a[column])
+      const y = String(b[column])
+      return x === y ? 0 : x < y ? -sign : sign
     })
   }
   const limit = url.searchParams.get('limit')
@@ -138,8 +154,10 @@ function remember(state: MockState, fn: string, body: unknown) {
     else rows.push(row)
   }
   if (fn === 'submit_checkin') {
-    const existing = ((state.tables.checkins ?? []) as Record<string, unknown>[]).some((r) => r.date === b.p_date)
-    put('checkins', { date: b.p_date, answer: b.p_answer, answered_at: at, status_seen_before: b.p_status_seen === true, is_first: !existing })
+    // As the database does (D33): the first answer keeps its own row; a change is a new row.
+    const rows = (state.tables.checkins ??= []) as Record<string, unknown>[]
+    const existing = rows.some((r) => r.date === b.p_date)
+    rows.push({ date: b.p_date, answer: b.p_answer, answered_at: at, status_seen_before: b.p_status_seen === true, is_first: !existing })
   } else if (fn === 'submit_followthrough') {
     put('followthrough', { date: b.p_date, answer: b.p_answer, answered_at: at, channel: b.p_channel })
   }

@@ -7,6 +7,7 @@
 import { reading, sampleDay, sleepFloorDay, type SampleDay } from '../lib/sample-days'
 import { type Tables } from './answer'
 import { dailySync, TODAY, whyTables, zones } from './data'
+import { demoWording } from './wording'
 
 export interface Scenario {
   id: string
@@ -135,7 +136,7 @@ const floorLast = { asleep_min: 372, hrv_median: 50, sleeping_hr: 50 }
 export const SCENARIOS: Scenario[] = [
   {
     id: 'ease-off',
-    label: 'Ease off (the sample day)',
+    label: demoWording.scenarios['ease-off'],
     time: [6, 50],
     tables: (now) => {
       const base = common(sampleLast)
@@ -149,7 +150,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'ready',
-    label: 'Ready',
+    label: demoWording.scenarios['ready'],
     time: [6, 50],
     tables: (now) => {
       const base = common(readyLast)
@@ -163,7 +164,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'sleep-floor',
-    label: 'Ease off because of a very short night',
+    label: demoWording.scenarios['sleep-floor'],
     time: [6, 50],
     tables: (now) => {
       const base = common(floorLast)
@@ -178,7 +179,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'learning',
-    label: 'Still learning your usual range',
+    label: demoWording.scenarios['learning'],
     time: [6, 50],
     tables: (now) => ({
       ...common({ asleep_min: 370, hrv_median: 42, sleeping_hr: 55 }),
@@ -193,7 +194,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'waiting',
-    label: 'Waiting for last night to arrive',
+    label: demoWording.scenarios['waiting'],
     time: [6, 50],
     tables: (now) => ({
       ...common(sampleLast),
@@ -204,7 +205,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'no-sync',
-    label: 'No sync by noon',
+    label: demoWording.scenarios['no-sync'],
     time: [12, 10],
     tables: (now) => ({
       ...common(sampleLast),
@@ -215,7 +216,7 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'evening',
-    label: 'Evening question on an Ease off day',
+    label: demoWording.scenarios['evening'],
     time: [20, 0],
     tables: (now) => ({
       ...common(sampleLast),

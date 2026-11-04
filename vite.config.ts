@@ -6,13 +6,16 @@ import { LIVE_DATABASE, testHeaders } from './csp-config.ts'
 import { pickPublicValues } from './env-config.ts'
 import { DEMO_URL } from './src/demo/constants.ts'
 
+// One plugins list for both builds, so a plugin added for the live app reaches the demo too.
+const plugins = () => [react()]
+
 export default defineConfig(({ mode }) => {
   // The demo build (D95): made-up data only. It reads no environment at all, so none of the
   // project's keys or addresses can reach it, and it swaps the app's empty demo hook for the
   // demo's setup (src/demo/install.ts). The live build never contains that file.
   if (mode === 'demo') {
     return {
-      plugins: [react()],
+      plugins: plugins(),
       envPrefix: '__CLARIVI_NONE__',
       define: {
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(DEMO_URL),
@@ -27,7 +30,7 @@ export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
   const values = pickPublicValues(env)
   return {
-    plugins: [react()],
+    plugins: plugins(),
     // Expose nothing from the environment automatically; only the values
     // picked above are written into the app.
     envPrefix: '__CLARIVI_NONE__',
