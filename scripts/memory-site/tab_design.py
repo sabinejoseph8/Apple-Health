@@ -36,7 +36,22 @@ def visual(sec, assets):
                     raise SystemExit(f'swatch not found: {name}')
     h = h.replace('<section class="sec" id="design-visual-design-language" aria-labelledby="h-design-visual-design-language">', '', 1)
     h = re.sub(r'^<div class="sec-head">.*?</div>', '', h, count=1, flags=re.S)
-    return h[:-len('</section>')]
+    return h[:-len('</section>')] + dark_set(sec)
+
+
+def dark_set(sec):
+    """The dark colour set (D111): design.md keeps it as plain tables (their first column is 'Colour',
+    so the swatch refresh above skips them), shown under the drawn palette."""
+    for sub in sec['subs']:
+        if sub['title'] != 'Colour palette':
+            continue
+        blocks = sub['blocks']
+        start = next((i for i, b in enumerate(blocks) if b['t'] == 'p' and b['text'].startswith('**Dark mode (D111')), None)
+        if start is None:
+            return ''
+        end = next((i for i, b in enumerate(blocks) if i > start and b['t'] == 'p' and b['text'].startswith('**Contrast rules**')), len(blocks))
+        return '<h3 class="sub-title" id="design-dark-set">Dark set</h3>' + blocks_html(blocks[start:end], T)
+    return ''
 
 
 def comp_blocks(sec):

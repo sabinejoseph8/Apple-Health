@@ -23,6 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 
 from mdlib import load_doc, esc  # noqa: E402
+from common import ICON  # noqa: E402
 from taskids import known_ids, save_ids  # noqa: E402
 import tab_product, tab_design, tab_tech, tab_plan, tab_mvp  # noqa: E402
 
@@ -61,11 +62,12 @@ tabs = [
     ('mvp', 'MVP', 'MVP', tab_mvp.build(load_doc(os.path.join(DOCS, 'mvp.md')))),
 ]
 
-tabbar = ['<div class="tabbar"><nav class="tabs" role="tablist" aria-label="Project Memory files">']
+tabbar = ['<div class="tabbar"><p class="tab-hint"><strong>Five files.</strong> Choose one to read it:</p>'
+          '<nav class="tabs" role="tablist" aria-label="Project Memory files">']
 for i, (k, lng, sht, _) in enumerate(tabs):
     tabbar.append(f'<a role="tab" class="tab" id="tab-{k}" href="#{k}" aria-controls="{k}" '
                   f'aria-selected="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}">'
-                  f'<span class="t-long">{lng}</span><span class="t-short">{sht}</span></a>')
+                  f'{ICON["file"]}<span class="t-long">{lng}</span><span class="t-short">{sht}</span></a>')
 tabbar.append('</nav></div>')
 
 panels = ['<main class="panels" id="panels">']

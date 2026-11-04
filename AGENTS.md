@@ -7,13 +7,13 @@ Clarivi is an iPhone web app, installed to the home screen, that turns a person'
 The agreed plan is in `docs/`. Read the files a task needs before starting it.
 
 - `docs/progress.md`: the phased build plan, with tasks, automated tests and manual checks. Work from this file.
-- `docs/product-spec.md`: what the app must do (requirements R1 to R67).
+- `docs/product-spec.md`: what the app must do (requirements R1 to R76).
 - `docs/design.md`: colours, type, spacing, components and screens. The designed screens are in the "Clarivi Screens" canvas: https://claude.ai/artifact/Xc7im7cUsqwwkDbyQRYt8E
 - `docs/design-screens.html`: a copy of the Clarivi Screens canvas (open it in a browser): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open, all on the sample day of Tuesday 29 September. Use it for exact layout, wording and sample values.
 - `docs/clarivi-flow.html`: the daily morning loop step by step, the six views it needs and every state each view can be in.
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
 - `docs/cayman-data-protection.md`, `docs/consent-draft.md` and `docs/privacy-impact-assessment.md`: the data protection research for every place testers may live (not legal advice), the approved consent text (in the app as `wording.consent`) and the assessment of storing testers' data in the US.
-- `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 onwards) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
+- `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R76 in `docs/product-spec.md`) and decisions (D1 onwards) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.
 
@@ -38,14 +38,23 @@ When Sabine says "update proj memory", review every one of the five files, even 
 
 ## Interview notes
 
-Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
+Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as the story of the project in Sabine's own words. Include:
 
 - who the app is for and why
 - key decisions and tradeoffs
 - major bugs and how she fixed them
 - significant improvements
+- how quality was defined and measured, and what the results changed
 
-Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+Update this file whenever there is a significant new feature, a major bug resolved, a meaningful design change or a new evaluation result. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+
+## Evaluation rules
+
+Success criteria are set before any result and never moved quietly. A session that has seen an evaluation's expected answers doesn't edit the thing being evaluated.
+
+## Public writing
+
+Public files describe the work, never who it might be shown to. `python3 checks/run_all.py` checks every tracked file for that; the words it looks for are in `checks/run_all.py`, and the one sentence allowed in `docs/product-spec.md`'s overview is named in `checks/portfolio.json`. A review is a first-time reader's or a signed-out visitor's. Private files (`private/`) may say anything.
 
 ## How to work with Sabine
 

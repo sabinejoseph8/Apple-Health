@@ -1,9 +1,9 @@
 # Design: Clarivi
 
 **Status:** Agreed, v1.0 (30 September 2026)
-**Last updated:** 3 November 2026 (the demo's iPhone frame, D110; dark mode planned, D111; 30 October 2026: the setup guide now has three automations and no wait, and the 11:30 reminder text changed, D103; the demo build's banner, D95 and D100; the no-stages note on the card, Why today and past days, D92; 9 October: the owner page's database line for the Pro plan, D90. 8 October: past days, D88, worded about that night and that day after the Phase 6 review; the no-sleep-stages card and the trends row on cards without a status, D87; 6 October: the on-screen words in this file brought in line with the wording review, D85: "Great" on the check-in, "your usual range" in verdicts, labels and footnotes; earlier, 5 October: what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card; 5 October 2026: the Sync now button on the waiting cards)
+**Last updated:** 3 November 2026 (the Look line mentions dark mode; the dark colour set approved, D111; the demo's iPhone frame, D110; 30 October 2026: the setup guide now has three automations and no wait, and the 11:30 reminder text changed, D103; the demo build's banner, D95 and D100; the no-stages note on the card, Why today and past days, D92; 9 October: the owner page's database line for the Pro plan, D90. 8 October: past days, D88, worded about that night and that day after the Phase 6 review; the no-sleep-stages card and the trends row on cards without a status, D87; 6 October: the on-screen words in this file brought in line with the wording review, D85: "Great" on the check-in, "your usual range" in verdicts, labels and footnotes; earlier, 5 October: what Phase 1a built from the Default form, icon and notification patterns; the final score numbers from Phase 2c: zones 1.2 and 2.4, normals from 42 nights; what Phase 3 built: the check-in, card states, notices and Why today details; what Phases 4 and 5 built: the 8pm card, Settings, trends, the digest and the owner page; what Phase 6 built: the app icon in deep violet, the setup guide, the consent screen, "Your data" and Settings' "Your consent" card; 5 October 2026: the Sync now button on the waiting cards)
 **Designed screens:** the "Clarivi Screens" canvas (also in this project as `docs/design-screens.html`): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open.
-**Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards.
+**Look:** native iOS, close to Apple Health. System font, light grey background, white rounded cards; in dark mode (D111) a black background and dark grey cards.
 
 Anything marked **Default** wasn't designed yet. It's a proposed starting point that follows the same patterns.
 
@@ -27,7 +27,7 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 
 ### Colour palette
 
-**Dark mode (planned, D111, decided 3 November 2026).** The app and the demo are light only today, and every colour below is the light set. A dark set will be designed, contrast-checked and agreed with Sabine here before anything is built; the live app and the demo get it from the same code.
+**Light and dark (D111).** The tables below are the light set, which the app uses today. The dark set follows them, after the Readings table.
 
 **Base**
 | Name | Hex | Used for |
@@ -69,7 +69,90 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 | Sleep | `#5856D6` | `#ECEBFB` | `#A9A8EC` |
 | Sleeping heart rate | `#C4262F` | `#FBE7E8` | `#E79AA0` |
 
-**Contrast rules**
+**Dark mode (D111, approved by Sabine on 3 November 2026).** The app and the demo follow the phone's own light or dark setting automatically (the demo follows the visitor's computer). There is no Settings choice in v1. The dark set below is the only change: names, type, spacing, radius and layout stay as they are. The live app gets it after week two ends.
+
+**Dark set.** Same token names as the light set; every colour below is the dark value. The page is true black and cards one step lighter, as on iPhone. Status colours are lighter and softer, and the reading lines brighter, so they stay clear on black.
+
+**Base**
+| Colour | Light | Dark | Used for |
+|---|---|---|---|
+| Background | `#F2F2F7` | `#000000` | Page background behind all cards |
+| Surface | `#FFFFFF` | `#1C1C1E` | Cards, rows, buttons on tinted areas |
+| Text | `#000000` | `#FFFFFF` | Headlines, values, main text |
+| Text secondary | `#3A3A3C` | `#D1D1D6` | Briefing paragraph, body copy, secondary icons |
+| Text muted | `#6C6C70` | `#9A9AA1` | Captions, labels, "Usual for you", sync time |
+| Separator | `#E5E5EA` | `#38383A` | Row dividers, link-row top borders |
+| Divider strong | `#D1D1D6` | `#48484A` | Divider inside the points table |
+| Chevron | `#C4C4C8` | `#636366` | Disclosure chevrons on rows and links |
+
+**Action**
+| Colour | Light | Dark | Used for |
+|---|---|---|---|
+| Link blue | `#0A60D8` | `#5AA9FF` | Links, text buttons, icons in rows, the 8pm emphasis ring |
+| Button blue | `#0A4FB8` | `#7DB8FF` | Text on answer buttons; the 8pm "Today's nudge" label |
+| Button tint | `#EEF3FC` | `#17263D` | Background of the Yes and No buttons on the 8pm card |
+| Primary button | `#0A60D8` | `#1F6FE0` | Background of the filled primary button (new token: it was Link blue) |
+| On primary | `#FFFFFF` | `#FFFFFF` | Text on the primary button (new token: it was a fixed white) |
+
+**Status**
+| Colour | Light | Dark | Used for |
+|---|---|---|---|
+| Ease off text | `#8A4100` | `#FFB873` | Ease off pill text, "Today's nudge" label, "Below your usual range" verdicts |
+| Ease off pill | `#FFEBD6` | `#4A2B0C` | Ease off pill background, today's zone box |
+| Ease off tint | `#FFF4E8` | `#2E1E0F` | Nudge block background |
+| Ease off line | `#F1D9BF` | `#4A3317` | Divider inside the nudge block |
+| Ease off border | `#E6CBAE` | `#5C4020` | Button borders on the nudge tint |
+| Attention orange | `#E07000` | `#FF9F0A` | Last-night dot on a chart when outside normal; today's zone outline |
+| Normal green | `#1F7A35` | `#5DD27A` | "In your usual range" verdict, "Recorded: you followed it" |
+| Ready text | `#1F7A35` | `#6FDC8C` | Ready pill text |
+| Ready pill | `#E3F4E8` | `#12331D` | Ready pill background |
+| Rest text | `#A1261D` | `#FF8F86` | Rest pill text |
+| Rest pill | `#FDE7E5` | `#43181A` | Rest pill background |
+| Neutral text | `#3A3A3C` | `#D1D1D6` | Pills for Learning, Waiting, No sync, Late |
+| Neutral pill | `#E5E5EA` | `#3A3A3C` | Their background |
+
+**Readings**
+| Reading | Light line / band / median | Dark line / band / median |
+|---|---|---|
+| Heart rate variability | `#0071A4` / `#E1F0F7` / `#7FB6D2` | `#4FB6EA` / `#10303F` / `#2E7CA3` |
+| Sleep | `#5856D6` / `#ECEBFB` / `#A9A8EC` | `#9D9BFF` / `#26254D` / `#5F5DC2` |
+| Sleeping heart rate | `#C4262F` / `#FBE7E8` / `#E79AA0` | `#FF6F77` / `#431B1F` / `#A6444B` |
+
+**Dark mode contrast** (checked with the same rules as the light set; all pairs meet their target)
+| Pair | Needs | Light | Dark |
+|---|---|---|---|
+| Text on card | 4.5:1 | 21.00 | 17.01 |
+| Text on page | 4.5:1 | 18.82 | 21.00 |
+| Secondary text on card | 4.5:1 | 11.35 | 11.18 |
+| Muted text on card | 4.5:1 | 5.23 | 6.09 |
+| Muted text on page | 4.5:1 | 4.69 | 7.51 |
+| Link on card | 4.5:1 | 5.71 | 6.93 |
+| Link on page | 4.5:1 | 5.12 | 8.55 |
+| Primary button text | 4.5:1 | 5.71 | 4.76 |
+| Answer button text | 4.5:1 | 6.68 | 7.37 |
+| Ease off pill text | 4.5:1 | 6.38 | 7.52 |
+| Nudge label on nudge tint | 4.5:1 | 6.82 | 9.44 |
+| Ready pill text | 4.5:1 | 4.72 | 8.10 |
+| Rest pill text | 4.5:1 | 6.31 | 6.88 |
+| Neutral pill text | 4.5:1 | 9.04 | 7.46 |
+| In your usual range (green) on card | 4.5:1 | 5.39 | 8.88 |
+| Below your usual range (ease text) on card | 4.5:1 | 7.40 | 10.01 |
+| HRV label on card | 4.5:1 | 5.39 | 7.46 |
+| Sleep label on card | 4.5:1 | 5.65 | 6.94 |
+| Sleeping HR label on card | 4.5:1 | 5.73 | 6.31 |
+| Chart line HRV on its band | 3.0:1 | 4.62 | 6.07 |
+| Chart line Sleep on its band | 3.0:1 | 4.80 | 5.89 |
+| Chart line Sleeping HR on its band | 3.0:1 | 4.83 | 5.51 |
+| Orange outside-range dot on card | 3.0:1 | 3.24 | 8.28 |
+
+**Dark mode behaviour**
+- The page declares both schemes, so form controls and scroll bars follow the phone, and the status bar colour (the `theme-color` meta) is `#F2F2F7` in light and `#000000` in dark.
+- Cards are told apart from the page by their lighter colour (1.23 to 1), with no shadows, as in the light set.
+- The status is never carried by colour alone: the pill words and the down arrow and tick icons stay.
+- The app icon (white ring on deep violet) is unchanged. A Home Screen app's launch screen cannot follow the dark setting, so it may flash light for a moment on a dark phone; this is a platform limit, not a design choice.
+- In the demo, the iPhone frame's black bezel and the yellow banner are unchanged in both schemes.
+
+**Contrast rules** (both the light and the dark set)
 - Text meets 4.5:1 on its background (3:1 for text 24 points and larger).
 - Below and in-range verdicts differ in lightness and icon (down arrow vs. tick), not only in hue.
 
