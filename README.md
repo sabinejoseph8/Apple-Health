@@ -1,6 +1,6 @@
 # Clarivi
 
-**A small iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
+**An iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
 
 > **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
 
