@@ -1,8 +1,44 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { wording } from '../../supabase/functions/_shared/wording'
-import { health } from '../lib/native'
+import { health, type NotificationStatus, notifications } from '../lib/native'
 
 const n = wording.native
+
+// Settings' Notifications card inside the native app (10c): asks iOS once,
+// then says whether they are on; "blocked" sends the person to iOS Settings.
+export function NativeNotifications() {
+  const [status, setStatus] = useState<NotificationStatus | null>(null)
+  const [busy, setBusy] = useState(false)
+  const w = wording.notifications
+
+  useEffect(() => {
+    notifications.status().then(setStatus).catch(() => setStatus(null))
+  }, [])
+
+  async function turnOn() {
+    setBusy(true)
+    try {
+      await notifications.request()
+      setStatus(await notifications.status())
+    } catch {
+      // Stays as it was; the button can be tried again.
+    }
+    setBusy(false)
+  }
+
+  return (
+    <>
+      <p className="body">{n.notificationsIntro}</p>
+      {status === 'notDetermined' && (
+        <button className="primary" type="button" onClick={turnOn} disabled={busy}>
+          {busy ? w.turningOn : w.turnOn}
+        </button>
+      )}
+      {status === 'authorized' && <p className="caption">{n.notificationsOn}</p>}
+      {status === 'denied' && <p className="body">{w.blocked}</p>}
+    </>
+  )
+}
 
 // Inside the native iPhone app (D115, 10b): the card's Sync now runs the
 // app's own Health sync instead of the Shortcut, and says how it went.

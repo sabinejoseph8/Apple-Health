@@ -13,16 +13,66 @@ public class ClariviHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setToken", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clearToken", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sync", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "configure", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "notificationStatus", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestNotifications", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "planFollowUp", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "cancelFollowUp", returnType: CAPPluginReturnPromise),
     ]
+
+    // MARK: Notifications the phone schedules itself (10c)
+
+    @objc func notificationStatus(_ call: CAPPluginCall) {
+        Task { call.resolve(["status": await LocalNotifications.status()]) }
+    }
+
+    @objc func requestNotifications(_ call: CAPPluginCall) {
+        Task {
+            let ok = await LocalNotifications.request()
+            if ok { HealthSync.shared.planReminders() }
+            call.resolve(["granted": ok])
+        }
+    }
+
+    @objc func planFollowUp(_ call: CAPPluginCall) {
+        guard let day = call.getString("date") else { return call.reject("date is needed") }
+        LocalNotifications.planFollowUp(day: day)
+        call.resolve()
+    }
+
+    @objc func cancelFollowUp(_ call: CAPPluginCall) {
+        guard let day = call.getString("date") else { return call.reject("date is needed") }
+        LocalNotifications.cancelFollowUp(day: day)
+        call.resolve()
+    }
 
     @objc func status(_ call: CAPPluginCall) {
         Task {
             let asked = await HealthSync.shared.permissionAsked()
             call.resolve(["available": HealthSync.available,
-                          "hasToken": Keychain.token() != nil,
+                          "hasToken": HealthSync.shared.token != nil,
                           "permissionAsked": asked,
                           "lastRun": HealthSync.shared.lastRun ?? NSNull()])
         }
+    }
+
+    // On each open: the server address, the signed-in account and the words
+    // for the notifications (10c), then the reminders are planned.
+    @objc func configure(_ call: CAPPluginCall) {
+        guard let url = call.getString("ingestUrl"), !url.isEmpty,
+              let userId = call.getString("userId"), !userId.isEmpty else {
+            call.reject("ingestUrl and userId are needed")
+            return
+        }
+        HealthSync.shared.configure(ingestUrl: url, userId: userId)
+        var texts: [String: String] = [:]
+        for key in ["title", "readingsIn", "reminderTitle", "reminder", "followUpTitle", "followUp"] {
+            if let t = call.getString(key) { texts[key] = t }
+        }
+        if !texts.isEmpty { LocalNotifications.texts = texts }
+        HealthSync.shared.planReminders()
+        if HealthSync.shared.token != nil { HealthSync.shared.enableBackgroundDelivery() }
+        call.resolve()
     }
 
     @objc func requestPermission(_ call: CAPPluginCall) {
@@ -34,16 +84,15 @@ public class ClariviHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     // The token is shown to the person once by Settings and handed here to
-    // the keychain, with the server address the web build was made with.
+    // the keychain, under the signed-in account.
     @objc func setToken(_ call: CAPPluginCall) {
-        guard let token = call.getString("token"), !token.isEmpty,
-              let url = call.getString("ingestUrl"), !url.isEmpty else {
-            call.reject("token and ingestUrl are needed")
+        guard let token = call.getString("token"), !token.isEmpty else {
+            call.reject("token is needed")
             return
         }
-        HealthSync.shared.ingestUrl = url
-        if Keychain.setToken(token.trimmingCharacters(in: .whitespacesAndNewlines)) {
+        if HealthSync.shared.setToken(token.trimmingCharacters(in: .whitespacesAndNewlines)) {
             HealthSync.shared.enableBackgroundDelivery()
+            HealthSync.shared.planReminders()
             call.resolve()
         } else {
             call.reject("the token couldn't be saved")

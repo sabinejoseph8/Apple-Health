@@ -9,7 +9,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Health wakes the app for new sleep data once the person has allowed
         // reading and the app holds an upload token (D115, 10b).
-        if Keychain.token() != nil {
+        if HealthSync.shared.token != nil {
             HealthSync.shared.enableBackgroundDelivery()
         }
         #if DEBUG
@@ -17,6 +17,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // no Watch): write one made-up night into Health first.
         if CommandLine.arguments.contains("-clariviSeed") {
             Task { _ = await HealthSeed.writeMadeUpNight() }
+        }
+        // -clariviNotifyTest: a "readings in" notification 8 seconds after
+        // launch, and the waiting notifications listed in the log.
+        if CommandLine.arguments.contains("-clariviNotifyTest") {
+            Task {
+                LocalNotifications.readingsIn(after: 8)
+                NSLog("Clarivi: waiting notifications: %@", await LocalNotifications.pendingSummary())
+            }
         }
         #endif
         return true

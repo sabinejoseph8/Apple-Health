@@ -70,8 +70,6 @@ export const wording = {
     title: 'Notifications',
     notInstalled: 'To get notifications, add Clarivi to your Home Screen, then open it from there.',
     notSupported: "This browser can't show Clarivi notifications. Use Clarivi from your iPhone's Home Screen.",
-    // The native iPhone app (D115): its notifications come in a later version (10c).
-    nativeLater: "Notifications aren't in this version of the iPhone app yet. Open Clarivi in the morning to see today's status.",
     blocked: 'Notifications are turned off for Clarivi. Turn them on in Settings, then Notifications, then Clarivi.',
     turnOn: 'Turn on notifications',
     turningOn: 'Turning on…',
@@ -128,6 +126,12 @@ export const wording = {
     tokenCreatedSaved: "Saved in this app. If your Shortcut should keep working too, copy the token into it now: it's shown only once.",
     lastRun: (when: string, message: string) => `Last sync ${when}: ${message}`,
     healthUnavailable: (why: string) => `The Health sync isn't available in this app (${why}).`,
+    // 10c: the notifications the app schedules on the phone itself. The
+    // reminder and the 8pm question use the push wording below (R49, R50).
+    notificationsIntro:
+      'This app reminds you itself: when last night\'s readings are in after a sync in the background, at 11:30 if the status isn\'t in yet, and at 8pm on Ease off and Rest days. The status itself isn\'t in the notification yet: open Clarivi to see it.',
+    readingsIn: "Last night's readings are in. Open Clarivi to see today's status.",
+    notificationsOn: 'Notifications are on for this phone.',
   },
 
   // Replies to the iPhone Shortcut, which can show them as a notification.

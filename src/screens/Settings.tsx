@@ -9,6 +9,7 @@ import AppLink from '../components/AppLink'
 import AccountSettings from './AccountSettings'
 import ConsentSettings from './ConsentSettings'
 import UploadToken from './UploadToken'
+import { NativeNotifications } from '../components/NativeSync'
 import { health } from '../lib/native'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
@@ -107,7 +108,7 @@ export default function Settings({ session }: { session: Session }) {
         <h2 id="notif-h" className="card-headline">{w.title}</h2>
         {support === 'not-installed' && <p className="body">{w.notInstalled}</p>}
         {support === 'not-supported' && <p className="body">{w.notSupported}</p>}
-        {support === 'native-later' && <p className="body">{w.nativeLater}</p>}
+        {support === 'native' && <NativeNotifications />}
         {support === 'blocked' && <p className="body">{w.blocked}</p>}
         {support === 'ready' && !subscribed && (
           <button className="primary" type="button" onClick={onTurnOn} disabled={busy}>
@@ -122,8 +123,8 @@ export default function Settings({ session }: { session: Session }) {
             </button>
           </>
         )}
-        {devices !== null && <p className="caption">{w.devices(devices)}</p>}
-        {lastDelivered !== undefined && (
+        {support !== 'native' && devices !== null && <p className="caption">{w.devices(devices)}</p>}
+        {support !== 'native' && lastDelivered !== undefined && (
           <p className="caption">{lastDelivered ? w.lastDelivered(formatWhen(lastDelivered)) : w.noneDelivered}</p>
         )}
         {message && <p className="body" role="status">{message}</p>}

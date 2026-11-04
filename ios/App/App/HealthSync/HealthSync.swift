@@ -25,6 +25,7 @@ final class HealthSync {
     private static let markerKey = "clarivi.lastSyncDay"
     private static let lastRunKey = "clarivi.lastRun"
     private static let ingestUrlKey = "clarivi.ingestUrl"
+    private static let userIdKey = "clarivi.userId"
     private static let schemaVersion = 1
 
     // The reading types, named as the server expects them (ingest-schema.ts).
@@ -48,11 +49,32 @@ final class HealthSync {
 
     static var available: Bool { HKHealthStore.isHealthDataAvailable() }
 
-    // MARK: Settings the app passes in
+    // MARK: What the app passes in on each open
 
-    var ingestUrl: String? {
-        get { defaults.string(forKey: Self.ingestUrlKey) }
-        set { defaults.set(newValue, forKey: Self.ingestUrlKey) }
+    // The server address the web build was made for, and the signed-in
+    // account, whose token is the only one this phone uses. A different
+    // account signing in starts afresh: no marker, no run, no reminders.
+    func configure(ingestUrl: String, userId: String) {
+        if let previous = defaults.string(forKey: Self.userIdKey), previous != userId {
+            defaults.removeObject(forKey: Self.markerKey)
+            defaults.removeObject(forKey: Self.lastRunKey)
+            LocalNotifications.cancelAll()
+        }
+        defaults.set(ingestUrl, forKey: Self.ingestUrlKey)
+        defaults.set(userId, forKey: Self.userIdKey)
+    }
+
+    var ingestUrl: String? { defaults.string(forKey: Self.ingestUrlKey) }
+    var userId: String? { defaults.string(forKey: Self.userIdKey) }
+
+    var token: String? {
+        guard let userId else { return nil }
+        return Keychain.token(for: userId)
+    }
+
+    func setToken(_ token: String) -> Bool {
+        guard let userId else { return false }
+        return Keychain.setToken(token, for: userId)
     }
 
     var lastRun: [String: Any]? { defaults.dictionary(forKey: Self.lastRunKey) }
@@ -110,7 +132,7 @@ final class HealthSync {
         defer { lock.lock(); running = false; lock.unlock() }
 
         let now = Date()
-        guard let token = Keychain.token() else {
+        guard let token else {
             return outcome("no_token", "No upload token on this phone.", trigger: trigger)
         }
         guard let urlText = ingestUrl, let url = URL(string: urlText) else {
@@ -140,6 +162,7 @@ final class HealthSync {
         }
         if pingReply["already_complete_today"] as? Bool == true {
             defaults.set(today, forKey: Self.markerKey)
+            LocalNotifications.planReminders(todayDone: true, now: now)
             return outcome("already_complete", pingReply["message"] as? String ?? "Today's sync was already done.", trigger: trigger)
         }
 
@@ -164,8 +187,20 @@ final class HealthSync {
         }
         let complete = reply["night_complete"] as? Bool == true
         if complete { defaults.set(today, forKey: Self.markerKey) }
+        // 10c: the reminder goes once the night is in; a background sync that
+        // completed it says so about a minute later, when the status is ready.
+        LocalNotifications.planReminders(todayDone: complete, now: now)
+        if complete && trigger == "health_background" { LocalNotifications.readingsIn(after: 75) }
         let message = reply["message"] as? String ?? (complete ? "Last night's readings are in." : "Last night isn't finished yet.")
         return outcome(complete ? "night_complete" : "night_not_finished", message, trigger: trigger)
+    }
+
+    // Each time the app opens (10c): today's reminder stays unless today's
+    // sync is done, and tomorrow's is set. Only with a token on this phone.
+    func planReminders() {
+        guard token != nil else { return }
+        let now = Date()
+        LocalNotifications.planReminders(todayDone: defaults.string(forKey: Self.markerKey) == Self.dayFormatter.string(from: now), now: now)
     }
 
     // MARK: Health
@@ -232,9 +267,10 @@ final class HealthSync {
     }
 
     func forget() {
-        Keychain.clearToken()
+        if let userId { Keychain.clearToken(for: userId) }
         defaults.removeObject(forKey: Self.markerKey)
         defaults.removeObject(forKey: Self.lastRunKey)
+        LocalNotifications.cancelAll()
     }
 
     // ISO 8601 with the phone's offset, as the Shortcut formats it.

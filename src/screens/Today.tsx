@@ -5,11 +5,12 @@ import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
-import { health, type HealthStatus, isNative } from '../lib/native'
+import { configureNative, health, type HealthStatus, isNative, notifications } from '../lib/native'
 import { HealthPermissionCard, NativeSyncButton } from '../components/NativeSync'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
+import { supabase } from '../lib/supabase'
 import AppLink from '../components/AppLink'
 import { addDays } from '../lib/day'
 import {
@@ -107,11 +108,20 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   }, [load])
   useEffect(() => {
     if (!isNative()) return
-    refreshHealth()
+    // The native side learns the account and the words for its own
+    // notifications (10c) before the first sync of this open.
+    const p = wording.push
+    const texts = { title: wording.appName, readingsIn: wording.native.readingsIn, reminderTitle: p.reminderTitle, reminder: p.reminder, followUpTitle: p.followUpTitle, followUp: p.followUp }
+    supabase.auth
+      .getSession()
+      .then(({ data }) => (data.session ? configureNative(data.session.user.id, texts) : undefined))
+      .catch(() => undefined)
+      .then(refreshHealth)
     const onVisible = () => document.visibilityState === 'visible' && refreshHealth()
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [refreshHealth])
+
 
   // Each minute: check again while a sync is awaited, and start afresh when
   // the day changes, so yesterday's status never shows as today's (R25).
@@ -153,6 +163,16 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   const followToday: FollowDay | null =
     data?.follow.today ?? (row && cardNudge && !data?.follow.shownToday ? { date: row.date, nudge: cardNudge, answer: null } : null)
   const evening = askTonight(now, followToday)
+
+  // The native app's 8pm question (10c): set when the card shows a change
+  // day, removed once answered. The web app gets it from the server instead.
+  const followDate = followToday?.date ?? null
+  const followAnswered = followToday?.answer != null
+  useEffect(() => {
+    if (!isNative() || !followDate) return
+    if (followAnswered) notifications.cancelFollowUp(followDate)
+    else notifications.planFollowUp(followDate)
+  }, [followDate, followAnswered])
 
   async function answerFollow(day: 'today' | 'yesterday', date: string, a: FollowAnswer) {
     // The server checks what was shown, so make sure the card's record is in.

@@ -38,12 +38,47 @@ export interface HealthStatus {
 interface ClariviHealthPlugin {
   status(): Promise<HealthStatus>
   requestPermission(): Promise<{ asked: boolean }>
-  setToken(options: { token: string; ingestUrl: string }): Promise<void>
+  setToken(options: { token: string }): Promise<void>
   clearToken(): Promise<void>
   sync(options: { trigger: HealthTrigger }): Promise<HealthRun>
+  configure(options: Record<string, string>): Promise<void>
+  notificationStatus(): Promise<{ status: NotificationStatus }>
+  requestNotifications(): Promise<{ granted: boolean }>
+  planFollowUp(options: { date: string }): Promise<void>
+  cancelFollowUp(options: { date: string }): Promise<void>
 }
 
+export type NotificationStatus = 'notDetermined' | 'denied' | 'authorized'
+
 const plugin = registerPlugin<ClariviHealthPlugin>('ClariviHealth')
+
+// On each open, the native side learns the server address, the signed-in
+// account (its token is the only one used) and the words for its
+// notifications (10c), all from here so the wording stays in one module.
+export async function configureNative(userId: string, texts: Record<string, string>): Promise<void> {
+  if (!isNative()) return
+  await plugin.configure({ ingestUrl, userId, ...texts })
+}
+
+// The notifications the native app schedules on the phone itself (10c).
+export const notifications = {
+  async status(): Promise<NotificationStatus | null> {
+    if (!isNative()) return null
+    return (await plugin.notificationStatus()).status
+  },
+  async request(): Promise<boolean> {
+    if (!isNative()) return false
+    return (await plugin.requestNotifications()).granted
+  },
+  async planFollowUp(date: string) {
+    if (!isNative()) return
+    await plugin.planFollowUp({ date }).catch(() => undefined)
+  },
+  async cancelFollowUp(date: string) {
+    if (!isNative()) return
+    await plugin.cancelFollowUp({ date }).catch(() => undefined)
+  },
+}
 
 // The same server the web build was made for; the native side keeps it with the token.
 const ingestUrl = `${import.meta.env.VITE_SUPABASE_URL as string}/functions/v1/ingest`
@@ -60,7 +95,7 @@ export const health = {
   },
   async setToken(token: string): Promise<void> {
     if (!isNative()) return
-    await plugin.setToken({ token, ingestUrl })
+    await plugin.setToken({ token })
   },
   // Sign out and Delete my data: this phone forgets the token (R23).
   async clearToken(): Promise<void> {

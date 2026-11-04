@@ -21,6 +21,7 @@
 		C1A0000000000000000B0003 /* HealthSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0000000000000000A0003 /* HealthSync.swift */; };
 		C1A0000000000000000B0004 /* ClariviHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0000000000000000A0004 /* ClariviHealthPlugin.swift */; };
 		C1A0000000000000000B0006 /* HealthSeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0000000000000000A0006 /* HealthSeed.swift */; };
+		C1A0000000000000000B0007 /* LocalNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0000000000000000A0007 /* LocalNotifications.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		C1A0000000000000000A0004 /* ClariviHealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClariviHealthPlugin.swift; sourceTree = "<group>"; };
 		C1A0000000000000000A0005 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		C1A0000000000000000A0006 /* HealthSeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSeed.swift; sourceTree = "<group>"; };
+		C1A0000000000000000A0007 /* LocalNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotifications.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +100,7 @@
 				C1A0000000000000000A0003 /* HealthSync.swift */,
 				C1A0000000000000000A0004 /* ClariviHealthPlugin.swift */,
 				C1A0000000000000000A0006 /* HealthSeed.swift */,
+				C1A0000000000000000A0007 /* LocalNotifications.swift */,
 			);
 			path = HealthSync;
 			sourceTree = "<group>";
@@ -195,6 +198,7 @@
 				C1A0000000000000000B0003 /* HealthSync.swift in Sources */,
 				C1A0000000000000000B0004 /* ClariviHealthPlugin.swift in Sources */,
 				C1A0000000000000000B0006 /* HealthSeed.swift in Sources */,
+				C1A0000000000000000B0007 /* LocalNotifications.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,9 +24,9 @@ describe('pushSupport', () => {
   it('reports browsers without web push', () => {
     expect(pushSupport({ ...base, isIOS: false, standalone: false, hasPushManager: false })).toBe('not-supported')
   })
-  it('says notifications come later inside the native app, whatever the browser parts say (D115)', () => {
-    expect(pushSupport({ ...base, native: true })).toBe('native-later')
-    expect(pushSupport({ ...base, native: true, standalone: false, hasServiceWorker: false, hasPushManager: false })).toBe('native-later')
+  it('leaves notifications to the native app itself, whatever the browser parts say (D115)', () => {
+    expect(pushSupport({ ...base, native: true })).toBe('native')
+    expect(pushSupport({ ...base, native: true, standalone: false, hasServiceWorker: false, hasPushManager: false })).toBe('native')
   })
 })
 
