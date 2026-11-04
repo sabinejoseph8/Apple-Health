@@ -94,14 +94,14 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 
 - **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
 - **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
-- **One-page case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
+- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
 
 ## Try it
 
 Pick how deep to go:
 
 1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
-2. **Read** the [one-page case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
+2. **Read** the [case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
 4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
 5. **Browse** the Project Memory website linked above.
