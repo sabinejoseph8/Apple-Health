@@ -5,7 +5,7 @@ import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
-import { configureNative, health, type HealthStatus, isNative, notifications } from '../lib/native'
+import { configureNative, health, type HealthStatus, isNative, notifications, SYNC_REACHED_SERVER } from '../lib/native'
 import { HealthPermissionCard, NativeSyncButton } from '../components/NativeSync'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
@@ -102,8 +102,10 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
     const s = await health.status().catch(() => null)
     setHealthStatus(s)
     if (s?.hasToken && s.permissionAsked) {
-      await health.sync('health_open').catch(() => null)
-      load()
+      // The card reloads only when the server was reached; a run that stopped
+      // early (done today, outside the window) changed nothing.
+      const run = await health.sync('health_open').catch(() => null)
+      if (run && SYNC_REACHED_SERVER.has(run.result)) load()
     }
   }, [load])
   useEffect(() => {

@@ -26,10 +26,15 @@ public class ClariviHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         Task { call.resolve(["status": await LocalNotifications.status()]) }
     }
 
+    // Once allowed, anything planned before permission existed is planned
+    // again: iOS drops a request made before the person says yes.
     @objc func requestNotifications(_ call: CAPPluginCall) {
         Task {
             let ok = await LocalNotifications.request()
-            if ok { HealthSync.shared.planReminders() }
+            if ok {
+                HealthSync.shared.planReminders()
+                LocalNotifications.replanFollowUp()
+            }
             call.resolve(["granted": ok])
         }
     }
@@ -104,8 +109,13 @@ public class ClariviHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         call.resolve()
     }
 
+    // Only the app's own trigger words reach the server's log (D115).
     @objc func sync(_ call: CAPPluginCall) {
         let trigger = call.getString("trigger") ?? "health_open"
+        guard ["health_open", "health_button"].contains(trigger) else {
+            call.reject("unknown trigger")
+            return
+        }
         let byHand = trigger == "health_button"
         Task {
             let out = await HealthSync.shared.run(trigger: trigger, byHand: byHand)

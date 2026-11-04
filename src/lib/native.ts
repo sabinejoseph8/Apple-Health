@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core'
+import { wording } from '../../supabase/functions/_shared/wording'
 
 // Whether the app is running inside the native iPhone app (D115, Phase 10)
 // rather than in Safari or the Home Screen web app. The native app has no
@@ -11,22 +12,23 @@ export function isNative(): boolean {
 // The native Health sync (10b): the Swift side is ios/App/App/HealthSync.
 // Results and messages never hold a reading.
 export type HealthTrigger = 'health_open' | 'health_button'
-export type HealthResult =
-  | 'no_token'
-  | 'no_url'
-  | 'outside_window'
-  | 'done_today'
-  | 'busy'
-  | 'already_complete'
-  | 'night_complete'
-  | 'night_not_finished'
-  | 'refused'
-  | 'failed'
+export type HealthResult = keyof typeof wording.native.results
 export interface HealthRun {
   result: HealthResult
+  // The server's own sentence when it sent one, else the words for the result.
   message: string
   trigger: string
   at: string
+}
+
+// The results that mean the server was reached and the card may have changed.
+export const SYNC_REACHED_SERVER: ReadonlySet<string> = new Set(['already_complete', 'night_complete', 'night_not_finished'])
+
+// The native side sends a result code and, at most, the server's sentence;
+// every other sentence comes from the wording module (R61, CLAUDE.md).
+export function describeRun(run: HealthRun): HealthRun {
+  const message = run.message || wording.native.results[run.result] || wording.general.offline
+  return { ...run, message }
 }
 export interface HealthStatus {
   available: boolean
@@ -87,7 +89,8 @@ const ingestUrl = `${import.meta.env.VITE_SUPABASE_URL as string}/functions/v1/i
 export const health = {
   async status(): Promise<HealthStatus | null> {
     if (!isNative()) return null
-    return plugin.status()
+    const s = await plugin.status()
+    return { ...s, lastRun: s.lastRun ? describeRun(s.lastRun) : null }
   },
   async requestPermission(): Promise<boolean> {
     if (!isNative()) return false
@@ -108,6 +111,6 @@ export const health = {
   },
   async sync(trigger: HealthTrigger): Promise<HealthRun | null> {
     if (!isNative()) return null
-    return plugin.sync({ trigger })
+    return describeRun(await plugin.sync({ trigger }))
   },
 }

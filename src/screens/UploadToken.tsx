@@ -59,6 +59,7 @@ export default function UploadToken() {
     const pasted = String(new FormData(e.currentTarget).get('token') ?? '').trim()
     if (!pasted) return
     setBusy(true)
+    setError(null)
     try {
       await health.setToken(pasted)
       setPasting(false)
@@ -131,7 +132,14 @@ export default function UploadToken() {
             </button>
           )}
           {!healthStatus.hasToken && !pasting && !asking && (
-            <button className="text-button" type="button" onClick={() => setPasting(true)}>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => {
+                setError(null)
+                setPasting(true)
+              }}
+            >
               {n.tokenPaste}
             </button>
           )}

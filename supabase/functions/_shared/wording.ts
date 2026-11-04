@@ -132,6 +132,23 @@ export const wording = {
       'This app reminds you itself: when last night\'s readings are in after a sync in the background, at 11:30 if the status isn\'t in yet, and at 8pm on Ease off and Rest days. The status itself isn\'t in the notification yet: open Clarivi to see it.',
     readingsIn: "Last night's readings are in. Open Clarivi to see today's status.",
     notificationsOn: 'Notifications are on for this phone.',
+    // What each result of the app's own sync means, shown under Sync now and
+    // in Settings. When the server sent its own sentence (sync.* above), that
+    // is shown instead.
+    results: {
+      no_token: 'Add your upload token in Settings first.',
+      no_url: 'Open the card once, then try again.',
+      no_permission: 'Allow Health access on the card first.',
+      outside_window: 'Automatic syncs run between 4am and noon.',
+      done_today: "Today's sync is already done on this phone.",
+      busy: 'A sync is already running.',
+      already_complete: "Today's sync was already done.",
+      night_complete: "Last night's readings are in.",
+      night_not_finished: "Readings sent. Last night isn't finished yet.",
+      unreadable: "Health couldn't be read. Unlock your phone and try again.",
+      refused: 'Clarivi refused the readings. Check your token in Settings.',
+      failed: "Clarivi couldn't be reached. Check your connection and try again.",
+    },
   },
 
   // Replies to the iPhone Shortcut, which can show them as a notification.

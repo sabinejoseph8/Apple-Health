@@ -71,7 +71,16 @@ enum LocalNotifications {
         }
     }
 
+    private static let followUpDayKey = "clarivi.followUpDay"
+
+    // The day whose 8pm question is waiting, so it can be planned again once
+    // notifications are allowed (a request made before that is dropped by iOS).
+    static func replanFollowUp() {
+        if let day = UserDefaults.standard.string(forKey: followUpDayKey) { planFollowUp(day: day) }
+    }
+
     static func planFollowUp(day: String, now: Date = Date()) {
+        UserDefaults.standard.set(day, forKey: followUpDayKey)
         guard let body = text("followUp") else { return }
         let cal = Calendar.current
         var parts = DateComponents()
@@ -89,11 +98,15 @@ enum LocalNotifications {
 
     static func cancelFollowUp(day: String) {
         center.removePendingNotificationRequests(withIdentifiers: ["follow-up-\(day)"])
+        if UserDefaults.standard.string(forKey: followUpDayKey) == day {
+            UserDefaults.standard.removeObject(forKey: followUpDayKey)
+        }
     }
 
     // Sign out and Delete my data: nothing left waiting on this phone.
     static func cancelAll() {
         center.removeAllPendingNotificationRequests()
+        UserDefaults.standard.removeObject(forKey: followUpDayKey)
     }
 
     // Test builds only: what is waiting, for the log (ids and fire dates, no words).

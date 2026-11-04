@@ -21,6 +21,13 @@ final class HealthSync {
     private let defaults = UserDefaults.standard
     private let lock = NSLock()
     private var running = false
+    // The one observer query for new sleep data; set up once per launch.
+    private var observer: HKObserverQuery?
+
+    // iOS gives a background wake about 30 seconds in all, so a background
+    // run gives each request less time than a run with the app open.
+    private static let foregroundTimeout: TimeInterval = 60
+    private static let backgroundTimeout: TimeInterval = 12
 
     private static let markerKey = "clarivi.lastSyncDay"
     private static let lastRunKey = "clarivi.lastRun"
@@ -56,6 +63,7 @@ final class HealthSync {
     // account signing in starts afresh: no marker, no run, no reminders.
     func configure(ingestUrl: String, userId: String) {
         if let previous = defaults.string(forKey: Self.userIdKey), previous != userId {
+            Keychain.clearToken(for: previous)
             defaults.removeObject(forKey: Self.markerKey)
             defaults.removeObject(forKey: Self.lastRunKey)
             LocalNotifications.cancelAll()
@@ -105,13 +113,14 @@ final class HealthSync {
     // The handler runs a morning sync under the same rules as any automatic
     // run, so a wake outside 4am to noon, or after today's sync, does nothing.
     func enableBackgroundDelivery() {
-        guard Self.available else { return }
+        guard Self.available, observer == nil else { return }
         let query = HKObserverQuery(sampleType: Self.sleepType, predicate: nil) { _, completion, _ in
             Task {
                 _ = await HealthSync.shared.run(trigger: "health_background", byHand: false)
                 completion()
             }
         }
+        observer = query
         store.execute(query)
         store.enableBackgroundDelivery(for: Self.sleepType, frequency: .immediate) { _, _ in }
     }
@@ -119,34 +128,44 @@ final class HealthSync {
     // MARK: The run
 
     // Returns the outcome for the app: result, message, at, trigger. Results:
-    // no_token, no_url, outside_window, done_today, busy, already_complete,
-    // night_complete, night_not_finished, refused, failed.
+    // no_token, no_url, no_permission, outside_window, done_today, busy,
+    // already_complete, night_complete, night_not_finished, unreadable,
+    // refused, failed. The message is the
+    // server's own sentence when it sent one (from its wording module) and
+    // empty otherwise: the app puts words to each result from the wording
+    // module, so no sentence for the person lives here.
     func run(trigger: String, byHand: Bool) async -> [String: Any] {
         lock.lock()
         if running {
             lock.unlock()
-            return outcome("busy", "A sync is already running.", trigger: trigger, keep: false)
+            return outcome("busy", trigger: trigger, keep: false)
         }
         running = true
         lock.unlock()
         defer { lock.lock(); running = false; lock.unlock() }
 
         let now = Date()
+        let timeout = trigger == "health_background" ? Self.backgroundTimeout : Self.foregroundTimeout
         guard let token else {
-            return outcome("no_token", "No upload token on this phone.", trigger: trigger)
+            return outcome("no_token", trigger: trigger)
         }
         guard let urlText = ingestUrl, let url = URL(string: urlText) else {
-            return outcome("no_url", "The app has no server address yet.", trigger: trigger)
+            return outcome("no_url", trigger: trigger)
+        }
+        // Health has not been asked yet (a fresh install resets it): the card
+        // asks; a run now would only fail at the reading step.
+        if await !permissionAsked() {
+            return outcome("no_permission", trigger: trigger)
         }
         let today = Self.dayFormatter.string(from: now)
         if !byHand {
             let hour = Calendar.current.component(.hour, from: now)
             if hour < 4 || hour >= 12 {
-                return outcome("outside_window", "Automatic syncs run between 4am and noon.", trigger: trigger, keep: false)
+                return outcome("outside_window", trigger: trigger, keep: false)
             }
         }
         if defaults.string(forKey: Self.markerKey) == today {
-            return outcome("done_today", "Today's sync is already done on this phone.", trigger: trigger, keep: false)
+            return outcome("done_today", trigger: trigger, keep: false)
         }
 
         let offsetMinutes = TimeZone.current.secondsFromGMT(for: now) / 60
@@ -154,16 +173,16 @@ final class HealthSync {
         // 2. The ping.
         let ping: [String: Any] = ["schema_version": Self.schemaVersion, "kind": "ping",
                                    "device_tz_offset_min": offsetMinutes, "trigger": trigger]
-        guard let pingReply = await post(ping, to: url, token: token) else {
-            return outcome("failed", "Clarivi couldn't be reached.", trigger: trigger)
+        guard let pingReply = await post(ping, to: url, token: token, timeout: timeout) else {
+            return outcome("failed", trigger: trigger)
         }
-        if let error = pingReply["error"] as? String {
-            return outcome("refused", Self.refusedMessage(error, reply: pingReply), trigger: trigger)
+        if pingReply["error"] != nil {
+            return outcome("refused", pingReply["message"] as? String, trigger: trigger)
         }
         if pingReply["already_complete_today"] as? Bool == true {
             defaults.set(today, forKey: Self.markerKey)
             LocalNotifications.planReminders(todayDone: true, now: now)
-            return outcome("already_complete", pingReply["message"] as? String ?? "Today's sync was already done.", trigger: trigger)
+            return outcome("already_complete", pingReply["message"] as? String, trigger: trigger)
         }
 
         // 3. Yesterday's and today's readings.
@@ -171,7 +190,7 @@ final class HealthSync {
         var series: [[String: Any]] = []
         for reading in Self.readings {
             guard let samples = await fetch(reading.type, from: start, to: now) else {
-                return outcome("failed", "Health couldn't be read. Unlock your phone and try again.", trigger: trigger)
+                return outcome("unreadable", trigger: trigger)
             }
             series.append(Self.series(reading, samples))
         }
@@ -179,11 +198,11 @@ final class HealthSync {
         // 4. The daily post.
         let body: [String: Any] = ["schema_version": Self.schemaVersion, "kind": "daily",
                                    "device_tz_offset_min": offsetMinutes, "trigger": trigger, "series": series]
-        guard let reply = await post(body, to: url, token: token) else {
-            return outcome("failed", "Clarivi couldn't be reached.", trigger: trigger)
+        guard let reply = await post(body, to: url, token: token, timeout: timeout) else {
+            return outcome("failed", trigger: trigger)
         }
-        if let error = reply["error"] as? String {
-            return outcome("refused", Self.refusedMessage(error, reply: reply), trigger: trigger)
+        if reply["error"] != nil {
+            return outcome("refused", reply["message"] as? String, trigger: trigger)
         }
         let complete = reply["night_complete"] as? Bool == true
         if complete { defaults.set(today, forKey: Self.markerKey) }
@@ -191,8 +210,7 @@ final class HealthSync {
         // completed it says so about a minute later, when the status is ready.
         LocalNotifications.planReminders(todayDone: complete, now: now)
         if complete && trigger == "health_background" { LocalNotifications.readingsIn(after: 75) }
-        let message = reply["message"] as? String ?? (complete ? "Last night's readings are in." : "Last night isn't finished yet.")
-        return outcome(complete ? "night_complete" : "night_not_finished", message, trigger: trigger)
+        return outcome(complete ? "night_complete" : "night_not_finished", reply["message"] as? String, trigger: trigger)
     }
 
     // Each time the app opens (10c): today's reminder stays unless today's
@@ -241,9 +259,9 @@ final class HealthSync {
 
     // MARK: The server
 
-    private func post(_ body: [String: Any], to url: URL, token: String) async -> [String: Any]? {
+    private func post(_ body: [String: Any], to url: URL, token: String, timeout: TimeInterval) async -> [String: Any]? {
         guard let data = try? JSONSerialization.data(withJSONObject: body) else { return nil }
-        var request = URLRequest(url: url, timeoutInterval: 60)
+        var request = URLRequest(url: url, timeoutInterval: timeout)
         request.httpMethod = "POST"
         request.httpBody = data
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -252,15 +270,10 @@ final class HealthSync {
         return (try? JSONSerialization.jsonObject(with: reply)) as? [String: Any]
     }
 
-    private static func refusedMessage(_ error: String, reply: [String: Any]) -> String {
-        if let message = reply["message"] as? String, !message.isEmpty { return message }
-        return "Clarivi refused the sync (\(error))."
-    }
-
     // MARK: Bookkeeping
 
-    private func outcome(_ result: String, _ message: String, trigger: String, keep: Bool = true) -> [String: Any] {
-        let out: [String: Any] = ["result": result, "message": message, "trigger": trigger,
+    private func outcome(_ result: String, _ serverMessage: String? = nil, trigger: String, keep: Bool = true) -> [String: Any] {
+        let out: [String: Any] = ["result": result, "message": serverMessage ?? "", "trigger": trigger,
                                   "at": Self.timeFormatter.string(from: Date())]
         if keep { defaults.set(out, forKey: Self.lastRunKey) }
         return out
