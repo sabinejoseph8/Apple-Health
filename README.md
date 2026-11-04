@@ -42,6 +42,12 @@ One morning, from my side:
 
 The full picture is in the [architecture diagram](docs/architecture.pdf) and the [tech spec](docs/tech-spec.md).
 
+## Planned and tested like a product
+
+- **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
+- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
+- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
+
 ## Key design choices and tradeoffs
 
 - **Plain words before charts.** The card's briefing uses no numbers; they sit behind "Why today" and "Show the numbers". The cost: less detail on the first screen, and more work on wording.
@@ -95,12 +101,6 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 - The held-out set found one digest describing a change the data did not show, which led to the second AI check on digests (D95).
 
 **How blind was it?** Not very. One builder, one counter, the rules written first and rerunnable, and nobody else checked the counts.
-
-## Planned and tested like a product
-
-- **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
-- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
-- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
 
 ## Try it
 
