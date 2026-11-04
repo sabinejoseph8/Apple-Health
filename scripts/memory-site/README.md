@@ -16,6 +16,7 @@ Builds the Clarivi Memory site (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapT
 
 - `mdlib.py` reads the Markdown; `common.py` holds shared pieces; `tab_*.py` turn each file's sections into the site's cards, lists and diagrams.
 - Task ids (`p1a-01`, `p2-03`, `p6-14` ...) are kept by matching each task's words with `assets/task-ids.json`, so a tick never moves to the wrong task when tasks are added or reworded. `OVERRIDES` in `taskids.py` pins a task whose words changed too much.
+- Phase 9 is left off the published site (D109): `HIDDEN_PHASES` in `tab_plan.py` skips its section, card and tasks. They still get ids, so `assets/task-ids.json` and the stored ticks are kept; remove the phase from that set to show it again.
 - `assets/` holds what isn't in the Markdown: the page's styles and script, the drawn design previews (in the app's current words, D85), and the diagrams. Change a diagram in `assets/mermaid.json`.
 - R-numbers link to the product spec's requirements, except on the MVP tab, where R1 to R26 are the MVP's own risks. D-numbers link to the MVP tab's decision register from every tab.
 
