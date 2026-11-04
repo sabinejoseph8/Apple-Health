@@ -803,5 +803,41 @@
   "texts": [
    "Code review of everything changed in this phase; fix what it finds, then re-run the full test suite"
   ]
+ },
+ "p10-01": {
+  "phase": "10",
+  "texts": [
+   "10a Native shell: Capacitor 8 added to the project (ios/, Swift Package Manager, no CocoaPods); the web app builds into it and runs on the iPhone simulator with sign-in; inside the native app the service worker, the web push sign-up (Settings says notifications come later), the Sync now button and the Shortcut links switch off; the unit tests, type check and build still pass"
+  ]
+ },
+ "p10-02": {
+  "phase": "10",
+  "texts": [
+   "10b Health sync in Swift: the app asks once for permission to read the five readings; the daily run reads the same window the Shortcut reads and posts the same column format to ingest with the upload token (entered once from Settings and kept in the Keychain); a ping first and the \"already synced today\" rule; runs when the app opens and when Health delivers new sleep data in the background; the card's Sync now runs it by hand; the run and its reply are logged for the owner; tested on the simulator with made-up Health samples against the local copy (the functions served locally)"
+  ]
+ },
+ "p10-03": {
+  "phase": "10",
+  "texts": [
+   "10c Notifications scheduled on the phone (free option, D115): after a sync that completes the night, a notification that today's status is in; the 11:30 reminder when no status is shown; the 8pm question on change days; cancelled when the app shows the status first; wording agreed with Sabine; no health detail in any of them (R49, R50)"
+  ]
+ },
+ "p10-04": {
+  "phase": "10",
+  "texts": [
+   "10d On Sabine's iPhone, after week two: install from Xcode with her Apple ID (a free install), test account first, then her own; the Shortcut keeps running beside it for the first days; count each morning which sync arrived first and how long after waking"
+  ]
+ },
+ "p10-05": {
+  "phase": "10",
+  "texts": [
+   "Docs (product spec, tech spec, mvp.md, README's repository structure), the Memory site, interview notes"
+  ]
+ },
+ "p10-06": {
+  "phase": "10",
+  "texts": [
+   "Code review of everything changed in this phase; fix what it finds, then re-run the tests"
+  ]
  }
 }
