@@ -149,14 +149,28 @@ test.describe('on a computer screen', () => {
     await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
     await expect(banner(page).getByText('Demo with made-up data')).toBeVisible()
     const frame = page.locator('#root')
-    const box = await frame.boundingBox()
-    expect(box?.width).toBe(414)
-    expect(box?.height).toBeLessThanOrEqual(868)
-    expect(box?.height).toBeGreaterThanOrEqual(560)
     await expect(frame).toHaveCSS('border-top-left-radius', '56px')
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
     expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0)
   })
+
+  // The phone keeps an iPhone's proportions (414 by 868) and shrinks to fit a short window, never squashed.
+  for (const height of [650, 700, 900, 1100]) {
+    test(`at ${height}px high the whole phone is visible and is the shape of an iPhone`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height })
+      await page.goto('/?scenario=sleep-floor')
+      await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+      const box = await page.locator('#root').boundingBox()
+      expect(box).not.toBeNull()
+      const { x, y, width, height: h } = box!
+      expect(width / h).toBeGreaterThan(0.46)
+      expect(width / h).toBeLessThan(0.49)
+      expect(x).toBeGreaterThan(0)
+      expect(y).toBeGreaterThanOrEqual(0)
+      expect(y + h).toBeLessThanOrEqual(height)
+      expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0)
+    })
+  }
 
   test('a long screen scrolls inside the frame, and a new screen starts at the top', async ({ page }) => {
     await page.goto('/?scenario=sleep-floor#/guide')

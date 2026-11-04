@@ -42,14 +42,18 @@
 }
 
 /* On a wide screen the app is shown inside an iPhone-shaped frame (D110): the page's #root is the
-   frame and scrolls inside it. A narrow screen or a real phone shows the app as it is. */
+   frame and scrolls inside it. A narrow screen or a real phone shows the app as it is. The frame
+   always has an iPhone's proportions (414 by 868, a 390 by 844 screen): a short window shrinks the
+   whole phone in steps (zoom, below) instead of squashing it. */
 @media (min-width: 700px) {
   #root {
+    display: flex;
+    flex-direction: column;
     position: relative;
     box-sizing: border-box;
     width: 414px;
-    height: min(868px, calc(100vh - 150px));
-    min-height: 560px;
+    height: 868px;
+    zoom: 0.5;
     margin: 20px auto 28px;
     border: 12px solid #101012;
     border-radius: 56px;
@@ -72,6 +76,7 @@
     top: 10px;
     z-index: 5;
     display: block;
+    flex: none;
     width: 112px;
     height: 32px;
     margin: 10px auto -42px;
@@ -85,6 +90,7 @@
     bottom: 8px;
     z-index: 5;
     display: block;
+    flex: none;
     width: 130px;
     height: 5px;
     margin: -13px auto 8px;
@@ -93,7 +99,62 @@
   }
   /* Room under the island and the home indicator, as the Home Screen app gets from the safe areas. */
   #root .page {
+    flex: 1 0 auto;
+    box-sizing: border-box;
+    width: 100%;
     padding-top: 60px;
     padding-bottom: 32px;
+  }
+}
+
+/* The whole phone and the banner fit the window height: the largest step that fits is used. */
+@media (min-width: 700px) and (min-height: 612px) {
+  #root {
+    zoom: 0.55;
+  }
+}
+@media (min-width: 700px) and (min-height: 656px) {
+  #root {
+    zoom: 0.6;
+  }
+}
+@media (min-width: 700px) and (min-height: 699px) {
+  #root {
+    zoom: 0.65;
+  }
+}
+@media (min-width: 700px) and (min-height: 743px) {
+  #root {
+    zoom: 0.7;
+  }
+}
+@media (min-width: 700px) and (min-height: 786px) {
+  #root {
+    zoom: 0.75;
+  }
+}
+@media (min-width: 700px) and (min-height: 829px) {
+  #root {
+    zoom: 0.8;
+  }
+}
+@media (min-width: 700px) and (min-height: 873px) {
+  #root {
+    zoom: 0.85;
+  }
+}
+@media (min-width: 700px) and (min-height: 916px) {
+  #root {
+    zoom: 0.9;
+  }
+}
+@media (min-width: 700px) and (min-height: 960px) {
+  #root {
+    zoom: 0.95;
+  }
+}
+@media (min-width: 700px) and (min-height: 1003px) {
+  #root {
+    zoom: 1;
   }
 }
