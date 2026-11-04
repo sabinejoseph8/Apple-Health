@@ -3,7 +3,7 @@
 **An iPhone app that turns my own Apple Watch data into a plain-words morning answer: what last night means against my normal, why, and one thing to do today.**
 
 > [!IMPORTANT]
-> **Project in progress:** Testing is ongoing. Week one (19–25 October 2026) is complete, and week two is underway until Sunday, 8 November 2026. Week two results and a review will be added after testing ends. All results currently shown on this page are from week one.
+> **Project in progress.** Week one (19 to 25 October 2026) is done: the calculations matched an independent check on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. Every result on this page is from week one.
 
 > **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
 
@@ -16,17 +16,20 @@
 - **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
 - **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
 - **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
-- **Status:** built and in use by one person, with testing still in progress. Week one is done. Week two, the same test again after a change to the sync, started on 2 November 2026 and finishes on 8 November; the changed alarm sync passed its check on a real morning on 1 November, after one setup fix. Its results are added when it ends.
+- **Status:** built and in use by one person. Week one is done. Week two, the same test after a change to the sync, runs 2 to 8 November 2026; its results are added when it ends.
+- **How it was built:** I am not a developer. I wrote the problem, the specs and every decision in the log, and Claude Code wrote the code, tests and queries to them. I reviewed every screen and every word, ran every manual check on my own iPhone, and decided what to cut.
 
 ## The problem
 
-Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep, workouts, weight and gait), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personalised, longitudinal picture of their own recovery, sleep and training patterns.
+Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep, workouts, weight and gait), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personal picture over time of their own recovery, sleep and training patterns.
 
 - **Who it is for:** Apple Watch users who train consistently (strength training, general fitness) and already track workouts and sleep, but want to understand the patterns behind their numbers rather than just seeing isolated daily readings.
 - **What problem it solves:** Apple Health has no way to detect drift against a person's own baseline, surface relationships between metrics (for example sleep and next-day recovery), or tell a normal day from an unusual one.
 - **Why it matters:** without that visibility, early signs of under-recovery, overtraining or illness go unnoticed until performance or health has already suffered, and users cannot tell whether a change they made (more sleep, a deload week) actually worked.
 - **What the user should be able to do:** wake up and get a plain-words answer from their own data: whether last night, set against their own normal, is meaningfully off, why, and one action for the day, with the past weeks of each reading one tap away.
 - **The outcome:** earlier, evidence-based awareness of their own recovery and readiness, so training and lifestyle adjustments are driven by their own data rather than generic guidance.
+
+Version 1 builds the first part of this: the morning answer against the person's own normal. The relationships between readings were tested on my own year and not built (see Small on purpose below).
 
 Clarivi gives the answer first, in plain words, and keeps the working one tap away. It never names a medical condition and never gives medical advice.
 
@@ -55,7 +58,7 @@ The full picture is in the [architecture diagram](docs/architecture.pdf) and the
 - **The AI explains and never decides.** Its input is an allow-list of results, tested with a marker in every forbidden field. Its output goes through a filter, a retry and a fixed fallback. The cost: a short "Getting ready" wait, about a cent per answer, and a third consent box because Anthropic processes the results. I chose one model and did not compare models.
 - **Sync through an iPhone Shortcut, not a native app.** No App Store and no app to maintain. The cost: it depends on iOS, and it is where my main target was missed. The Watch decides when a night reaches Health, and Clarivi cannot see that moment.
 - **Private by default.** Every table has row-level security, there are no third-party scripts or tracking, and secrets live only in Supabase's secret store. The cost: more setup, and a consent screen before anything else.
-- **Small on purpose.** I cut the test from four people to one before any result existed (D89, D91). I tested three planned analysis modules on my own year before building them, and dropped all three when the data could not support them. The cost: a thinner product, and a result that cannot speak for anyone else.
+- **Small on purpose.** I cut the test from four people to one before any result existed (D89, D91). I tested three planned analysis modules on my own year before building them: two found nothing the data could support (0 of 12 each) and the third missed its target (a one-spread shift found 10% of the time, against 80%), so I built none. The cost: a thinner product, and a result that cannot speak for anyone else.
 
 ## How quality was defined and measured
 
@@ -76,7 +79,7 @@ The full picture is in the [architecture diagram](docs/architecture.pdf) and the
 
 Before any result, the test shrank from four people over 28 days to one person over one week, so the sync and engagement targets were re-scaled (D89, D91). After week one's results, no target changed. One counting rule did: from week two, a "successful sync" means the status was worked out and shown before noon (D99, decided before any week-two result). Week one stays as recorded.
 
-**How it was measured.** The counting rules were written into a query file before its numbers were computed, and week two reruns the same file. The pandas reference recalculates every night, usual range and status and compares each with the database. The AI was tested on invented cases only: 40 for development, and 20 held-out cases written and graded by separate fresh sessions. The same assistant built the app and counted week one, so the separation is by written rules, not by a second person.
+**How it was measured.** The counting rules were written into a query file before its numbers were computed, and week two reruns the same file. The pandas reference recalculates every night, usual range and status and compares each with the database. The AI was tested on invented cases only: 40 for development, and 20 held-out cases written and graded by two separate Claude sessions that had not seen the app. The same Claude Code session that built the app also counted week one, so the separation is by written rules, not by a second person.
 
 **Results, week one.**
 
@@ -91,8 +94,9 @@ Before any result, the test shrank from four people over 28 days to one person o
 | Engagement | 5 of 7 days | 3 of 7 days | No |
 | Check-ins | More than chance | 2 of 2 first answers agreed, both on Ready days | Indicative only |
 | Action | About half | No Ease off or Rest day, so no question was asked | Not measurable |
+| My own account | Written | Written: it never changed a decision, and I would not keep using it as it was, because of remembering to sync and because after noon the card gives no status | Yes |
 
-Week two: results added after the test ends. The AI explanations passed 38 of 40 invented cases on a single attempt in the live check, and 20 of 20 held-out cases passed the filter (the instruction was tuned on the 40, so that result is partly in-sample). [Details and every caveat](docs/evaluation.md).
+The AI explanations were added after week one, so they are not one of the ten targets. Their checks were written on 29 October, before any prompt existed, with no numeric pass mark: every miss is reported as a miss. They were tested on invented cases only. In the live check 38 of 40 development cases passed on a single attempt (the instruction and filter were tuned on these, so that result is in-sample). Of 20 held-out cases, 20 of 20 passed the filter and 19 of 20 matched the numbers: one digest described a change the data did not show, which led to a second AI check on every digest (D95). The filter was tightened after the held-out set was graded, so its filter result is partly in-sample. [Details and every caveat](docs/evaluation.md).
 
 **What the results changed.**
 - The sync miss, and a log showing that even automatic runs often stopped before the night was complete, led to a third trigger on the alarm, then to dropping its fixed wait and extending the 11:30 reminder (D94, D103).
@@ -110,7 +114,7 @@ Pick how deep to go:
 2. **Read** the [case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
 4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
-5. **Browse** the Project Memory website linked above.
+5. **Browse** the [Project Memory website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe): the spec, design, tech spec, plan and decisions, with live plan ticks.
 6. Coming next: a short video, after week two.
 
 ## Where the data goes
@@ -141,7 +145,7 @@ docs/       Project Memory, the evaluation, the architecture diagram and the run
 
 ## Skills demonstrated
 
-- **AI product management:** problem framing, a spec and phased plan agreed before building, success targets set up front, and decisions driven by measured results, including the ones that missed.
+- **AI product management:** problem framing, a spec and phased plan agreed before building, success targets set up front, directing an AI coding tool from specs, a plan and a decision log, and decisions driven by measured results, including the ones that missed.
 - **Evaluation:** an independent reference check, an invented test set with a sealed held-out part, and pre-registered counting rules.
 - **Responsible AI:** an allow-list for what the AI sees, a filter and a fixed fallback for what it says, and consent for each purpose.
 - **Data protection:** row-level security, minimal data, a privacy impact assessment and consent text written for the strictest rules among the places testers might live.
