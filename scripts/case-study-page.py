@@ -2,7 +2,7 @@
 
     python3 scripts/case-study-page.py [--out private/case-study-page/index.html]
 
-The words and numbers stay in docs/case-study.html, which also makes the one-page PDF. This script
+The words and numbers stay in docs/case-study.html, which also makes the PDF. This script
 reads that file, puts the architecture diagram in as a drawing instead of an image, and wraps it in
 a page that works at phone width and in light and dark. Publish the result to the page's own address;
 after week two, update docs/case-study.html first and run this again. Standard library only.
@@ -68,6 +68,8 @@ CSS = """
   td.no { color: var(--warm); font-weight: 700; }
   td.yes { color: var(--yes); font-weight: 700; }
   .note { background: var(--note); border-left: 4px solid var(--note-edge); padding: 12px 14px; font-size: 15px; margin: 4px 0 8px; }
+  .problem { max-width: 82ch; }
+  .problem > p { margin-bottom: 12px; }
   .status { background: var(--note); border-left: 4px solid var(--note-edge); padding: 12px 16px; margin: 0 0 22px; max-width: 76ch; }
   .status strong { color: var(--ink); }
   .foot { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; font-size: 14px; color: var(--muted); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 32px; }
@@ -97,7 +99,7 @@ LINKS = [
     ('Evaluation', 'https://github.com/sabinejoseph8/Apple-Health/blob/main/docs/evaluation.md'),
     ('Try the demo on made-up data', 'https://apple-health-rust.vercel.app'),
     ('Project memory', 'https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe'),
-    ('One-page PDF', 'https://github.com/sabinejoseph8/Apple-Health/blob/main/docs/case-study.pdf'),
+    ('PDF version', 'https://github.com/sabinejoseph8/Apple-Health/blob/main/docs/case-study.pdf'),
 ]
 
 
@@ -110,24 +112,24 @@ def build():
     src = open(os.path.join(ROOT, 'docs', 'case-study.html'), encoding='utf-8').read()
     body = between(src, '<body>', '</body>')[len('<body>'):]
     head = between(body, '<header class="head">', '</header>') + '</header>'
-    kpis = between(body, '<div class="kpis">', '<div class="cols">').rstrip()
+    problem = between(body, '<section class="problem">', '</section>') + '</section>'
+    kpis = between(body, '<div class="kpis">', '<div class="figure">').rstrip()
+    figure = re.search(r'<div class="figure">.*?<div class="cap">.*?</div>\s*</div>', body, flags=re.S).group(0)
     cols = between(body, '<div class="cols">', '<footer').rstrip()
     foot = between(body, '<footer class="foot">', '</footer>') + '</footer>'
 
     svg = open(os.path.join(ROOT, 'docs', 'architecture.svg'), encoding='utf-8').read().strip()
     svg = re.sub(r'<\?xml[^>]*\?>\s*', '', svg)
     img = '<img src="architecture.png" alt="Architecture diagram">'
-    assert img in cols, 'the architecture image tag moved in docs/case-study.html'
-    cols = cols.replace(img, '<div class="diagram">' + svg + '</div>')
-    figure = re.search(r'<div class="figure">.*?<div class="cap">.*?</div>\s*</div>', cols, flags=re.S).group(0)
-    cols = cols.replace(figure, '')
+    assert img in figure, 'the architecture image tag moved in docs/case-study.html'
+    figure = figure.replace(img, '<div class="diagram">' + svg + '</div>')
     figure = figure.replace('<div class="cap">', '<div class="hint">Swipe sideways to see the whole drawing.</div><div class="cap">', 1)
     cols = re.sub(r'(<table>.*?</table>)', r'<div class="scroll">\1</div>', cols, flags=re.S)
     links = '<nav class="more" aria-label="More">' + ''.join(f'<a href="{u}">{t}</a>' for t, u in LINKS) + '</nav>'
 
     title = re.search(r'<title>(.*?)</title>', src).group(1)
     return (f'<title>{title}</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>{CSS}</style>\n'
-            f'<div class="page">\n{head}\n<p class="status" role="note">{STATUS}</p>\n{kpis}\n{figure}\n{cols}\n{foot}\n{links}\n</div>\n')
+            f'<div class="page">\n{head}\n<p class="status" role="note">{STATUS}</p>\n{problem}\n{kpis}\n{figure}\n{cols}\n{foot}\n{links}\n</div>\n')
 
 
 if __name__ == '__main__':

@@ -20,7 +20,13 @@
 
 ## The problem
 
-Apple Watch records the numbers, and the Health app shows each as an isolated daily card. It does not say whether today's reading is unusual for you, or why. People who train regularly need that answer before they decide how hard to go, not a chart to interpret.
+Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep, workouts, weight and gait), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personalised, longitudinal picture of their own recovery, sleep and training patterns.
+
+- **Who it is for:** Apple Watch users who train consistently (strength training, general fitness) and already track workouts and sleep, but want to understand the patterns behind their numbers rather than just seeing isolated daily readings.
+- **What problem it solves:** Apple Health has no way to detect drift against a person's own baseline, surface relationships between metrics (for example sleep and next-day recovery), or tell a normal day from an unusual one.
+- **Why it matters:** without that visibility, early signs of under-recovery, overtraining or illness go unnoticed until performance or health has already suffered, and users cannot tell whether a change they made (more sleep, a deload week) actually worked.
+- **What the user should be able to do:** wake up and get a plain-words answer from their own data: whether last night, set against their own normal, is meaningfully off, why, and one action for the day, with the past weeks of each reading one tap away.
+- **The outcome:** earlier, evidence-based awareness of their own recovery and readiness, so training and lifestyle adjustments are driven by their own data rather than generic guidance.
 
 Clarivi gives the answer first, in plain words, and keeps the working one tap away. It never names a medical condition and never gives medical advice.
 
@@ -94,14 +100,14 @@ Week two: results added after the test ends. The AI explanations passed 38 of 40
 
 - **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
 - **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
-- **One-page case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
+- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
 
 ## Try it
 
 Pick how deep to go:
 
 1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
-2. **Read** the [one-page case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
+2. **Read** the [case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and week one's results with every miss.
 4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
 5. **Browse** the Project Memory website linked above.
