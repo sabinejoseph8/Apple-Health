@@ -8,7 +8,7 @@ from taskids import TASK_RE, group_key, assign
 T = 'plan'
 DATE = rf'\d{{1,2}} (?:{MONTHS}) 2026'
 
-# Phases left off the published site (Phase 9, the portfolio package: Sabine's decision, 3 November 2026, D109).
+# Phases left off the published site (Phase 9, packaging: Sabine's decision, 3 November 2026, D109).
 # Their tasks still get ids and stay in assets/task-ids.json, so ticks and ids are safe if one is shown again.
 HIDDEN_PHASES = {'9'}
 

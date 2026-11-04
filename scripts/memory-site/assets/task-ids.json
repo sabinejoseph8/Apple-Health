@@ -750,8 +750,7 @@
  "p9-04": {
   "phase": "9",
   "texts": [
-   "Demo build on made-up data (D95, Sabine, 29 October 2026), so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses",
-   "Demo build on made-up data, so a recruiter can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses"
+   "Demo build on made-up data (D95, Sabine, 29 October 2026), so a visitor can try Clarivi without an account: the same app code built with a demo switch, deployed to a separate Vercel address (a second Vercel project, set up by Sabine when we reach it); no sign-in, no backend and no real data; it reuses the screen tests' made-up data layer (e2e/fixtures/mock-app.ts, moved to a shared place) with a made-up week that shows Ready, Ease off, Ease off from the sleep floor, learning, waiting and a no-sync day, Why today with the numbers open, the digest and the trends; the AI texts are fixed examples labelled as examples, with no real AI calls; a banner says \"Demo with made-up data\"; the demo build reads none of the project's keys or addresses"
   ]
  },
  "p9-05": {
@@ -763,7 +762,7 @@
  "p9-06": {
   "phase": "9",
   "texts": [
-   "Recruiter README for AI product manager roles, with a \"Try it\" section that offers the layers (read the case study, watch the video, open the demo, inspect the evaluation, run the checks), replacing the current one; the original brief kept as docs/project-brief.md; discloses the AI feature and where data goes"
+   "README for a first-time reader, with a \"Try it\" section that offers the layers (read the case study, watch the video, open the demo, inspect the evaluation, run the checks), replacing the current one; the original brief kept as docs/project-brief.md; discloses the AI feature and where data goes"
   ]
  },
  "p9-07": {
@@ -783,7 +782,7 @@
  "p9-09": {
   "phase": "9",
   "texts": [
-   "Private portfolio kit PDF outside the repository (2-minute and 10-minute stories, likely interview questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings)"
+   "Private kit PDF outside the repository (2-minute and 10-minute stories, likely questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings)"
   ]
  },
  "p9-10": {

@@ -29,7 +29,7 @@ Run step 4's `npx supabase start` before steps 5 and 7. Stop the local database 
 python3 checks/run_all.py
 ```
 
-It should end with `0 failed`. While the portfolio package is still being built, it checks only the files that exist so far; `checks/portfolio.json` says which, and what is still to be added. The one contact address in the consent text is listed in that file on purpose, so it is not flagged. Every other address still is.
+It should end with `0 failed`. While the packaging is still being finished, it checks only the files that exist so far; `checks/portfolio.json` says which, and what is still to be added. The one contact address in the consent text is listed in that file on purpose, so it is not flagged. Every other address still is.
 
 A second script looks for anything that should not be public, including in the Git history:
 

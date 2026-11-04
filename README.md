@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > **Project in progress.** Week one (19 to 25 October 2026) is done: the calculations matched an independent check on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. Every result on this page is from week one.
 
-> **Portfolio case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
+> **An AI product management case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
 
 ![Architecture](docs/architecture.png)
 
@@ -48,7 +48,7 @@ The full picture is in the [architecture diagram](docs/architecture.pdf) and the
 ## Planned and tested like a product
 
 - **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
-- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the portfolio checks.
+- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the publishing checks.
 - **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Week one's results, with week two marked as next.
 
 ## Key design choices and tradeoffs
@@ -140,7 +140,7 @@ ios/        the iPhone app: the same web build in a native shell, with the Healt
 supabase/   database migrations, server functions and database tests
 e2e/        Playwright screen tests
 scripts/    the pandas reference check, the AI test set, the Shortcut builder, the Project Memory site builder
-checks/     the portfolio checks and the pre-publish scan
+checks/     the publishing checks and the pre-publish scan
 docs/       Project Memory, the evaluation, the architecture diagram and the run guide
 ```
 
