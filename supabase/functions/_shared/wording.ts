@@ -108,6 +108,28 @@ export const wording = {
     done: 'Done',
   },
 
+  // The native iPhone app's own Health sync (D115, Phase 10): in place of the
+  // Shortcut on that phone. No health detail, no reading.
+  native: {
+    healthTitle: 'Read your Watch readings from Health',
+    healthIntro:
+      'Clarivi needs to read heart rate, heart rate variability, breathing rate, resting heart rate and sleep from Health. It only reads them, and sends them to Clarivi each morning.',
+    healthAllow: 'Allow Health access',
+    healthAsked: "If you said no, you can allow Clarivi later in the Health app, under Sharing, then Apps.",
+    syncing: 'Syncing…',
+    syncHint: "Sends last night's readings from Health. It takes a few seconds.",
+    tokenIntro: 'This app sends your Watch readings each morning with your upload token.',
+    tokenSaved: 'Your token is saved in this app.',
+    tokenMissing: 'This app has no token yet. Create one, or paste the one your Shortcut uses.',
+    tokenPaste: 'Paste an existing token',
+    tokenField: 'Upload token',
+    tokenSave: 'Save in this app',
+    tokenRemove: 'Remove from this app',
+    tokenCreatedSaved: "Saved in this app. If your Shortcut should keep working too, copy the token into it now: it's shown only once.",
+    lastRun: (when: string, message: string) => `Last sync ${when}: ${message}`,
+    healthUnavailable: (why: string) => `The Health sync isn't available in this app (${why}).`,
+  },
+
   // Replies to the iPhone Shortcut, which can show them as a notification.
   // They carry no health detail.
   sync: {

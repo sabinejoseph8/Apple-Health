@@ -3,6 +3,7 @@ import { wording } from '../../supabase/functions/_shared/wording'
 import { ChevronRightIcon } from '../components/Icons'
 import { callFunction } from '../lib/functions'
 import { checkNewPassword } from '../lib/password'
+import { health } from '../lib/native'
 import { forgetThisDevice } from '../lib/push'
 import { supabase } from '../lib/supabase'
 
@@ -26,7 +27,9 @@ export default function AccountSettings({ email, onChanged }: { email: string; o
   if (panel === 'delete')
     return (
       <DeleteData
-        onDone={() => {
+        onDone={async () => {
+          // The server just revoked the token; the native app forgets its copy (D115).
+          await health.clearToken()
           close(w.deleted)
           // The token and phones above were just deleted: show that.
           onChanged()
@@ -137,6 +140,7 @@ function SignOutEverywhere({ onCancel }: { onCancel: () => void }) {
     } catch {
       // Sign out anyway; the phone may already have no subscription.
     }
+    await health.clearToken()
     // Stops notifications to every one of this person's devices, so a lost
     // phone never shows their status again; then ends every session (R7).
     await supabase.rpc('forget_all_devices').then(

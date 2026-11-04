@@ -22,6 +22,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Clarivi reads your heart rate, heart rate variability, breathing rate, resting heart rate and sleep from Health to work out each morning's status. It only reads them.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Only a test build on the simulator writes made-up readings to Health. Clarivi on your iPhone never writes to Health.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

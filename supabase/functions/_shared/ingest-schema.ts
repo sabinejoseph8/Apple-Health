@@ -70,8 +70,10 @@ type Kind = (typeof KINDS)[number]
 
 // Which automation ran the Shortcut, "manual" by hand, "button" from the
 // card's Sync now button (D84), or "alarm" when the person stops their alarm
-// (D94).
-const TRIGGERS = ['charger', 'app', 'manual', 'button', 'alarm'] as const
+// (D94). The native iPhone app's own Health sync (D115) is logged apart:
+// when the app opens, when Health delivers new sleep data in the background,
+// and from the card's Sync now button inside the app.
+const TRIGGERS = ['charger', 'app', 'manual', 'button', 'alarm', 'health_open', 'health_background', 'health_button'] as const
 type Trigger = (typeof TRIGGERS)[number]
 
 const MINUTE = 60_000

@@ -167,6 +167,14 @@ Deno.test('a sync from the card\'s Sync now button is recorded as such (D84)', (
   assertEquals(r.upload.trigger, 'button')
 })
 
+Deno.test('a sync from the native app\'s own Health sync is recorded apart from the Shortcut (D115)', () => {
+  for (const given of ['health_open', 'health_background', 'health_button']) {
+    const r = parseUpload(daily([hr], { trigger: given }), NOW)
+    assert(r.ok, given)
+    assertEquals(r.upload.trigger, given)
+  }
+})
+
 Deno.test('a sync from the alarm automation is recorded as such (D94)', () => {
   const r = parseUpload(daily([hr], { trigger: 'alarm' }), NOW)
   assert(r.ok)

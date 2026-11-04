@@ -9,6 +9,7 @@ import AppLink from '../components/AppLink'
 import AccountSettings from './AccountSettings'
 import ConsentSettings from './ConsentSettings'
 import UploadToken from './UploadToken'
+import { health } from '../lib/native'
 import { currentPushSupport, forgetThisDevice, refreshSubscription, sendTestNotification, turnOnNotifications } from '../lib/push'
 
 const w = wording.notifications
@@ -68,6 +69,9 @@ export default function Settings({ session }: { session: Session }) {
     } catch {
       // Sign out anyway; the phone may already have no subscription.
     }
+    // The native app also forgets the upload token, so a signed-out phone
+    // stops sending readings (D115).
+    await health.clearToken()
     await supabase.auth.signOut({ scope: 'local' })
   }
 

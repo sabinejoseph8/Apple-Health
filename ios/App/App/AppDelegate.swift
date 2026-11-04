@@ -7,7 +7,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Health wakes the app for new sleep data once the person has allowed
+        // reading and the app holds an upload token (D115, 10b).
+        if Keychain.token() != nil {
+            HealthSync.shared.enableBackgroundDelivery()
+        }
+        #if DEBUG
+        // Test builds, launched with -clariviSeed on the simulator (which has
+        // no Watch): write one made-up night into Health first.
+        if CommandLine.arguments.contains("-clariviSeed") {
+            Task { _ = await HealthSeed.writeMadeUpNight() }
+        }
+        #endif
         return true
     }
 
