@@ -56,6 +56,14 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 
 if (!location.hash && scenario.hash) location.hash = scenario.hash
 
+// On a wide screen the phone frame (demo.css) is what scrolls, so when the app moves to another
+// screen and asks the window to scroll to the top, the frame goes back to the top as well.
+const windowScrollTo = window.scrollTo.bind(window) as (...args: unknown[]) => void
+window.scrollTo = ((...args: unknown[]) => {
+  document.getElementById('root')?.scrollTo(0, 0)
+  windowScrollTo(...args)
+}) as typeof window.scrollTo
+
 // The banner: what this is, and a way to pick another morning.
 function mountBanner() {
   const bar = document.createElement('div')

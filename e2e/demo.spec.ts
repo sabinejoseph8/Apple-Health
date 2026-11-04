@@ -131,4 +131,51 @@ test.describe('on an iPhone', () => {
     await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
   })
+  test('there is no phone frame: the app fills the screen', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: wording.checkin.answers.okay }).click()
+    const box = await page.locator('#root').boundingBox()
+    expect(box?.width).toBe(390)
+    await expect(page.locator('#root')).toHaveCSS('border-top-left-radius', '0px')
+  })
+})
+
+// On a wide screen the app is shown inside an iPhone-shaped frame (D110).
+test.describe('on a computer screen', () => {
+  test.use({ viewport: { width: 1280, height: 900 }, isMobile: false, hasTouch: false })
+
+  test('the app sits in a phone-sized frame under the banner, and the page itself does not scroll', async ({ page }) => {
+    await page.goto('/?scenario=sleep-floor')
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+    await expect(banner(page).getByText('Demo with made-up data')).toBeVisible()
+    const frame = page.locator('#root')
+    const box = await frame.boundingBox()
+    expect(box?.width).toBe(414)
+    expect(box?.height).toBeLessThanOrEqual(868)
+    expect(box?.height).toBeGreaterThanOrEqual(560)
+    await expect(frame).toHaveCSS('border-top-left-radius', '56px')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0)
+  })
+
+  test('a long screen scrolls inside the frame, and a new screen starts at the top', async ({ page }) => {
+    await page.goto('/?scenario=sleep-floor#/guide')
+    const frame = page.locator('#root')
+    await expect(page.locator('main').first()).toBeVisible()
+    expect(await frame.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeGreaterThan(300)
+    await frame.evaluate((el) => el.scrollTo(0, 300))
+    expect(await frame.evaluate((el) => el.scrollTop)).toBe(300)
+    await page.evaluate(() => {
+      location.hash = '#/settings'
+    })
+    await expect.poll(() => frame.evaluate((el) => el.scrollTop)).toBe(0)
+  })
+
+  test('every screen still opens from the card', async ({ page }) => {
+    await page.goto('/?scenario=sleep-floor')
+    await page.getByRole('link', { name: /Why ease off today/ }).click()
+    await expect(page.getByRole('heading', { name: wording.why.floor.headline })).toBeVisible()
+    await page.goBack()
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+  })
 })

@@ -40,3 +40,60 @@
 .card.notice[aria-labelledby='notify-headline'] {
   display: none;
 }
+
+/* On a wide screen the app is shown inside an iPhone-shaped frame (D110): the page's #root is the
+   frame and scrolls inside it. A narrow screen or a real phone shows the app as it is. */
+@media (min-width: 700px) {
+  #root {
+    position: relative;
+    box-sizing: border-box;
+    width: 414px;
+    height: min(868px, calc(100vh - 150px));
+    min-height: 560px;
+    margin: 20px auto 28px;
+    border: 12px solid #101012;
+    border-radius: 56px;
+    box-shadow: 0 0 0 2px #3a3a3e, 0 24px 60px rgba(0, 0, 0, 0.28);
+    background: var(--bg);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* The frame, not the window, is the box anything fixed in the app would stay inside. */
+    transform: translateZ(0);
+  }
+  #root::-webkit-scrollbar {
+    display: none;
+  }
+  /* The camera island, pinned to the top of the screen while the app scrolls under it. */
+  #root::before {
+    content: '';
+    position: sticky;
+    top: 10px;
+    z-index: 5;
+    display: block;
+    width: 112px;
+    height: 32px;
+    margin: 10px auto -42px;
+    border-radius: 20px;
+    background: #101012;
+  }
+  /* The home indicator, pinned to the bottom. */
+  #root::after {
+    content: '';
+    position: sticky;
+    bottom: 8px;
+    z-index: 5;
+    display: block;
+    width: 130px;
+    height: 5px;
+    margin: -13px auto 8px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  /* Room under the island and the home indicator, as the Home Screen app gets from the safe areas. */
+  #root .page {
+    padding-top: 60px;
+    padding-bottom: 32px;
+  }
+}
