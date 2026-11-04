@@ -1,19 +1,19 @@
 # Clarivi
 
-Clarivi is a small iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a one-week test with one user, Sabine (the owner), since 8 October 2026 (D89, shortened from two weeks to one by D91; first planned as four weeks with Sabine and three testers).
+Clarivi is an iPhone web app, installed to the home screen, that turns a person's own Apple Watch data into a plain-words morning answer: what last night's readings mean against their own normal, why today's status was set, and one action for today. Version 1 is a one-week test with one user, Sabine (the owner), since 8 October 2026 (D89, shortened from two weeks to one by D91; first planned as four weeks with Sabine and three testers).
 
 ## Where the plan lives
 
 The agreed plan is in `docs/`. Read the files a task needs before starting it.
 
 - `docs/progress.md`: the phased build plan, with tasks, automated tests and manual checks. Work from this file.
-- `docs/product-spec.md`: what the app must do (requirements R1 to R67).
+- `docs/product-spec.md`: what the app must do (requirements R1 to R76).
 - `docs/design.md`: colours, type, spacing, components and screens. The designed screens are in the "Clarivi Screens" canvas: https://claude.ai/artifact/Xc7im7cUsqwwkDbyQRYt8E
 - `docs/design-screens.html`: a copy of the Clarivi Screens canvas (open it in a browser): the readiness card at 6:50am and 8pm, Why today, and Why today with the numbers open, all on the sample day of Tuesday 29 September. Use it for exact layout, wording and sample values.
 - `docs/clarivi-flow.html`: the daily morning loop step by step, the six views it needs and every state each view can be in.
 - `docs/tech-spec.md`: architecture, data model, interfaces, security, hosting and testing.
 - `docs/cayman-data-protection.md`, `docs/consent-draft.md` and `docs/privacy-impact-assessment.md`: the data protection research for every place testers may live (not legal advice), the approved consent text (in the app as `wording.consent`) and the assessment of storing testers' data in the US.
-- `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R67 in `docs/product-spec.md`) and decisions (D1 onwards) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
+- `docs/mvp.md`: the MVP scoping document, with the success criteria (D9), risks (R1 to R25; these are risk numbers, not the requirement numbers R1 to R76 in `docs/product-spec.md`) and decisions (D1 onwards) behind the plan. Use it for why something was decided, and keep it up to date as the project progresses (see Project memory). If it disagrees with the four plan files above, they win, since they are the agreed versions: update the MVP document to match.
 
 If the docs and the code disagree, or a task needs a decision the docs don't make, stop and ask Sabine. Don't change an agreed decision on your own.
 
@@ -38,14 +38,23 @@ When Sabine says "update proj memory", review every one of the five files, even 
 
 ## Interview notes
 
-Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as if Sabine is telling a PM interview story. Include:
+Maintain a file called `interview-notes.md` in the `private/` folder, which Git ignores, so the notes never reach the public repository (moved there from the project root on 29 October 2026, Sabine's decision, D95; earlier versions remain in the public history). Keep it written in the first person, as the story of the project in Sabine's own words. Include:
 
 - who the app is for and why
 - key decisions and tradeoffs
 - major bugs and how she fixed them
 - significant improvements
+- how quality was defined and measured, and what the results changed
 
-Update this file whenever there is a significant new feature, a major bug resolved, or a meaningful design change. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+Update this file whenever there is a significant new feature, a major bug resolved, a meaningful design change or a new evaluation result. The repository is public and the notes' history is in it, so the notes never include passwords, keys, account email addresses or anyone's health readings.
+
+## Evaluation rules
+
+Success criteria are set before any result and never moved quietly. A session that has seen an evaluation's expected answers doesn't edit the thing being evaluated.
+
+## Public writing
+
+Public files describe the work, never who it might be shown to. `python3 checks/run_all.py` checks every tracked file for that; the words it looks for are in `checks/run_all.py`, and the one sentence allowed in `docs/product-spec.md`'s overview is named in `checks/portfolio.json`. A review is a first-time reader's or a signed-out visitor's. Private files (`private/`) may say anything.
 
 ## How to work with Sabine
 
@@ -55,7 +64,7 @@ Update this file whenever there is a significant new feature, a major bug resolv
 - When a step needs her (a dashboard setting, an account, a sign-in, something on her iPhone), say so clearly and give one step at a time.
 - Before saying a task group is done, run the automated tests listed for its phase, then walk her through the manual verification steps.
 - At the end of each phase (after its last task group), run a code review of everything the phase changed, using the code-review skill. Fix what it finds, re-run the phase's automated tests, then tell Sabine in plain words what was found and what was fixed. Only then tick the phase's code-review task and call the phase done. Anything the review raises that needs a decision goes to Sabine first.
-- When a task is done and its checks pass, change its `- [ ]` to `- [x]` in `docs/progress.md`, tick it on the Clarivi Memory site too (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe), and update the Summary at the top of `docs/progress.md`.
+- When a task is done and its checks pass, change its `- [ ]` to `- [x]` in `docs/progress.md`, tick it on the Clarivi Memory site too (https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe; Phase 9 is not on the site, D109), and update the Summary at the top of `docs/progress.md`.
 - Commit small, working changes with clear messages, and push to GitHub at the end of each task group.
 
 ## Stack (details in docs/tech-spec.md)
