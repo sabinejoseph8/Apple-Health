@@ -20,6 +20,7 @@ This guide is for a reader who wants to see how Clarivi is checked, not to use i
 | 5 | `python3 -m pip install -r scripts/reference/requirements.txt`, then `python3 scripts/reference/check.py --local-synthetic` | Builds a throwaway account with a made-up year of readings on the local database, recalculates it independently with pandas and compares every value. It ends with "The database and the reference agree." |
 | 6 | `npx playwright install webkit`, then `npm run test:e2e` | The screen tests at iPhone size, with made-up data |
 | 7 | In a second window `npx supabase functions serve`, then `python3 scripts/reference/privacy_check.py --local` | Checks the privacy rules from the outside, as real people, using two made-up accounts it creates and deletes: signed out sees nothing, signed in sees only their own rows, nobody can write to a table directly. It prints PASS lines and ends with `0 failed` |
+| 8 | `npm run dev:demo`, then open the address it prints | The app itself with made-up data and a banner: no sign-in, no backend, nothing leaves the browser. The banner picks another morning; Why today, the weekly digest and the trends open from the card. `npm run build:demo` builds it and checks it holds none of the project's address or keys |
 
 Run step 4's `npx supabase start` before steps 5 and 7. Stop the local database afterwards with `npm run db:stop`.
 
