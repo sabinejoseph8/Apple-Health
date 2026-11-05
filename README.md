@@ -25,8 +25,6 @@ Clarivi gives the answer first, in plain words, and keeps the working one tap aw
 
 https://github.com/user-attachments/assets/b49f8721-7d24-4163-85a5-753b05a20791
 
-Clarivi for iPhone (in progress, released after the second test week), recorded on the iPhone simulator with made-up data.
-
 ![Architecture](docs/architecture.png)
 
 ## At a glance
