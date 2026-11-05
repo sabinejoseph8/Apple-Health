@@ -5,29 +5,6 @@
 > [!IMPORTANT]
 > **Project in progress.** Week one (19 to 25 October 2026) is done: the calculations matched an independent check on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. Every result on this page is from week one.
 
-> **An AI product management case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
-
-![Architecture](docs/architecture.png)
-
-## Watch the iPhone app (under 2 minutes)
-
-
-https://github.com/user-attachments/assets/b49f8721-7d24-4163-85a5-753b05a20791
-
-
-Clarivi for iPhone (in progress, released after the second test week), recorded on the iPhone simulator with made-up data.
-
-
-## At a glance
-
-- **The user and the problem:** The Apple Watch provides a lot of data points with no guidance as to how to interpret them. Using only their own Apple Watch data, a user learns each morning whether their recovery has drifted from their personal baseline, and gets one data-backed action for the day.
-- **What it does:** each morning a card says Ready, Ease off or Rest, in a few plain sentences, with one action for the day. A "Why today" screen shows exactly how the status was decided.
-- **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
-- **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
-- **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
-- **Status:** built and in use by one person. Week one is done. Week two, the same test after a change to the sync, runs 2 to 8 November 2026; its results are added when it ends.
-- **How it was built:** I wrote the problem, the specs and every decision in the log, and Claude Code wrote the code, tests and queries to them. I reviewed every screen and every word, ran every manual check on my own iPhone, and decided what to cut.
-
 ## The problem
 
 Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep and workouts), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personal picture over time of their own recovery, sleep and training patterns.
@@ -41,6 +18,22 @@ Apple Watch and the Health app collect an unusually rich stream of physiological
 Version 1 builds the first part of this: the morning answer against the person's own normal. The relationships between readings were tested on my own year and not built (see Small on purpose below).
 
 Clarivi gives the answer first, in plain words, and keeps the working one tap away. It never names a medical condition and never gives medical advice.
+
+## Watch the iPhone app (under 2 minutes)
+
+https://github.com/user-attachments/assets/b49f8721-7d24-4163-85a5-753b05a20791
+
+![Architecture](docs/architecture.png)
+
+## At a glance
+
+- **The user and the problem:** The Apple Watch provides a lot of data points with no guidance as to how to interpret them. Using only their own Apple Watch data, a user learns each morning whether their recovery has drifted from their personal baseline, and gets one data-backed action for the day.
+- **What it does:** each morning a card says Ready, Ease off or Rest, in a few plain sentences, with one action for the day. A "Why today" screen shows exactly how the status was decided.
+- **How it works:** an iPhone Shortcut posts the overnight readings. Fixed arithmetic in SQL scores them against my own usual range. The AI (Claude Opus 5.5) writes the wording. It never sets the status.
+- **How quality was defined:** ten measures with targets, set on 29 September 2026, before any result existed.
+- **Results, week one (19 to 25 October 2026):** the calculations match an independent check on my whole year (261 nights, 0 values differ), and isolation held (checked with two made-up accounts). The sync target was missed: 4 of 7 days had a post against a target of 6, and only 2 of 7 days had a status before noon.
+- **Status:** built and in use by one person. Week one is done. Week two, the same test after a change to the sync, runs 2 to 8 November 2026; its results are added when it ends.
+- **How it was built:** I wrote the problem, the specs and every decision in the log, and Claude Code wrote the code, tests and queries to them. I reviewed every screen and every word, ran every manual check on my own iPhone, and decided what to cut.
 
 ## How it works
 
