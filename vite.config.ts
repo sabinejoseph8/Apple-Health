@@ -1,14 +1,22 @@
 /// <reference types="vitest/config" />
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { LIVE_DATABASE, testHeaders } from './csp-config.ts'
 import { pickPublicValues } from './env-config.ts'
+import { stripCrossorigin } from './native-html.ts'
+
+// The native iPhone app (D115) can't load crossorigin-marked files from its
+// own origin; the files are same-origin everywhere, so the tags go without it.
+const nativeHtml: Plugin = {
+  name: 'clarivi-native-html',
+  transformIndexHtml: { order: 'post', handler: stripCrossorigin },
+}
 
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
   const values = pickPublicValues(env)
   return {
-    plugins: [react()],
+    plugins: [react(), nativeHtml],
     // Expose nothing from the environment automatically; only the values
     // picked above are written into the app.
     envPrefix: '__CLARIVI_NONE__',

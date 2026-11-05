@@ -56,6 +56,32 @@ def png(size: int) -> bytes:
     return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b"")
 
 
+def solid_png(size: int, colour: tuple) -> bytes:
+    # One flat colour: the iPhone app's launch screen (D115), the app's light
+    # ground, so the card appears on the same colour it loads over. A launch
+    # screen cannot follow the dark setting (design.md), as on the web app.
+    row = bytes([0]) + bytes(colour) * size
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+
+    header = struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(row * size, 9)) + chunk(b"IEND", b"")
+
+
+GROUND = (0xF2, 0xF2, 0xF7)  # the app's light ground, design.md
+IOS_ASSETS = Path(__file__).resolve().parent.parent / "ios" / "App" / "App" / "Assets.xcassets"
+
 for name, size in [("apple-touch-icon.png", 180), ("icon-192.png", 192), ("icon-512.png", 512)]:
     (OUT / name).write_bytes(png(size))
     print("wrote", name)
+
+# The iPhone app (D115): the same mark at the size iOS wants, and its launch
+# screen, written into the Xcode asset sets Capacitor made.
+if IOS_ASSETS.is_dir():
+    (IOS_ASSETS / "AppIcon.appiconset" / "AppIcon-512@2x.png").write_bytes(png(1024))
+    print("wrote ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png")
+    launch = solid_png(2732, GROUND)
+    for name in ("splash-2732x2732.png", "splash-2732x2732-1.png", "splash-2732x2732-2.png"):
+        (IOS_ASSETS / "Splash.imageset" / name).write_bytes(launch)
+    print("wrote the three launch images in ios/App/App/Assets.xcassets/Splash.imageset")

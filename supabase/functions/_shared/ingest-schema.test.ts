@@ -167,6 +167,44 @@ Deno.test('a sync from the card\'s Sync now button is recorded as such (D84)', (
   assertEquals(r.upload.trigger, 'button')
 })
 
+// The shape HealthSync.swift builds (series(), one object per reading type):
+// ISO times with the phone's offset, HealthKit's unit strings, sleep stages
+// as HealthKit's numbers and an empty unit, plus a device column. Captured
+// from the simulator on 4 November 2026; a change on either side shows here.
+Deno.test('the native app\'s column payload is accepted whole (D115)', () => {
+  const t = (h: number, m = 0) => `2026-11-04T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00-05:00`
+  const body = {
+    schema_version: 1,
+    kind: 'daily',
+    device_tz_offset_min: -300,
+    trigger: 'health_button',
+    series: [
+      { type: 'heart_rate', start: [t(1), t(1, 5)], end: [t(1), t(1, 5)], value: [52.3, 51.8], unit: ['count/min', 'count/min'], source: ['Apple Watch', 'Apple Watch'], device: ['Apple Watch', 'Apple Watch'] },
+      { type: 'hrv_sdnn', start: [t(3)], end: [t(3)], value: [53], unit: ['ms'], source: ['Apple Watch'], device: ['Apple Watch'] },
+      { type: 'respiratory_rate', start: [t(2)], end: [t(2)], value: [15], unit: ['count/min'], source: ['Apple Watch'], device: ['Apple Watch'] },
+      { type: 'resting_hr', start: ['2026-11-03T12:00:00-05:00'], end: ['2026-11-03T20:00:00-05:00'], value: [57], unit: ['count/min'], source: ['Apple Watch'], device: ['Apple Watch'] },
+      { type: 'sleep_stage', start: [t(0), t(2), t(4)], end: [t(2), t(4), t(6)], value: [3, 4, 5], unit: ['', '', ''], source: ['Apple Watch', 'Apple Watch', 'Apple Watch'], device: ['', '', ''] },
+    ],
+  }
+  const r = parseUpload(body, new Date('2026-11-04T13:00:00-05:00'))
+  assert(r.ok)
+  assertEquals(r.upload.trigger, 'health_button')
+  assertEquals(r.upload.set_aside, 0)
+  assertEquals(r.upload.samples.length, 8)
+  const stages = r.upload.samples.filter((s) => s.type === 'sleep_stage').map((s) => s.stage)
+  assertEquals(stages, ['core', 'deep', 'rem'])
+  assertEquals(r.upload.samples[0].source_device, 'Apple Watch')
+  assertEquals(r.upload.samples.find((s) => s.type === 'hrv_sdnn')?.unit, 'ms')
+})
+
+Deno.test('a sync from the native app\'s own Health sync is recorded apart from the Shortcut (D115)', () => {
+  for (const given of ['health_open', 'health_background', 'health_button']) {
+    const r = parseUpload(daily([hr], { trigger: given }), NOW)
+    assert(r.ok, given)
+    assertEquals(r.upload.trigger, given)
+  }
+})
+
 Deno.test('a sync from the alarm automation is recorded as such (D94)', () => {
   const r = parseUpload(daily([hr], { trigger: 'alarm' }), NOW)
   assert(r.ok)
