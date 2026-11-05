@@ -5,8 +5,6 @@
 > [!IMPORTANT]
 > **Project in progress.** Week one (19 to 25 October 2026) is done: the calculations matched an independent check on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. Every result on this page is from week one.
 
-> **An AI product management case study.** I built Clarivi to practise managing an AI feature on sensitive data: define quality before building, measure it honestly, and say what missed. It is real software running on my own Apple Watch data. The test so far has one user, me, so it shows whether the pipeline works, not whether the tool changes behaviour. You can [try a demo on made-up data](https://apple-health-rust.vercel.app); it never holds real readings.
-
 ## The problem
 
 Apple Watch and the Health app collect an unusually rich stream of physiological and behavioural data (heart rate, heart rate variability, sleep and workouts), but mostly show each metric as an isolated daily card, with little sense of trend. There is no way to see how a metric is drifting over time, how it relates to other metrics, or whether today's reading is actually unusual for this person. This project builds a tool that takes a person's own Apple Watch data each morning and turns it into a personal picture over time of their own recovery, sleep and training patterns.
