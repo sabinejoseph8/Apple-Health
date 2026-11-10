@@ -48,11 +48,50 @@ interface ClariviHealthPlugin {
   requestNotifications(): Promise<{ granted: boolean }>
   planFollowUp(options: { date: string }): Promise<void>
   cancelFollowUp(options: { date: string }): Promise<void>
+  appState(): Promise<{ inFront: boolean }>
+  addListener(event: 'appState', cb: (state: { inFront: boolean }) => void): Promise<{ remove: () => Promise<void> }>
 }
 
 export type NotificationStatus = 'notDetermined' | 'denied' | 'authorized'
 
 const plugin = registerPlugin<ClariviHealthPlugin>('ClariviHealth')
+
+// Whether the person can see the app (10f). iOS also starts the native app
+// out of sight when the Watch saves sleep, and the card then loads with no one
+// looking; such a load must not count as a view, or record a status as shown.
+// The source is the native plugin; tests pass their own.
+export interface AppStateSource {
+  appState(): Promise<{ inFront: boolean }>
+  addListener(event: 'appState', cb: (state: { inFront: boolean }) => void): Promise<{ remove: () => Promise<void> }>
+}
+
+// Calls back with whether the app is on screen now, then each time that
+// changes. Outside the native app the page counts as on screen, as before. If
+// the native side can't answer, the app counts as on screen, as before 10f.
+export function watchInFront(cb: (inFront: boolean) => void, source: AppStateSource | null = isNative() ? plugin : null): () => void {
+  if (!source) {
+    cb(true)
+    return () => undefined
+  }
+  let live = true
+  let heard = false
+  const listener = source.addListener('appState', (state) => {
+    heard = true
+    if (live) cb(state.inFront)
+  }).catch(() => null)
+  source
+    .appState()
+    .then((state) => state.inFront)
+    .catch(() => true)
+    .then((inFront) => {
+      // An event that arrived first is newer than this answer.
+      if (live && !heard) cb(inFront)
+    })
+  return () => {
+    live = false
+    listener.then((l) => l?.remove()).catch(() => undefined)
+  }
+}
 
 // On each open, the native side learns the server address, the signed-in
 // account (its token is the only one used) and the words for its

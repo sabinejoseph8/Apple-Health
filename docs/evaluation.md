@@ -91,6 +91,7 @@ None was built (decided 29 October 2026).
 - **No outside user.** Nobody but the owner used it, so engagement and retention say nothing about other people.
 - **Signal evidence is thin.** The owner's year has no calendar illness or major events, so the Signal check rests on one trip and on workouts far below her usual.
 - **The Watch decides when the night arrives.** The Watch's sleep reached the iPhone's Health hours after waking on 30 October, and week one's log showed the same on 20 October. Clarivi cannot see that moment, so any sync target depends on something it does not control, and a fixed wait cannot fix it.
+- **Card views from the iPhone app's background wakes.** From 10 November 2026, iOS also starts the iPhone app out of sight when the Watch saves sleep, and until task 10f each such start logged a card view nobody saw: on 10 November, three of the card views (two overnight, one a second after a background sync) were wakes like that, and two more in the afternoon can't be told apart. Week two ran before the app, so its results are not affected. After 10f, a card view, and a status recorded as shown, needs the app on screen. Engagement counts days, and 10 November also had a card view a few minutes after the morning notification, followed by Why today opened, so that day counts either way.
 - **Not measured yet.** Week two. The quality of the AI's wording on real nights, which the owner judges by reading it in week two. Isolation between two real people.
 
 ## 5. What the results changed

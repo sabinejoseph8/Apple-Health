@@ -21,6 +21,9 @@
 --             sent without error. Taps are not part of this target.
 --   Engagement (5 of 7 days). Days the card was opened (a card_view event) or the morning
 --             notification was tapped.
+--             From 10 November 2026 until task 10f, the iPhone app's background wakes also
+--             logged card views nobody saw (docs/evaluation.md, Caveats); a day whose only
+--             card views are wakes like that is not an engaged day.
 --   Quiet by default (about 1 day in 7). Of the days a status was shown, the days the first status
 --             shown was Ease off or Rest. The year figures use the daily_status table as it
 --             stands: the version 3 count is every Ease off and Rest day; the version 2 count

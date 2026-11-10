@@ -1,5 +1,6 @@
 import Capacitor
 import Foundation
+import UIKit
 
 // The bridge between the web app and the native Health sync (D115, 10b). The
 // web app calls these from src/lib/native.ts; replies never hold a reading.
@@ -18,7 +19,31 @@ public class ClariviHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestNotifications", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "planFollowUp", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "cancelFollowUp", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "appState", returnType: CAPPluginReturnPromise),
     ]
+
+    // MARK: Whether the app is on screen (10f)
+
+    // iOS also starts the app out of sight, when the Watch saves sleep (the
+    // Health observer), and the web page then loads with no one looking. The
+    // web app asks here before it counts a card as seen, and hears when the
+    // app comes to the front or goes away.
+    public override func load() {
+        let centre = NotificationCenter.default
+        centre.addObserver(self, selector: #selector(cameToFront), name: UIApplication.didBecomeActiveNotification, object: nil)
+        centre.addObserver(self, selector: #selector(wentAway), name: UIApplication.didEnterBackgroundNotification, object: nil)
+    }
+
+    @objc private func cameToFront() { notifyListeners("appState", data: ["inFront": true]) }
+    @objc private func wentAway() { notifyListeners("appState", data: ["inFront": false]) }
+
+    // Opening the app passes through "inactive" before "active", so only
+    // "background" means out of sight.
+    @objc func appState(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            call.resolve(["inFront": UIApplication.shared.applicationState != .background])
+        }
+    }
 
     // MARK: Notifications the phone schedules itself (10c)
 
