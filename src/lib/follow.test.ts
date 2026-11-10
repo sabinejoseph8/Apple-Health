@@ -37,6 +37,11 @@ describe('which days were change days', () => {
     expect(days.get('2026-09-29')?.nudge).toBe('train_easy')
   })
 
+  it('never treats a status shown after noon, recorded with no nudge, as a change day (D119)', () => {
+    const days = followDays([{ date: '2026-09-29', nudge: null, shown_at: '2026-09-29T18:00:00Z' }], [])
+    expect(days.size).toBe(0)
+  })
+
   it("gives each day's latest answer (R54)", () => {
     const days = followDays(
       [{ date: '2026-09-29', nudge: 'train_easy', shown_at: '2026-09-29T11:44:00Z' }],

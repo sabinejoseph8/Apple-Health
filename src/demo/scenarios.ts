@@ -215,6 +215,22 @@ export const SCENARIOS: Scenario[] = [
     }),
   },
   {
+    // D119: last night arrived after noon, so the status shows late, without a nudge.
+    id: 'after-noon',
+    label: demoWording.scenarios['after-noon'],
+    time: [13, 0],
+    tables: (now) => {
+      const base = common(sampleLast)
+      return {
+        ...base,
+        ...answered,
+        daily_status: [row(sampleDay, now, 18), past],
+        uploads: synced(now, 20),
+        ai_texts: [...(base.ai_texts ?? []), ...aiMorning(sampleDay, EXAMPLE_MORNING.ease_off)],
+      }
+    },
+  },
+  {
     id: 'evening',
     label: demoWording.scenarios['evening'],
     time: [20, 0],

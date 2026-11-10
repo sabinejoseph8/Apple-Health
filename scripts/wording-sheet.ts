@@ -181,14 +181,16 @@ ${stateCard(s.analysing.pill, s.analysing.headline, [s.analysing.detail], 'The s
 ${stateCard(s.analysing.pill, s.analysing.delayedHeadline, [s.analysing.delayedDetail], 'Still no status 15 minutes after the readings arrived.')}
 ${stateCard(s.nightUnfinished.pill, s.nightUnfinished.headline, [s.nightUnfinished.detail], 'A sync came before the Watch handed over last night’s sleep (R26). Before noon only.')}
 ${stateCard(s.missed.pill, s.missed.headline, [s.missed.detail], 'No sync by 11:30am (R27).')}
-${stateCard(s.noSync.pill, s.noSync.headline, [s.noSync.detail], 'No sync by noon (R29).')}
-${stateCard(s.noSync.pill, s.noSync.afterNoon, [s.noSync.detail], 'The first sync came after noon (R29).')}
-${stateCard(s.notEnoughData.pill, s.notEnoughData.headline, [s.notEnoughData.noSleep], 'No sleep recorded, or the night was still unfinished at noon (R31).')}
+${stateCard(s.noSync.pill, s.noSync.headline, [s.noSync.stillPossible], 'No sync yet, between noon and 8pm: a sync can still bring today\u2019s status, late (R29, D119).')}
+${stateCard(s.noSync.pill, s.noSync.headline, [s.noSync.detail], 'No sync by 8pm (R29, D119).')}
+${stateCard(s.notEnoughData.pill, s.notEnoughData.headline, [s.notEnoughData.noSleep], 'No sleep recorded (R31).')}
+${stateCard(s.notEnoughData.pill, s.notEnoughData.headline, [s.notEnoughData.unfinished], 'The night was still unfinished at 8pm (R31, D119).')}
 ${stateCard(s.notEnoughData.pill, s.notEnoughData.headline, [s.notEnoughData.tooFew], 'Two or more readings missing (R31).')}
 ${stateCard(s.learning.pill, s.learning.headline, [s.learning.progress(14, v2.needed), learningLastNight({ asleep_min: 370, hrv: 41.6, sleeping_hr: 55 }) ?? ''], 'Two or more normals still being learned (R32): values, no verdicts, no status.')}
 <div class="pair"><div class="phone"><h3>${esc(s.rejected.headline)}</h3><p>${esc(s.rejected.token)}</p><div class="link">${esc(s.rejected.settings)}</div></div><div class="side"><p class="muted">The Shortcut’s token was replaced (R11). Shown above whatever else the card says.</p><p>Other rejections: “${esc(s.rejected.other)}”</p></div></div>
 <div class="pair"><div class="phone"><p>${esc(w.sync.importProgress(5))}</p></div><div class="side"><p class="muted">While the one-year import is under 12 months (R12).</p></div></div>
 <div class="pair"><div class="phone"><div class="row">${pill(w.card.status.ease_off, 'ease_off')}${pill(w.card.late, 'neutral')}<span class="muted">${esc(w.card.synced(w.time.at('11:48am')))}</span></div></div><div class="side"><p class="muted">A sync between 11:30am and noon gives the normal card, marked late with the grey pill (R28).</p></div></div>
+<div class="pair"><div class="phone"><div class="row">${pill(w.card.status.ease_off, 'ease_off')}${pill(w.card.late, 'neutral')}<span class="muted">${esc(w.card.synced(w.time.at('2:10pm')))}</span></div><p class="muted">${esc(w.card.afterNoon)}</p></div><div class="side"><p class="muted">Last night arrived after noon: the status still shows, marked late, with this line and no nudge, no 8pm question and no morning notification (R29, D119).</p></div></div>
 
 <h2>3. Check-in</h2>
 <div class="pair"><div class="phone"><h3>${esc(w.checkin.question)}</h3><div class="buttons"><span>${esc(w.checkin.answers.good)}</span><span>${esc(w.checkin.answers.okay)}</span><span>${esc(w.checkin.answers.off)}</span></div><p class="muted">${esc(w.checkin.hint)}</p><div class="link" style="border:0">${esc(w.checkin.skip)}</div></div>
