@@ -76,7 +76,7 @@ export async function loadToday(now: Date = new Date()): Promise<TodayData> {
     supabase.from('digests').select('week_start').order('week_start', { ascending: false }).limit(1).maybeSingle(),
   ])
   const digestWeek = (must(digest) as { week_start: string } | null)?.week_start
-  const shownRows = must(shown) as { date: string; nudge: Nudge; shown_at: string }[]
+  const shownRows = must(shown) as { date: string; nudge: Nudge | null; shown_at: string }[]
   const follow = followDays(shownRows, must(answers) as { date: string; answer: FollowAnswer; answered_at: string }[])
 
   // The normals' minimum nights only matter while learning.

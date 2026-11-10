@@ -110,23 +110,33 @@ describe('which card shows (R25 to R32)', () => {
     expect(state).toMatchObject({ kind: 'status', late: true })
   })
 
-  it('gives no status when the first sync came after noon (R29)', () => {
+  it('shows the status late, with no nudge, when the first sync came after noon (R29, D119)', () => {
     const { state } = selectCard(inputs({ now: at(12, 40), status: statusRow(), recentUploads: [upload(at(12, 30))] }))
-    expect(state).toEqual({ kind: 'no_sync', afterNoon: true })
+    expect(state).toMatchObject({ kind: 'status', late: true, afterNoon: true, syncedAt: at(12, 30) })
   })
 
-  it("gives no status when last night only arrived after noon (R26, R31)", () => {
+  it('shows the status late, with no nudge, when last night only arrived after noon (R29, D119)', () => {
     const morning = upload(at(9, 0), { night_complete: false })
     const later = upload(at(12, 30))
     const { state } = selectCard(inputs({ now: at(12, 40), status: statusRow(), recentUploads: [later, morning] }))
-    expect(state).toEqual({ kind: 'not_enough_data', why: 'unfinished' })
+    expect(state).toMatchObject({ kind: 'status', late: true, afterNoon: true })
   })
 
-  it('says sleep is still in progress before noon, and not enough data after (R26)', () => {
+  it('keeps the nudge when the night came before noon and the card is opened after it', () => {
+    const { state } = selectCard(inputs({ now: at(15, 0), status: statusRow(), recentUploads: [upload(at(9, 0))] }))
+    expect(state).toMatchObject({ kind: 'status', late: false, afterNoon: false })
+  })
+
+  it('treats a first sync after noon as readings being worked out, not as no status (D119)', () => {
+    expect(selectCard(inputs({ now: at(14, 1), recentUploads: [upload(at(14, 0))] })).state).toEqual({ kind: 'analysing', delayed: false })
+  })
+
+  it('says sleep is still in progress until 8pm, and not enough data after (R26, D119)', () => {
     const sync = upload(at(6, 42), { night_complete: false })
     const status = noStatus('night_unfinished')
     expect(selectCard(inputs({ status, recentUploads: [sync] })).state.kind).toBe('night_unfinished')
-    expect(selectCard(inputs({ now: at(12, 5), status, recentUploads: [sync] })).state).toEqual({
+    expect(selectCard(inputs({ now: at(19, 59), status, recentUploads: [sync] })).state.kind).toBe('night_unfinished')
+    expect(selectCard(inputs({ now: at(20, 0), status, recentUploads: [sync] })).state).toEqual({
       kind: 'not_enough_data',
       why: 'unfinished',
     })
@@ -139,9 +149,10 @@ describe('which card shows (R25 to R32)', () => {
     expect(selectCard(inputs({ now: at(12, 5), status, recentUploads: [sync] })).state).toEqual({ kind: 'no_sleep_stages', beforeNoon: false })
   })
 
-  it('says no sync yet from 11:30 (R27), and no sync by noon after (R29)', () => {
+  it('says no sync yet from 11:30 (R27); from noon no nudge, and a status still possible until 8pm (R29, D119)', () => {
     expect(selectCard(inputs({ now: at(11, 30) })).state.kind).toBe('missed')
-    expect(selectCard(inputs({ now: at(12, 0) })).state).toEqual({ kind: 'no_sync', afterNoon: false })
+    expect(selectCard(inputs({ now: at(12, 0) })).state).toEqual({ kind: 'no_sync', stillPossible: true })
+    expect(selectCard(inputs({ now: at(20, 0) })).state).toEqual({ kind: 'no_sync', stillPossible: false })
   })
 
   it('says why there is not enough data (R31)', () => {

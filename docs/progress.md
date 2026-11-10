@@ -578,6 +578,7 @@ Decided 3 October 2026: workouts from a one-time Health app export (D54); disrup
 - [x] 10c Notifications scheduled on the phone (free option, D115): after a sync that completes the night, a notification that today's status is in; the 11:30 reminder when no status is shown; the 8pm question on change days; cancelled when the app shows the status first; wording agreed with Sabine; no health detail in any of them (R49, R50)
 - [ ] 10d On Sabine's iPhone, after week two: install from Xcode with her Apple ID (a free install), test account first, then her own; the Shortcut keeps running beside it for the first days; count each morning which sync arrived first and how long after waking
 - [ ] Docs (product spec, tech spec, `mvp.md`, README's repository structure), the Memory site, interview notes
+- [ ] 10e Status after noon (D119, Sabine, 10 November 2026): when last night arrives after noon, the card shows today's status marked late with "Last night's readings arrived after noon, so there's no nudge today.", and no nudge, no 8pm question or morning notification; the server records it as shown with no nudge (`synced_after_noon`, migration `20261110000000_status_after_noon.sql`); the iPhone app syncs on its own from 4am to 8pm; the card says sleep is in progress until 8pm and, between noon and 8pm with no sync, that a status can still come; the demo gets an after-noon morning; unit, database and browser tests
 - [ ] Code review of everything changed in this phase; fix what it finds, then re-run the tests
 
 ### Automated tests

@@ -29,13 +29,14 @@ export function askYesterday(now: Date, yesterday: FollowDay | null): boolean {
 // The change days among what was shown: the first shown nudge of each day
 // (D61), when it asked for a change, with that day's latest answer.
 export function followDays(
-  shown: { date: string; nudge: Nudge; shown_at: string }[],
+  shown: { date: string; nudge: Nudge | null; shown_at: string }[],
   answers: { date: string; answer: FollowAnswer; answered_at: string }[],
 ): Map<string, FollowDay> {
-  const first = new Map<string, Nudge>()
+  // A status shown after noon is recorded with no nudge (D119): not a change day.
+  const first = new Map<string, Nudge | null>()
   for (const s of [...shown].sort((a, b) => a.shown_at.localeCompare(b.shown_at))) if (!first.has(s.date)) first.set(s.date, s.nudge)
   const days = new Map<string, FollowDay>()
-  for (const [date, nudge] of first) if (nudge !== 'train_as_planned') days.set(date, { date, nudge, answer: null })
+  for (const [date, nudge] of first) if (nudge && nudge !== 'train_as_planned') days.set(date, { date, nudge, answer: null })
   const latest = [...answers].sort((a, b) => b.answered_at.localeCompare(a.answered_at))
   for (const day of days.values()) day.answer = latest.find((a) => a.date === day.date)?.answer ?? null
   return days

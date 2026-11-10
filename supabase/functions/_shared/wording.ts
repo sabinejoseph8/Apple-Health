@@ -139,7 +139,7 @@ export const wording = {
       no_token: 'Add your upload token in Settings first.',
       no_url: 'Open the card once, then try again.',
       no_permission: 'Allow Health access on the card first.',
-      outside_window: 'Automatic syncs run between 4am and noon.',
+      outside_window: 'Automatic syncs run between 4am and 8pm.',
       done_today: "Today's sync is already done on this phone.",
       busy: 'A sync is already running.',
       already_complete: "Today's sync was already done.",
@@ -246,6 +246,9 @@ export const wording = {
     // "at 6:42am" this morning, or "yesterday at 9:15pm".
     synced: (when: string) => `Updated from your Watch ${when}`,
     late: 'Late',
+    // D119 (approved by Sabine, 10 November 2026): last night arrived after noon,
+    // so the status shows, late, without a nudge or an 8pm question.
+    afterNoon: "Last night's readings arrived after noon, so there's no nudge today.",
     // D84: on the card while last night isn't in yet, before noon.
     syncNow: 'Sync now',
     syncNowHint: "Opens the Shortcuts app to send last night's readings. Come back here when it's done.",
@@ -364,7 +367,7 @@ export const wording = {
       notEnoughData: 'Not enough data that night',
       noSleep: "Your Watch didn't record any sleep that night, so there was no status that day.",
       tooFew: "Two or more of that night's readings were missing, so there was no status that day.",
-      unfinished: "That night's sleep hadn't arrived by noon, so there was no status that day.",
+      unfinished: "That night's sleep hadn't arrived in time, so there was no status that day.",
     },
     // The reading cards on a past day, where Why today says "last night"
     // (approved by Sabine, 8 October 2026). The chart ends on that day.
@@ -453,8 +456,9 @@ export const wording = {
     noSync: {
       pill: 'No sync',
       headline: 'No sync this morning',
-      afterNoon: "Today's sync came after noon",
       detail: "There's no status or nudge today. Tomorrow starts afresh.",
+      // Between noon and 8pm a sync can still bring today's status, late (D119).
+      stillPossible: "There's no nudge today. If last night's readings arrive before 8pm, today's status will show here.",
     },
     // D87: the Watch's sleep arrived without stages (words approved by Sabine, 8 October 2026).
     noSleepStages: {
@@ -468,7 +472,7 @@ export const wording = {
       headline: 'Not enough data last night',
       noSleep: "Your Watch didn't record any sleep last night, so there's no status today.",
       tooFew: "Two or more of last night's readings are missing, so there's no status today.",
-      unfinished: "Last night's sleep hadn't arrived by noon, so there's no status today.",
+      unfinished: "Last night's sleep hadn't arrived by 8pm, so there's no status today.",
     },
     learning: {
       pill: 'Learning your usual levels',

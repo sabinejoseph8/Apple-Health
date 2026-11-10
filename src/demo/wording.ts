@@ -14,6 +14,7 @@ export const demoWording = {
     learning: 'Still learning your usual range',
     waiting: 'Waiting for last night to arrive',
     'no-sync': 'No sync by noon',
+    'after-noon': 'Status after noon, with no nudge',
     evening: 'Evening question on an Ease off day',
   },
 } as const

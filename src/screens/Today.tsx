@@ -161,7 +161,9 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   // nothing has been shown yet does the status on this card decide, as the
   // card records it as shown now.
   const row = model?.state.kind === 'status' ? model.state.row : null
-  const cardNudge = row?.nudge && row.nudge !== 'train_as_planned' ? row.nudge : null
+  // A status that arrived after noon carries no nudge and no 8pm question (D119).
+  const afterNoon = model?.state.kind === 'status' && model.state.afterNoon
+  const cardNudge = row?.nudge && row.nudge !== 'train_as_planned' && !afterNoon ? row.nudge : null
   const followToday: FollowDay | null =
     data?.follow.today ?? (row && cardNudge && !data?.follow.shownToday ? { date: row.date, nudge: cardNudge, answer: null } : null)
   const evening = askTonight(now, followToday)
@@ -310,7 +312,7 @@ function Card({ state, now, folded, onSynced }: { state: CardState; now: Date; f
     case 'missed':
       return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} syncNow onSynced={onSynced} />
     case 'no_sync':
-      return <NoStatus pill={s.noSync.pill} headline={state.afterNoon ? s.noSync.afterNoon : s.noSync.headline} lines={[s.noSync.detail]} />
+      return <NoStatus pill={s.noSync.pill} headline={s.noSync.headline} lines={[state.stillPossible ? s.noSync.stillPossible : s.noSync.detail]} />
     case 'not_enough_data':
       return (
         <NoStatus
@@ -340,7 +342,7 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
   const [unfolded, setUnfolded] = useState(false)
   const { row } = state
   if (row.status === 'none') return null
-  const nudge = row.nudge && !folded ? c.nudges[row.nudge] : null
+  const nudge = row.nudge && !folded && !state.afterNoon ? c.nudges[row.nudge] : null
   const showBriefing = !folded || unfolded
   return (
     <section className="card briefing" aria-labelledby="card-headline">
@@ -351,6 +353,7 @@ function StatusCard({ state, now, folded }: { state: Extract<CardState, { kind: 
       </div>
       {row.readings_used === 2 && <p className="caption">{c.partial}</p>}
       {state.noStages && <p className="caption">{c.noStages}</p>}
+      {state.afterNoon && <p className="caption">{c.afterNoon}</p>}
       <h2 id="card-headline" className="card-headline">
         {headline(row)}
       </h2>

@@ -67,7 +67,8 @@ export interface CardInputs {
 
 export type CardState =
   // ai: the AI's explanation for this status, or null to show the fixed briefing (R70).
-  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean; noStages: boolean; ai: string | null }
+  // afterNoon: last night arrived after noon, so the status shows late with no nudge (R29, D119).
+  | { kind: 'status'; row: StatusRow; syncedAt: Date | null; late: boolean; afterNoon: boolean; noStages: boolean; ai: string | null }
   // The status is in and the AI is still writing its explanation (D95, option B): the whole card waits.
   | { kind: 'writing' }
   | { kind: 'waiting'; lastSync: Date | null }
@@ -77,7 +78,8 @@ export type CardState =
   // The Watch's sleep arrived without stages (D87); Sync now until noon.
   | { kind: 'no_sleep_stages'; beforeNoon: boolean }
   | { kind: 'missed' }
-  | { kind: 'no_sync'; afterNoon: boolean }
+  // stillPossible: before 8pm, when a sync can still bring today's status, late (D119).
+  | { kind: 'no_sync'; stillPossible: boolean }
   | { kind: 'not_enough_data'; why: 'no_sleep' | 'too_few' | 'unfinished' }
   | { kind: 'learning'; nights: number; needed: number; night: NightRow | null }
 
@@ -89,9 +91,11 @@ export interface CardModel {
   importMonths: number | null
 }
 
-// A sync after 11:30am is late (R28); after noon there is no status (R29).
+// A sync after 11:30am is late (R28). From noon the status still shows, late,
+// but with no nudge (R29, D119); the iPhone app syncs on its own until 8pm.
 export const LATE_FROM = 11 * 60 + 30
 export const NOON = 12 * 60
+export const STATUS_UNTIL = 20 * 60
 // The status usually follows a sync within a minute or two.
 export const ANALYSING_FOR_MS = 15 * 60 * 1000
 // How long the card waits for the AI's text before showing the fixed briefing (R70).
@@ -130,14 +134,11 @@ function selectState(i: CardInputs): CardState {
   const completing = todays.find((u) => u.night_complete)
   const synced = completing ? time(completing) : todays.length > 0 ? time(todays[todays.length - 1]) : null
   const nowMin = minutesOfDay(i.now)
-  const firstAfterNoon = first !== null && minutesOfDay(first) >= NOON
 
   const row = i.status
   if (row && row.status !== 'none') {
-    if (synced && minutesOfDay(synced) >= NOON) {
-      // Last night only arrived after noon: no status today (R29).
-      return firstAfterNoon ? { kind: 'no_sync', afterNoon: true } : { kind: 'not_enough_data', why: 'unfinished' }
-    }
+    // Last night only arrived after noon: the status shows, late, with no nudge (R29, D119).
+    const afterNoon = synced !== null && minutesOfDay(synced) >= NOON
     const ai = aiFor(row, i.aiText)
     if (ai === null && waitingForAi(row, i.now)) return { kind: 'writing' }
     return {
@@ -146,17 +147,17 @@ function selectState(i: CardInputs): CardState {
       ai,
       syncedAt: synced ?? (i.lastSync ? time(i.lastSync) : null),
       late: synced !== null && minutesOfDay(synced) >= LATE_FROM,
+      afterNoon,
       // The night was built from plain "asleep" records, the Watch having recorded no stages (D92).
       noStages: i.night?.no_stages === true,
     }
   }
 
   if (row) {
-    if (firstAfterNoon) return { kind: 'no_sync', afterNoon: true }
     switch (row.no_status_reason) {
       case 'night_unfinished':
-        // Sleep still in progress until noon (R26), then not enough data (R31).
-        return nowMin < NOON ? { kind: 'night_unfinished' } : { kind: 'not_enough_data', why: 'unfinished' }
+        // Sleep still in progress until 8pm (R26, D119), then not enough data (R31).
+        return nowMin < STATUS_UNTIL ? { kind: 'night_unfinished' } : { kind: 'not_enough_data', why: 'unfinished' }
       case 'no_sleep_stages':
         return { kind: 'no_sleep_stages', beforeNoon: nowMin < NOON }
       case 'learning':
@@ -170,12 +171,11 @@ function selectState(i: CardInputs): CardState {
 
   // No status row yet.
   if (first) {
-    if (firstAfterNoon) return { kind: 'no_sync', afterNoon: true }
     return { kind: 'analysing', delayed: i.now.getTime() - first.getTime() > ANALYSING_FOR_MS }
   }
   if (nowMin < LATE_FROM) return { kind: 'waiting', lastSync: i.lastSync ? time(i.lastSync) : null }
   if (nowMin < NOON) return { kind: 'missed' }
-  return { kind: 'no_sync', afterNoon: false }
+  return { kind: 'no_sync', stillPossible: nowMin < STATUS_UNTIL }
 }
 
 // "14 of 21 nights": the building reading closest to done, since a status

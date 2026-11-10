@@ -3,7 +3,7 @@ import HealthKit
 
 // The native sync (D115, Phase 10, 10b): what the Clarivi Sync Shortcut does,
 // done by the app itself. One run is one morning's attempt:
-//   1. automatic runs act only between 4am and noon, and never twice in a day
+//   1. automatic runs act only between 4am and 8pm (D119; noon before), and never twice in a day
 //      on this phone (the same rules as the Shortcut's automations);
 //   2. a small ping asks the server whether today's sync is already complete;
 //   3. yesterday's and today's readings are read from Health, the five types
@@ -111,7 +111,7 @@ final class HealthSync {
 
     // Health wakes the app when new sleep data arrives (R7's "by itself").
     // The handler runs a morning sync under the same rules as any automatic
-    // run, so a wake outside 4am to noon, or after today's sync, does nothing.
+    // run, so a wake outside 4am to 8pm, or after today's sync, does nothing.
     func enableBackgroundDelivery() {
         guard Self.available, observer == nil else { return }
         let query = HKObserverQuery(sampleType: Self.sleepType, predicate: nil) { _, completion, _ in
@@ -160,7 +160,7 @@ final class HealthSync {
         let today = Self.dayFormatter.string(from: now)
         if !byHand {
             let hour = Calendar.current.component(.hour, from: now)
-            if hour < 4 || hour >= 12 {
+            if hour < 4 || hour >= 20 {
                 return outcome("outside_window", trigger: trigger, keep: false)
             }
         }

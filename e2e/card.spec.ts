@@ -97,6 +97,20 @@ test.describe('cards without a status', () => {
     await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
   })
 
+  test('shows a status whose night arrived after noon, late and with no nudge (R29, D119)', async ({ page }) => {
+    await openApp(page, { at: '2026-09-29T14:20:00-05:00', tables: { ...answered, daily_status: [statusRow], uploads: [dailySync('2026-09-29T14:10:00-05:00')] } })
+    await expect(page.getByText(wording.card.status.ease_off, { exact: true })).toBeVisible()
+    await expect(page.getByText(wording.card.late, { exact: true })).toBeVisible()
+    await expect(page.getByText(wording.card.afterNoon)).toBeVisible()
+    await expect(page.getByText(wording.card.nudgeLabel, { exact: true })).toHaveCount(0)
+  })
+
+  test('between noon and 8pm with no sync, says a status can still come (R29, D119)', async ({ page }) => {
+    await openApp(page, { at: '2026-09-29T15:00:00-05:00', tables: answered })
+    await expect(page.getByRole('heading', { name: wording.states.noSync.headline })).toBeVisible()
+    await expect(page.getByText(wording.states.noSync.stillPossible)).toBeVisible()
+  })
+
   test('shows learning progress and last night in plain words (R32)', async ({ page }) => {
     const learning = { ...statusRow, status: 'none', no_status_reason: 'learning', nudge: null, total: null, readings_used: 0, points: {} }
     await openApp(page, {

@@ -60,6 +60,7 @@ export default function WhyToday() {
           row={state.row}
           why={loaded.why}
           past={false}
+          noNudge={state.afterNoon}
           after={
             <button className="secondary" type="button" onClick={() => goDay(addDays(loaded.today, -1))}>
               {p.previous}
@@ -77,12 +78,13 @@ export default function WhyToday() {
   )
 }
 
-type ShowProps = { dateText: string | null; row: StatusRow; why: WhyData; past: boolean; after?: ReactNode }
+type ShowProps = { dateText: string | null; row: StatusRow; why: WhyData; past: boolean; noNudge?: boolean; after?: ReactNode }
 
-function StatusWhy({ dateText, row, why, past, after }: ShowProps) {
+function StatusWhy({ dateText, row, why, past, noNudge = false, after }: ShowProps) {
   if (row.status === 'none') return null
   const summary = whySummary(row, past)
-  const nudge = row.nudge ? wording.card.nudges[row.nudge].action : null
+  // No nudge on a status that arrived after noon (D119).
+  const nudge = row.nudge && !noNudge ? wording.card.nudges[row.nudge].action : null
   return (
     <>
       {dateText && <p className="caption date-line">{dateText}</p>}
