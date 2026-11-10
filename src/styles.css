@@ -15,6 +15,8 @@
   --link-blue: #0a60d8;
   --button-blue: #0a4fb8;
   --button-tint: #eef3fc;
+  --primary: #0a60d8;
+  --on-primary: #ffffff;
 
   /* Status */
   --ease-text: #8a4100;
@@ -90,6 +92,56 @@
 
 @media (prefers-reduced-motion: reduce) {
   :root { --motion-panel: 0ms linear; }
+}
+
+/* Dark mode (D111, R76): the dark colour set from docs/design.md, section 2. It follows the
+   phone's setting and nothing else changes. src/dark-colours.test.ts checks every pair. */
+:root { color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Base */
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --text: #ffffff;
+    --text-secondary: #d1d1d6;
+    --text-muted: #9a9aa1;
+    --separator: #38383a;
+    --divider-strong: #48484a;
+    --chevron: #636366;
+
+    /* Action */
+    --link-blue: #5aa9ff;
+    --button-blue: #7db8ff;
+    --button-tint: #17263d;
+    --primary: #1f6fe0;
+    --on-primary: #ffffff;
+
+    /* Status */
+    --ease-text: #ffb873;
+    --ease-pill: #4a2b0c;
+    --ease-tint: #2e1e0f;
+    --ease-line: #4a3317;
+    --ease-border: #5c4020;
+    --attention: #ff9f0a;
+    --normal-green: #5dd27a;
+    --ready-text: #6fdc8c;
+    --ready-pill: #12331d;
+    --rest-text: #ff8f86;
+    --rest-pill: #43181a;
+    --neutral-text: #d1d1d6;
+    --neutral-pill: #3a3a3c;
+
+    /* Readings: line, normal-range band, normal (median) line */
+    --hrv: #4fb6ea;
+    --hrv-band: #10303f;
+    --hrv-median: #2e7ca3;
+    --sleep: #9d9bff;
+    --sleep-band: #26254d;
+    --sleep-median: #5f5dc2;
+    --sleeping-hr: #ff6f77;
+    --sleeping-hr-band: #431b1f;
+    --sleeping-hr-median: #a6444b;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -215,8 +267,8 @@ html, body {
   min-height: 50px;
   border: 0;
   border-radius: var(--radius-control);
-  background: var(--link-blue);
-  color: #ffffff;
+  background: var(--primary);
+  color: var(--on-primary);
   font: 600 17px var(--font);
   cursor: pointer;
 }
