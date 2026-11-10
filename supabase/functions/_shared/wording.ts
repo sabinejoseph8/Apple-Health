@@ -106,6 +106,51 @@ export const wording = {
     done: 'Done',
   },
 
+  // The native iPhone app's own Health sync (D115, Phase 10): in place of the
+  // Shortcut on that phone. No health detail, no reading.
+  native: {
+    healthTitle: 'Read your Watch readings from Health',
+    healthIntro:
+      'Clarivi needs to read heart rate, heart rate variability, breathing rate, resting heart rate and sleep from Health. It only reads them, and sends them to Clarivi each morning.',
+    healthAllow: 'Allow Health access',
+    healthAsked: "If you said no, you can allow Clarivi later in the Health app, under Sharing, then Apps.",
+    syncing: 'Syncing…',
+    syncHint: "Sends last night's readings from Health. It takes a few seconds.",
+    tokenIntro: 'This app sends your Watch readings each morning with your upload token.',
+    tokenSaved: 'Your token is saved in this app.',
+    tokenMissing: 'This app has no token yet. Create one, or paste the one your Shortcut uses.',
+    tokenPaste: 'Paste an existing token',
+    tokenField: 'Upload token',
+    tokenSave: 'Save in this app',
+    tokenRemove: 'Remove from this app',
+    tokenCreatedSaved: "Saved in this app. If your Shortcut should keep working too, copy the token into it now: it's shown only once.",
+    lastRun: (when: string, message: string) => `Last sync ${when}: ${message}`,
+    healthUnavailable: (why: string) => `The Health sync isn't available in this app (${why}).`,
+    // 10c: the notifications the app schedules on the phone itself. The
+    // reminder and the 8pm question use the push wording below (R49, R50).
+    notificationsIntro:
+      'This app reminds you itself: when last night\'s readings are in after a sync in the background, at 11:30 if the status isn\'t in yet, and at 8pm on Ease off and Rest days. The status itself isn\'t in the notification yet: open Clarivi to see it.',
+    readingsIn: "Last night's readings are in. Open Clarivi to see today's status.",
+    notificationsOn: 'Notifications are on for this phone.',
+    // What each result of the app's own sync means, shown under Sync now and
+    // in Settings. When the server sent its own sentence (sync.* above), that
+    // is shown instead.
+    results: {
+      no_token: 'Add your upload token in Settings first.',
+      no_url: 'Open the card once, then try again.',
+      no_permission: 'Allow Health access on the card first.',
+      outside_window: 'Automatic syncs run between 4am and noon.',
+      done_today: "Today's sync is already done on this phone.",
+      busy: 'A sync is already running.',
+      already_complete: "Today's sync was already done.",
+      night_complete: "Last night's readings are in.",
+      night_not_finished: "Readings sent. Last night isn't finished yet.",
+      unreadable: "Health couldn't be read. Unlock your phone and try again.",
+      refused: 'Clarivi refused the readings. Check your token in Settings.',
+      failed: "Clarivi couldn't be reached. Check your connection and try again.",
+    },
+  },
+
   // Replies to the iPhone Shortcut, which can show them as a notification.
   // They carry no health detail.
   sync: {

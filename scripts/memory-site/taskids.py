@@ -38,7 +38,7 @@ def known_ids(ids_json, ticks_dir=None):
             if f.endswith('.json'):
                 d = json.load(open(os.path.join(ticks_dir, f), encoding='utf-8'))
                 tid = f[:-5]
-                found.setdefault(tid, {'phase': tid[1], 'texts': []})
+                found.setdefault(tid, {'phase': re.match(r'p(\d+)', tid).group(1), 'texts': []})
                 if d.get('text'):
                     found[tid]['texts'].append(d['text'])
     return found
@@ -55,7 +55,7 @@ def save_ids(ids_json, tasks, known):
 
 
 def group_key(phase, sub_title):
-    m = re.match(r'(\d)([a-z])\.', sub_title)
+    m = re.match(r'(\d+)([a-z])\.', sub_title)
     if m:
         return f'p{phase}{m.group(2)}'
     return f'p{phase}'

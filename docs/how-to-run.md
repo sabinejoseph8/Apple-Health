@@ -46,6 +46,16 @@ The written evaluation is [evaluation.md](evaluation.md): the targets and when t
 
 Two things cannot be run from a clone, because they read the owner's own data: `scripts/reference/check.py --live` (the reference check on the owner's real year) and `scripts/reference/week-results.sql` (the test week's targets, counted from the live logs). Their results, with the counting rules, are recorded in [docs/mvp.md](mvp.md).
 
+## The iPhone app (in progress, D115)
+
+The same web build inside a native shell, under `ios/`. With Xcode installed:
+
+```bash
+npm run build && npx cap sync ios
+```
+
+Then open `ios/App/App.xcodeproj` in Xcode and run the App scheme on an iPhone simulator. On the simulator, the app reads made-up Health data only: launch it with the argument `-clariviSeed` (Product, Scheme, Edit Scheme, Arguments) to write one made-up night first. To sync against the local copy, start it and its functions (`npx supabase start`, then `npx supabase functions serve --env-file supabase/functions/.env`) and sign in with a made-up account from `node scripts/local-card-demo.mjs`.
+
 ## Troubleshooting
 
 - `npx supabase start` fails: Docker Desktop must be running.

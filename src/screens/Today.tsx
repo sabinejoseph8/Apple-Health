@@ -5,9 +5,12 @@ import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
+import { configureNative, health, type HealthStatus, isNative, notifications, SYNC_REACHED_SERVER } from '../lib/native'
+import { HealthPermissionCard, NativeSyncButton } from '../components/NativeSync'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
 import type { PushSupport } from '../lib/push'
+import { supabase } from '../lib/supabase'
 import AppLink from '../components/AppLink'
 import { addDays } from '../lib/day'
 import {
@@ -90,6 +93,38 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [load])
 
+  // Inside the native app (D115): the app's own Health sync runs when the
+  // card opens and when it comes back to the front, like the Shortcut's app
+  // automation, and the card reloads once it has run. The Swift side keeps
+  // the 4am to noon window and the once-a-day rule.
+  const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
+  const refreshHealth = useCallback(async () => {
+    const s = await health.status().catch(() => null)
+    setHealthStatus(s)
+    if (s?.hasToken && s.permissionAsked) {
+      // The card reloads only when the server was reached; a run that stopped
+      // early (done today, outside the window) changed nothing.
+      const run = await health.sync('health_open').catch(() => null)
+      if (run && SYNC_REACHED_SERVER.has(run.result)) load()
+    }
+  }, [load])
+  useEffect(() => {
+    if (!isNative()) return
+    // The native side learns the account and the words for its own
+    // notifications (10c) before the first sync of this open.
+    const p = wording.push
+    const texts = { title: wording.appName, readingsIn: wording.native.readingsIn, reminderTitle: p.reminderTitle, reminder: p.reminder, followUpTitle: p.followUpTitle, followUp: p.followUp }
+    supabase.auth
+      .getSession()
+      .then(({ data }) => (data.session ? configureNative(data.session.user.id, texts) : undefined))
+      .catch(() => undefined)
+      .then(refreshHealth)
+    const onVisible = () => document.visibilityState === 'visible' && refreshHealth()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [refreshHealth])
+
+
   // Each minute: check again while a sync is awaited, and start afresh when
   // the day changes, so yesterday's status never shows as today's (R25).
   const shownDay = data?.inputs.today
@@ -130,6 +165,16 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   const followToday: FollowDay | null =
     data?.follow.today ?? (row && cardNudge && !data?.follow.shownToday ? { date: row.date, nudge: cardNudge, answer: null } : null)
   const evening = askTonight(now, followToday)
+
+  // The native app's 8pm question (10c): set when the card shows a change
+  // day, removed once answered. The web app gets it from the server instead.
+  const followDate = followToday?.date ?? null
+  const followAnswered = followToday?.answer != null
+  useEffect(() => {
+    if (!isNative() || !followDate) return
+    if (followAnswered) notifications.cancelFollowUp(followDate)
+    else notifications.planFollowUp(followDate)
+  }, [followDate, followAnswered])
 
   async function answerFollow(day: 'today' | 'yesterday', date: string, a: FollowAnswer) {
     // The server checks what was shown, so make sure the card's record is in.
@@ -208,7 +253,8 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
               onAnswer={(a) => answerFollow('today', followToday.date, a)}
             />
           )}
-          <Card state={model.state} now={now} folded={evening} />
+          {healthStatus?.available && !healthStatus.permissionAsked && <HealthPermissionCard onAsked={refreshHealth} />}
+          <Card state={model.state} now={now} folded={evening} onSynced={load} />
           <NotificationHealth push={push} lastFailed={data.lastNotification?.status === 'failed'} />
           {model.importMonths !== null && <p className="caption aside">{wording.sync.importProgress(model.importMonths)}</p>}
           <section className="list-card">
@@ -225,7 +271,7 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   )
 }
 
-function Card({ state, now, folded }: { state: CardState; now: Date; folded: boolean }) {
+function Card({ state, now, folded, onSynced }: { state: CardState; now: Date; folded: boolean; onSynced: () => void }) {
   switch (state.kind) {
     case 'status':
       return <StatusCard state={state} now={now} folded={folded} />
@@ -238,6 +284,7 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
           headline={s.waiting.headline}
           lines={[state.lastSync ? s.waiting.lastSync(formatWhen(state.lastSync.toISOString(), now)) : s.waiting.neverSynced]}
           syncNow
+          onSynced={onSynced}
         />
       )
     case 'analysing':
@@ -247,7 +294,9 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
         <NoStatus pill={s.analysing.pill} headline={s.analysing.headline} lines={[s.analysing.detail]} />
       )
     case 'night_unfinished':
-      return <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} syncNow />
+      return (
+        <NoStatus pill={s.nightUnfinished.pill} headline={s.nightUnfinished.headline} lines={[s.nightUnfinished.detail]} syncNow onSynced={onSynced} />
+      )
     case 'no_sleep_stages':
       return (
         <NoStatus
@@ -255,10 +304,11 @@ function Card({ state, now, folded }: { state: CardState; now: Date; folded: boo
           headline={s.noSleepStages.headline}
           lines={state.beforeNoon ? [s.noSleepStages.detail, s.noSleepStages.laterHint] : [s.noSleepStages.detail]}
           syncNow={state.beforeNoon}
+          onSynced={onSynced}
         />
       )
     case 'missed':
-      return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} syncNow />
+      return <NoStatus pill={s.missed.pill} headline={s.missed.headline} lines={[s.missed.detail]} syncNow onSynced={onSynced} />
     case 'no_sync':
       return <NoStatus pill={s.noSync.pill} headline={state.afterNoon ? s.noSync.afterNoon : s.noSync.headline} lines={[s.noSync.detail]} />
     case 'not_enough_data':
@@ -347,8 +397,23 @@ function Writing() {
 
 // A card without a status: a neutral pill, a headline and a plain line (R25 to R32).
 // The no-status card. Before noon, while last night isn't in, it offers Sync
-// now (D84): one tap runs the Shortcut while the phone is unlocked.
-function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; headline: string; lines: string[]; syncNow?: boolean }) {
+// now (D84): one tap runs the Shortcut while the phone is unlocked. Inside the
+// native app there is no Shortcut (D115): its own Health sync takes over in 10b.
+function NoStatus({
+  pill,
+  headline,
+  lines,
+  syncNow = false,
+  onSynced,
+}: {
+  pill: string
+  headline: string
+  lines: string[]
+  syncNow?: boolean
+  onSynced?: () => void
+}) {
+  const native = isNative()
+  const runShortcut = syncNow && !native
   return (
     <section className="card briefing" aria-labelledby="card-headline">
       <div className="status-row">
@@ -362,7 +427,7 @@ function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; he
           {line}
         </p>
       ))}
-      {syncNow && (
+      {runShortcut && (
         <>
           <a className="primary button-link" href={SYNC_NOW_URL}>
             {wording.card.syncNow}
@@ -370,6 +435,7 @@ function NoStatus({ pill, headline, lines, syncNow = false }: { pill: string; he
           <p className="caption">{wording.card.syncNowHint}</p>
         </>
       )}
+      {syncNow && native && <NativeSyncButton onDone={onSynced ?? (() => undefined)} />}
     </section>
   )
 }

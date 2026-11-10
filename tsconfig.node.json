@@ -21,12 +21,15 @@
     "allowImportingTsExtensions": true
   },
   "include": [
+    "capacitor.config.ts",
     "csp-config.ts",
     "csp.test.ts",
     "dark-colours.test.ts",
     "e2e",
     "env-config.test.ts",
     "env-config.ts",
+    "native-html.test.ts",
+    "native-html.ts",
     "playwright.config.ts",
     "scripts/wording-sheet.ts",
     "vite.config.ts"
