@@ -834,6 +834,12 @@
    "Docs (product spec, tech spec, mvp.md, README's repository structure), the Memory site, interview notes"
   ]
  },
+ "p10-07": {
+  "phase": "10",
+  "texts": [
+   "10e Status after noon: when last night arrives after noon, the card shows today's status marked late with \"Last night's readings arrived after noon, so there's no nudge today.\", and no nudge, no 8pm question or morning notification; the server records it as shown with no nudge (synced_after_noon, migration 20261110000000_status_after_noon.sql); the iPhone app syncs on its own from 4am to 8pm; the card says sleep is in progress until 8pm and, between noon and 8pm with no sync, that a status can still come; the demo gets an after-noon morning; unit, database and browser tests."
+  ]
+ },
  "p10-06": {
   "phase": "10",
   "texts": [
