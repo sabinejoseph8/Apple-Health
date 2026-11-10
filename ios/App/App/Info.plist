@@ -22,6 +22,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Clarivi reads your heart rate, heart rate variability, breathing rate, resting heart rate and sleep from Health to work out each morning's status. It only reads them.</string>
 	<key>NSHealthUpdateUsageDescription</key>
