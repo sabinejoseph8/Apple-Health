@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { wording } from '../supabase/functions/_shared/wording'
+import { demoWording } from './demo/wording'
 import { FORBIDDEN_TERMS } from './lib/forbidden-terms'
 
 function allStrings(value: unknown): string[] {
@@ -21,7 +22,8 @@ function fixedWords(value: unknown): string[] {
 const NO_HEALTH_DETAIL = ['heart', 'hrv', 'sleep', 'rest', 'ease off', 'ill', 'strain', 'breath', 'ready']
 
 describe('wording', () => {
-  const texts = allStrings(wording)
+  // The demo's banner and morning names (src/demo/wording.ts) follow the same rules.
+  const texts = [...allStrings(wording), ...allStrings(demoWording)]
 
   it('has text to test', () => {
     expect(texts.length).toBeGreaterThan(10)

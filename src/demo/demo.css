@@ -1,0 +1,160 @@
+/* The demo banner (D95). Classes only: the site's security headers allow no inline styles. */
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 16px 8px;
+  background: #fff4d6;
+  color: #3b2f00;
+  border-bottom: 1px solid #e8d79a;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.demo-banner strong {
+  font-weight: 700;
+}
+.demo-banner label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.demo-banner select {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #d3bf7a;
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.demo-banner p {
+  flex-basis: 100%;
+  margin: 0;
+}
+/* The phone-notification notice is about a real phone's settings, which the demo does not have. */
+.card.notice[aria-labelledby='notify-headline'] {
+  display: none;
+}
+
+/* On a wide screen the app is shown inside an iPhone-shaped frame (D110): the page's #root is the
+   frame and scrolls inside it. A narrow screen or a real phone shows the app as it is. The frame
+   always has an iPhone's proportions (414 by 868, a 390 by 844 screen): a short window shrinks the
+   whole phone in steps (zoom, below) instead of squashing it. */
+@media (min-width: 700px) {
+  #root {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
+    width: 414px;
+    height: 868px;
+    zoom: 0.5;
+    margin: 20px auto 28px;
+    border: 12px solid #101012;
+    border-radius: 56px;
+    box-shadow: 0 0 0 2px #3a3a3e, 0 24px 60px rgba(0, 0, 0, 0.28);
+    background: var(--bg);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* The frame, not the window, is the box anything fixed in the app would stay inside. */
+    transform: translateZ(0);
+  }
+  #root::-webkit-scrollbar {
+    display: none;
+  }
+  /* The camera island, pinned to the top of the screen while the app scrolls under it. */
+  #root::before {
+    content: '';
+    position: sticky;
+    top: 10px;
+    z-index: 5;
+    display: block;
+    flex: none;
+    width: 112px;
+    height: 32px;
+    margin: 10px auto -42px;
+    border-radius: 20px;
+    background: #101012;
+  }
+  /* The home indicator, pinned to the bottom. */
+  #root::after {
+    content: '';
+    position: sticky;
+    bottom: 8px;
+    z-index: 5;
+    display: block;
+    flex: none;
+    width: 130px;
+    height: 5px;
+    margin: -13px auto 8px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  /* Room under the island and the home indicator, as the Home Screen app gets from the safe areas. */
+  #root .page {
+    flex: 1 0 auto;
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: 60px;
+    padding-bottom: 32px;
+  }
+}
+
+/* The whole phone and the banner fit the window height: the largest step that fits is used. */
+@media (min-width: 700px) and (min-height: 612px) {
+  #root {
+    zoom: 0.55;
+  }
+}
+@media (min-width: 700px) and (min-height: 656px) {
+  #root {
+    zoom: 0.6;
+  }
+}
+@media (min-width: 700px) and (min-height: 699px) {
+  #root {
+    zoom: 0.65;
+  }
+}
+@media (min-width: 700px) and (min-height: 743px) {
+  #root {
+    zoom: 0.7;
+  }
+}
+@media (min-width: 700px) and (min-height: 786px) {
+  #root {
+    zoom: 0.75;
+  }
+}
+@media (min-width: 700px) and (min-height: 829px) {
+  #root {
+    zoom: 0.8;
+  }
+}
+@media (min-width: 700px) and (min-height: 873px) {
+  #root {
+    zoom: 0.85;
+  }
+}
+@media (min-width: 700px) and (min-height: 916px) {
+  #root {
+    zoom: 0.9;
+  }
+}
+@media (min-width: 700px) and (min-height: 960px) {
+  #root {
+    zoom: 0.95;
+  }
+}
+@media (min-width: 700px) and (min-height: 1003px) {
+  #root {
+    zoom: 1;
+  }
+}
