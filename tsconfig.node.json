@@ -24,6 +24,7 @@
     "capacitor.config.ts",
     "csp-config.ts",
     "csp.test.ts",
+    "dark-colours.test.ts",
     "e2e",
     "env-config.test.ts",
     "env-config.ts",
