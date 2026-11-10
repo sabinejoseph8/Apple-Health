@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { pushSupport, urlBase64ToUint8Array } from './push'
 
 const base = {
+  native: false,
   hasServiceWorker: true,
   hasPushManager: true,
   hasNotification: true,
@@ -22,6 +23,10 @@ describe('pushSupport', () => {
   })
   it('reports browsers without web push', () => {
     expect(pushSupport({ ...base, isIOS: false, standalone: false, hasPushManager: false })).toBe('not-supported')
+  })
+  it('leaves notifications to the native app itself, whatever the browser parts say (D115)', () => {
+    expect(pushSupport({ ...base, native: true })).toBe('native')
+    expect(pushSupport({ ...base, native: true, standalone: false, hasServiceWorker: false, hasPushManager: false })).toBe('native')
   })
 })
 

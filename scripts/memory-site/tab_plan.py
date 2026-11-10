@@ -54,7 +54,7 @@ def split_task(text):
 def collect_tasks(doc, old):
     tasks = []
     for s in doc['secs']:
-        m = re.match(r'Phase (\d)', s['name'])
+        m = re.match(r'Phase (\d+)', s['name'])
         if not m:
             continue
         ph = m.group(1)
@@ -123,7 +123,7 @@ def status_parts(text):
 
 
 def phase_section(s):
-    ph = re.match(r'Phase (\d)', s['name']).group(1)
+    ph = re.match(r'Phase (\d+)', s['name']).group(1)
     name = s['name'].split(': ', 1)[1]
     so, sid = sec_open(T, ph, name, 'sec phase', f'plan-phase-{ph}')
     goal = ''
@@ -263,7 +263,7 @@ def build(doc, old_ids):
     phases = []
     toc = []
     for s in doc['secs']:
-        if s['name'].startswith('Phase') and re.match(r'Phase (\d)', s['name']).group(1) not in HIDDEN_PHASES:
+        if s['name'].startswith('Phase') and re.match(r'Phase (\d+)', s['name']).group(1) not in HIDDEN_PHASES:
             h, sid, label, ph, name, status = phase_section(s)
             phases_html.append(h)
             phases.append((ph, name, status))

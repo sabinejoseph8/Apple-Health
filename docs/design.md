@@ -149,7 +149,7 @@ Anything marked **Default** wasn't designed yet. It's a proposed starting point 
 - The page declares both schemes, so form controls and scroll bars follow the phone, and the status bar colour (the `theme-color` meta) is `#F2F2F7` in light and `#000000` in dark.
 - Cards are told apart from the page by their lighter colour (1.23 to 1), with no shadows, as in the light set.
 - The status is never carried by colour alone: the pill words and the down arrow and tick icons stay.
-- The app icon (white ring on deep violet) is unchanged. A Home Screen app's launch screen cannot follow the dark setting, so it may flash light for a moment on a dark phone; this is a platform limit, not a design choice.
+- The app icon (white ring on deep violet) is unchanged. The iPhone app (D115) uses the same icon, written by `scripts/make-icons.py` at 1024 pixels into the Xcode icon set, and its launch screen is the light ground with nothing on it (Sabine, 4 November 2026: the icon is the violet one, not Capacitor's placeholder). A Home Screen app's launch screen cannot follow the dark setting, so it may flash light for a moment on a dark phone; this is a platform limit, not a design choice.
 - In the demo, the iPhone frame's black bezel and the yellow banner are unchanged in both schemes.
 
 **Contrast rules** (both the light and the dark set)
