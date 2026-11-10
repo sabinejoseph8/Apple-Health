@@ -5,7 +5,7 @@ import AppHeader from '../components/AppHeader'
 import FollowThroughCard from '../components/FollowThroughCard'
 import { BellIcon, CalendarIcon, ChartIcon, ChevronRightIcon, FaceIcon, HistoryIcon, WarningIcon } from '../components/Icons'
 import { SYNC_NOW_URL } from '../lib/links'
-import { configureNative, health, type HealthStatus, isNative, notifications, SYNC_REACHED_SERVER } from '../lib/native'
+import { configureNative, health, type HealthStatus, isNative, notifications, SYNC_REACHED_SERVER, watchInFront } from '../lib/native'
 import { HealthPermissionCard, NativeSyncButton } from '../components/NativeSync'
 import { type CardModel, type CardState, selectCard } from '../lib/card-state'
 import { askTonight, askYesterday, type FollowAnswer, type FollowDay } from '../lib/follow'
@@ -96,7 +96,7 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   // Inside the native app (D115): the app's own Health sync runs when the
   // card opens and when it comes back to the front, like the Shortcut's app
   // automation, and the card reloads once it has run. The Swift side keeps
-  // the 4am to noon window and the once-a-day rule.
+  // the 4am to 8pm window and the once-a-day rule.
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
   const refreshHealth = useCallback(async () => {
     const s = await health.status().catch(() => null)
@@ -108,21 +108,39 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
       if (run && SYNC_REACHED_SERVER.has(run.result)) load()
     }
   }, [load])
+
+  // Whether the app is on screen (10f). iOS also starts the native app out of
+  // sight when the Watch saves sleep; the card then loads with no one looking,
+  // so it counts no view, records nothing as shown and runs no open sync
+  // until the person brings the app to the front. Outside the native app the
+  // card is always counted as on screen, as before.
+  const [inFront, setInFront] = useState(() => !isNative())
+  const configured = useRef<Promise<unknown>>(Promise.resolve())
+  const wasAway = useRef(false)
   useEffect(() => {
     if (!isNative()) return
     // The native side learns the account and the words for its own
     // notifications (10c) before the first sync of this open.
     const p = wording.push
     const texts = { title: wording.appName, readingsIn: wording.native.readingsIn, reminderTitle: p.reminderTitle, reminder: p.reminder, followUpTitle: p.followUpTitle, followUp: p.followUp }
-    supabase.auth
+    configured.current = supabase.auth
       .getSession()
       .then(({ data }) => (data.session ? configureNative(data.session.user.id, texts) : undefined))
       .catch(() => undefined)
-      .then(refreshHealth)
-    const onVisible = () => document.visibilityState === 'visible' && refreshHealth()
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [refreshHealth])
+    return watchInFront((front) => {
+      if (!front) wasAway.current = true
+      setInFront(front)
+    })
+  }, [])
+  useEffect(() => {
+    if (!isNative() || !inFront) return
+    configured.current.then(refreshHealth)
+    // Back from out of sight: what loaded then may be old.
+    if (wasAway.current) {
+      wasAway.current = false
+      load()
+    }
+  }, [inFront, refreshHealth, load])
 
 
   // Each minute: check again while a sync is awaited, and start afresh when
@@ -146,16 +164,17 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   }, [kind, load])
 
   // Each card view is logged once per kind of card, never with health values
-  // (R43); a card showing a status also records what it showed (D61).
+  // (R43); a card showing a status also records what it showed (D61). Only
+  // while the app is on screen (10f).
   const onCard = !checkin && !askingYesterday
   useEffect(() => {
-    if (!data || !kind || !onCard) return
+    if (!data || !kind || !onCard || !inFront) return
     const key = `${data.inputs.today}:${kind}`
     if (logged.current.has(key)) return
     logged.current.add(key)
     logUsage('card_view', { date: data.inputs.today, status_shown: kind === 'status', state: kind })
     if (kind === 'status') recordShown(data.inputs.today).catch(() => undefined)
-  }, [data, kind, onCard])
+  }, [data, kind, onCard, inFront])
 
   // Today's change day is decided by what was first shown (D61). Only when
   // nothing has been shown yet does the status on this card decide, as the

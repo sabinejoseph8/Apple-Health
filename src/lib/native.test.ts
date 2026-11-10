@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { wording } from '../../supabase/functions/_shared/wording'
-import { configureNative, describeRun, health, isNative, notifications, SYNC_REACHED_SERVER } from './native'
+import { type AppStateSource, configureNative, describeRun, health, isNative, notifications, SYNC_REACHED_SERVER, watchInFront } from './native'
 
 // These tests run on the web, where there is no native side: every wrapper
 // must answer quietly rather than call a plugin that isn't there.
@@ -44,5 +44,79 @@ describe('describeRun', () => {
 
   it('names the results after which the card may have changed', () => {
     expect([...SYNC_REACHED_SERVER].sort()).toEqual(['already_complete', 'night_complete', 'night_not_finished'])
+  })
+})
+
+// 10f: iOS also starts the native app out of sight when the Watch saves sleep,
+// and the card must not count that as a view.
+describe('watchInFront', () => {
+  type Cb = (state: { inFront: boolean }) => void
+  function fakeSource(answer: Promise<{ inFront: boolean }>) {
+    let cb: Cb = () => undefined
+    let removed = false
+    const source: AppStateSource = {
+      appState: () => answer,
+      addListener: async (_event, f) => {
+        cb = f
+        return { remove: async () => void (removed = true) }
+      },
+    }
+    return { source, send: (inFront: boolean) => cb({ inFront }), removed: () => removed }
+  }
+  const settle = () => new Promise((r) => setTimeout(r, 0))
+
+  it('counts the page as on screen outside the native app, as before', () => {
+    const seen: boolean[] = []
+    watchInFront((v) => seen.push(v))
+    expect(seen).toEqual([true])
+  })
+
+  it('says out of sight when iOS started the app in the background', async () => {
+    const seen: boolean[] = []
+    const f = fakeSource(Promise.resolve({ inFront: false }))
+    watchInFront((v) => seen.push(v), f.source)
+    await settle()
+    expect(seen).toEqual([false])
+  })
+
+  it('says on screen once the person opens the app, and away when they leave', async () => {
+    const seen: boolean[] = []
+    const f = fakeSource(Promise.resolve({ inFront: false }))
+    watchInFront((v) => seen.push(v), f.source)
+    await settle()
+    f.send(true)
+    f.send(false)
+    expect(seen).toEqual([false, true, false])
+  })
+
+  it('lets an event that came first win over the slower first answer', async () => {
+    const seen: boolean[] = []
+    let answer: (v: { inFront: boolean }) => void = () => undefined
+    const f = fakeSource(new Promise((r) => (answer = r)))
+    watchInFront((v) => seen.push(v), f.source)
+    await settle()
+    f.send(true)
+    answer({ inFront: false })
+    await settle()
+    expect(seen).toEqual([true])
+  })
+
+  it('counts the app as on screen if the native side cannot answer', async () => {
+    const seen: boolean[] = []
+    const f = fakeSource(Promise.reject(new Error('no such method')))
+    watchInFront((v) => seen.push(v), f.source)
+    await settle()
+    expect(seen).toEqual([true])
+  })
+
+  it('stops calling back and removes its listener once stopped', async () => {
+    const seen: boolean[] = []
+    const f = fakeSource(Promise.resolve({ inFront: false }))
+    const stop = watchInFront((v) => seen.push(v), f.source)
+    stop()
+    await settle()
+    f.send(true)
+    expect(seen).toEqual([])
+    expect(f.removed()).toBe(true)
   })
 })
