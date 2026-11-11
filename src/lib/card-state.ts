@@ -42,6 +42,7 @@ export interface NightRow {
   hrv_median: number | null
   sleeping_hr: number | null
   no_stages?: boolean
+  sleep_end?: string
 }
 
 export interface CardInputs {
@@ -126,13 +127,19 @@ export function selectCard(i: CardInputs): CardModel {
 
 function selectState(i: CardInputs): CardState {
   // This morning's accepted syncs, oldest first. The time shown is the sync
-  // that completed last night, or else the latest one.
+  // that completed last night; with none (a night without stages never
+  // completes), the first sync after sleep ended, the first that could carry
+  // the night; with no night, the latest one. synced_after_noon on the server
+  // goes by the same sync.
   const todays = i.recentUploads
     .filter((u) => u.kind === 'daily' && u.status === 'accepted' && u.local_date === i.today)
     .sort((a, b) => a.received_at.localeCompare(b.received_at))
   const first = todays.length > 0 ? time(todays[0]) : null
   const completing = todays.find((u) => u.night_complete)
-  const synced = completing ? time(completing) : todays.length > 0 ? time(todays[todays.length - 1]) : null
+  const sleepEnd = i.night?.sleep_end ? new Date(i.night.sleep_end).getTime() : null
+  const afterSleep = sleepEnd === null ? undefined : todays.find((u) => time(u).getTime() >= sleepEnd)
+  const fallback = afterSleep ?? (todays.length > 0 ? todays[todays.length - 1] : undefined)
+  const synced = completing ? time(completing) : fallback ? time(fallback) : null
   const nowMin = minutesOfDay(i.now)
 
   const row = i.status
