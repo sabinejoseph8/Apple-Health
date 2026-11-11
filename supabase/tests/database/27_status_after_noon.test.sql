@@ -3,7 +3,7 @@
 -- answer). Made-up accounts in UTC-5.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(12);
 
 insert into auth.users (id, email) values
   ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'after-noon-a@example.test'),
@@ -39,6 +39,21 @@ select is(public.synced_after_noon('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026
 select is(public.synced_after_noon('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-04'), true,
   'the sync that completed the night counts, not an earlier partial one');
 select is(public.synced_after_noon('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-05'), false, '11:59am is still before noon');
+
+-- 6 November: a night without stages (never night_complete) that ended at 7am, posted at 9am, and
+-- the app synced again at 2pm. The 9am post carried the night: not after noon.
+-- 7 November: the same night, but the first post after sleep ended came at 1pm: after noon.
+insert into public.nights (user_id, night_date, tz_offset_min, sleep_start, sleep_end, asleep_min, finished, sleeping_hr_count, hrv_count, resp_count, coverage, confidence, no_stages)
+values ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-06', -300, '2026-11-06 01:00-05', '2026-11-06 07:00-05', 300, true, 0, 0, 0, 1, 'high', true),
+       ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-07', -300, '2026-11-07 01:00-05', '2026-11-07 07:00-05', 300, true, 0, 0, 0, 1, 'high', true);
+select pg_temp.sync('2026-11-06 09:00-05', false);
+select pg_temp.sync('2026-11-06 14:00-05', false);
+select pg_temp.sync('2026-11-07 05:00-05', false);
+select pg_temp.sync('2026-11-07 13:00-05', false);
+select is(public.synced_after_noon('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-06'), false,
+  'with no completing sync, the first sync after sleep ended counts, not a later afternoon one');
+select is(public.synced_after_noon('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', '2026-11-07'), true,
+  'and a sync before sleep ended does not count as carrying the night');
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1", "role": "authenticated"}';

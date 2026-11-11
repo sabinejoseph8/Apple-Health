@@ -122,6 +122,15 @@ describe('which card shows (R25 to R32)', () => {
     expect(state).toMatchObject({ kind: 'status', late: true, afterNoon: true })
   })
 
+  it('with no completing sync, goes by the first sync after sleep ended, not a later one', () => {
+    const night = { asleep_min: 300, hrv_median: null, sleeping_hr: null, no_stages: true, sleep_end: at(7, 0).toISOString() }
+    const early = upload(at(5, 0), { night_complete: false })
+    const carried = upload(at(9, 0), { night_complete: false })
+    const again = upload(at(14, 0), { night_complete: false })
+    const { state } = selectCard(inputs({ now: at(15, 0), status: statusRow(), night, recentUploads: [again, carried, early] }))
+    expect(state).toMatchObject({ kind: 'status', late: false, afterNoon: false, syncedAt: at(9, 0) })
+  })
+
   it('keeps the nudge when the night came before noon and the card is opened after it', () => {
     const { state } = selectCard(inputs({ now: at(15, 0), status: statusRow(), recentUploads: [upload(at(9, 0))] }))
     expect(state).toMatchObject({ kind: 'status', late: false, afterNoon: false })
