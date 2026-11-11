@@ -9,7 +9,10 @@ jobs:
     name: App (type check, tests, build)
     runs-on: ubuntu-latest
     steps:
+      # The full history, so the publishing checks can tell whether a PDF was rebuilt after its source.
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v5
         with:
           node-version: 24

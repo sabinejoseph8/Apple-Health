@@ -35,6 +35,19 @@
   "_style_note": "docs/design-screens.html is left out of the dash check: it is a saved copy of the Clarivi Screens canvas, and the dashes sit in its own script and style comments, not in anything written for a reader.",
   "case_study_pdf": "docs/case-study.pdf",
   "case_study_max_pages": 2,
+  "rendered": {
+    "docs/case-study.pdf": [
+      "docs/case-study.html",
+      "docs/architecture.png"
+    ],
+    "docs/architecture.png": [
+      "docs/architecture.svg"
+    ],
+    "docs/architecture.pdf": [
+      "docs/architecture.svg"
+    ]
+  },
+  "_rendered_note": "The checks can't read inside a PDF or an image, so they check each was rebuilt after its sources changed. Rebuild them as the note at the top of docs/case-study.html says.",
   "headline_numbers": {
     "_note": "Numbers that must read the same wherever they appear. Week one's (31 October 2026) and week two's (10 November 2026) are listed for the README and the case study.",
     "52 of 231": [
