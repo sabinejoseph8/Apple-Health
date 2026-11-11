@@ -41,6 +41,9 @@ DEFAULTS = {
                             "what the results changed"],
     "style_files": ["README.md", "docs/*.md", "docs/*.html"],
     "case_study_pdf": "docs/case-study.pdf",
+    # Rendered files and the sources they are made from: a source changed after
+    # its rendered file means the PDF or image was not rebuilt.
+    "rendered": {},
     "headline_numbers": {},
     "private_paths": ["interview-notes.md", "private/", "portfolio-private/"],
     "allowed_emails": ["users.noreply.github.com", "noreply@anthropic.com", "noreply@github.com",
@@ -283,6 +286,43 @@ def check_case_study_pages(root: Path, cfg: dict) -> Result:
     return ("pass", []) if 1 <= n <= limit else ("fail", [f"{cfg['case_study_pdf']} has {n} pages, not 1 to {limit}"])
 
 
+def check_rendered_files(root: Path, cfg: dict) -> Result:
+    """The checks can't read inside a PDF, so they check it was rebuilt: no
+    source may have changed after the file made from it (a later commit, or an
+    uncommitted edit the rendered file doesn't share)."""
+    rendered = cfg.get("rendered") or {}
+    if not rendered:
+        return "skip", ["no rendered files in the config"]
+    if git(root, "rev-parse", "--git-dir") is None:
+        return "skip", ["not a Git repository"]
+    if (git(root, "rev-parse", "--is-shallow-repository") or "").strip() == "true":
+        return "skip", ["a shallow clone has no history to compare"]
+
+    def changed(rel: str) -> bool:
+        return bool((git(root, "status", "--porcelain", "--", rel) or "").strip())
+
+    def committed_at(rel: str) -> int:
+        out = (git(root, "log", "-1", "--format=%ct", "--", rel) or "").strip()
+        return int(out) if out.isdigit() else 0
+
+    problems = []
+    for out, sources in rendered.items():
+        if not (root / out).exists():
+            problems.append(f"{out} missing")
+            continue
+        for src in sources:
+            if not (root / src).exists():
+                problems.append(f"{src} missing (the source of {out})")
+                continue
+            if changed(src) or changed(out):
+                stale = changed(src) and (not changed(out) or (root / src).stat().st_mtime > (root / out).stat().st_mtime)
+            else:
+                stale = committed_at(src) > committed_at(out)
+            if stale:
+                problems.append(f"{src} changed after {out} was rebuilt")
+    return ("fail" if problems else "pass", problems)
+
+
 def check_private_untracked(root: Path, cfg: dict) -> Result:
     files = tracked_files(root)
     if files is None:
@@ -408,6 +448,7 @@ CHECKS: List[Tuple[str, Callable[[Path, dict], Result]]] = [
     ("No em dashes in public writing", check_em_dashes),
     ("Headline numbers agree across files", check_headline_numbers),
     ("Case study PDF is within its page limit", check_case_study_pages),
+    ("PDFs and images are rebuilt after their sources", check_rendered_files),
     ("Private files are ignored and untracked", check_private_untracked),
     ("No secrets in tracked files", check_no_secrets),
     ("No personal email addresses in tracked files", check_no_personal_emails),

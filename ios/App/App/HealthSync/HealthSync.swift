@@ -6,9 +6,11 @@ import UIKit
 // done by the app itself. One run is one morning's attempt:
 //   1. automatic runs act only between 4am and 8pm (D119; noon before), and never twice in a day
 //      on this phone (the same rules as the Shortcut's automations);
-//   2. a small ping asks the server whether today's sync is already complete;
-//   3. yesterday's and today's readings are read from Health, the five types
-//      the Shortcut reads, and sent as one daily post in the same column
+//   2. yesterday's and today's readings are read from Health, the five types
+//      the Shortcut reads; a phone that can't read Health (locked) stops here,
+//      without contacting the server;
+//   3. a small ping asks the server whether today's sync is already complete,
+//      and if not, the readings go as one daily post in the same column
 //      format, with the upload token from the keychain;
 //   4. a reply with night_complete marks the day done on this phone.
 // The server keeps the rules about what counts (the 6pm to noon heart rate
@@ -203,7 +205,19 @@ final class HealthSync {
 
         let offsetMinutes = TimeZone.current.secondsFromGMT(for: now) / 60
 
-        // 2. The ping.
+        // 2. Yesterday's and today's readings, read first: Health can't be
+        // read on a locked phone, and a run that can't read it has nothing to
+        // send, so it stops before contacting the server (Phase 10 code review).
+        let start = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -1, to: now) ?? now)
+        var series: [[String: Any]] = []
+        for reading in Self.readings {
+            guard let samples = await fetch(reading.type, from: start, to: now) else {
+                return outcome("unreadable", trigger: trigger)
+            }
+            series.append(Self.series(reading, samples))
+        }
+
+        // 3. The ping.
         let ping: [String: Any] = ["schema_version": Self.schemaVersion, "kind": "ping",
                                    "device_tz_offset_min": offsetMinutes, "trigger": trigger]
         guard let pingReply = await post(ping, to: url, token: token, timeout: timeout) else {
@@ -216,16 +230,6 @@ final class HealthSync {
             defaults.set(today, forKey: Self.markerKey)
             LocalNotifications.planReminders(todayDone: true, now: now)
             return outcome("already_complete", pingReply["message"] as? String, trigger: trigger)
-        }
-
-        // 3. Yesterday's and today's readings.
-        let start = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -1, to: now) ?? now)
-        var series: [[String: Any]] = []
-        for reading in Self.readings {
-            guard let samples = await fetch(reading.type, from: start, to: now) else {
-                return outcome("unreadable", trigger: trigger)
-            }
-            series.append(Self.series(reading, samples))
         }
 
         // 4. The daily post.
