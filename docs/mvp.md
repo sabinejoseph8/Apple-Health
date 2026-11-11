@@ -293,7 +293,7 @@ The iOS Shortcuts app has a "Find Health Samples" action that can pull readings 
   - **Notifications, 90%: met.** All 6 days that had a status had their morning notification sent (6 of 6).
   - **Engagement, 5 of 7 days: met.** The card was opened, or the notification tapped, on 7 of 7 days (on Saturday the card was opened although no status could be shown).
   - **Quiet by default, about 1 day in 7: indicative only.** 0 of the 6 days shown were Ease off or Rest. The week's one Ease off, Saturday (the sleep floor), was worked out on Sunday from the past days and never shown. On her year up to 8 November, version 3 fires on 53 of 243 days and version 2 on 29 of 243.
-  - **Your check-ins against your status: indicative only.** On 3 of the 6 days shown, the first check-in agreed with the status. Every status was Ready, so this only shows how often she felt great or okay on a Ready day.
+  - **Your check-ins against your status: indicative only.** On 5 of the 6 days shown, the first check-in agreed with the status (first reported as 3 of 6; a code review on 10 November 2026 found the query looked for "great" where the database stores "good", and the rerun moved no other count). Every status was Ready, so this only shows how often she felt great or okay on a Ready day.
   - **Check-in completion:** 7 of the 7 days the card was opened had a check-in answered.
   - **Action: not measurable.** No Ease off or Rest was shown, so no follow-through question was asked.
   - **Partial-data days:** none (0 of 6 shown rested on fewer than three readings).

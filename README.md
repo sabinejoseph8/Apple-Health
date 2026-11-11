@@ -94,7 +94,7 @@ Before any result, the test shrank from four people over 28 days to one person o
 | Signal, my year | 2 in 3 | 2 of 13 disrupted mornings called Ease off or Rest (1 of 13 before the sleep floor) | 2 of 13, unchanged | No, both |
 | Quiet by default | About 1 in 7 | My year: 52 of 231 days (22%), against 29 of 231 (13%) before the sleep floor | My year to 10 November: 53 of 244 days (22%) | No, both |
 | Engagement | 5 of 7 days | 3 of 7 days | 7 of 7 days | No, then yes |
-| Check-ins | More than chance | 2 of 2 first answers agreed, both on Ready days | 3 of 6 agreed, all on Ready days | Indicative only |
+| Check-ins | More than chance | 2 of 2 first answers agreed, both on Ready days | 5 of 6 agreed, all on Ready days (first reported as 3 of 6: a counting bug, found in review) | Indicative only |
 | Action | About half | No Ease off or Rest day, so no question was asked | The week's one Ease off fell on the day my phone was off, so it was never shown | Not measurable |
 | My own account | Written | Written (below) | Written (below) | Yes, both |
 

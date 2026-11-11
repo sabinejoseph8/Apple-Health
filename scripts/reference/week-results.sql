@@ -36,11 +36,29 @@
 --             follow-through question was answered.
 --   Partial data. Days a status was shown that rested on fewer than three readings.
 --
+-- Code review, 10 November 2026 (after both weeks were counted). One bug and three added counts;
+-- no rule above was changed:
+--   Bug: the check-in answer shown as "great" is stored as 'good', and the query looked for
+--     'great', so a "great" morning on a Ready day was counted as disagreeing. Fixed. Week two's
+--     count moves from 3 of 6 to 5 of 6; week one's 2 of 2 does not move.
+--   Added, reported beside the rule's own count so neither can be read as the other:
+--     Check-ins, strict: only first answers given before the status was seen
+--       (docs/evaluation.md, section 1: "taken before the status is seen").
+--     Action, strict: change days with a nudge shown where the latest answer was yes
+--       ("followed about half the time"); a status shown late (D119) has no nudge and no question.
+--     Notifications, strict: of the days a status was worked out from a sync before noon, the days
+--       the morning notification was sent; a day leaves the first count when nothing was shown.
+--   The year rows count up to `year_to` (default: the week's last day), so a later rerun can be
+--   reproduced.
+--   Not valid yet for weeks synced by the iPhone app (from 10 November 2026): the app's own
+--   notifications are scheduled on the phone and leave no row here. A rule for those weeks is
+--   written down before they are counted.
+--
 -- Isolation and correctness are not counted here: they come from the database tests, the privacy
 -- check and the reference check (docs/mvp.md, week one's results).
 
 with params as (
-  select date '2026-10-19' as week_start, 'America/Cayman'::text as tz
+  select date '2026-10-19' as week_start, 'America/Cayman'::text as tz, null::date as year_to
 ),
 who as (
   select user_id from public.profiles where is_owner limit 1
@@ -50,7 +68,7 @@ days as (
 ),
 -- The first status shown each day (what she was actually shown, kept permanently).
 shown as (
-  select distinct on (s.date) s.date as d, s.status, s.readings_used, s.shown_at
+  select distinct on (s.date) s.date as d, s.status, s.readings_used, s.shown_at, s.nudge
     from public.shown_status s, who, days
    where s.user_id = who.user_id and s.date = days.d
    order by s.date, s.shown_at
@@ -83,17 +101,33 @@ opened_in_week as (
   select distinct o.d from opened o join days using (d)
 ),
 first_checkin as (
-  select c.date as d, c.answer from public.checkins c, who, days
+  select c.date as d, c.answer, c.status_seen_before from public.checkins c, who, days
    where c.user_id = who.user_id and c.date = days.d and c.is_first
 ),
 followed as (
   select distinct f.date as d from public.followthrough f, who, days
    where f.user_id = who.user_id and f.date = days.d
 ),
+followed_yes as (
+  select d from (
+    select distinct on (f.date) f.date as d, f.answer from public.followthrough f, who, days
+     where f.user_id = who.user_id and f.date = days.d
+     order by f.date, f.answered_at desc) latest
+   where answer = 'yes'
+),
+-- Days a status was worked out from a sync that came before local noon (the completing post, or
+-- else the latest one, as the card and the morning notification go by).
+status_before_noon as (
+  select ds.date as d from public.daily_status ds, who, days
+   where ds.user_id = who.user_id and ds.date = days.d and ds.status <> 'none'
+     and exists (select 1 from public.uploads u where u.user_id = who.user_id and u.local_date = ds.date
+                  and u.kind = 'daily' and u.status = 'accepted')
+     and not public.synced_after_noon(who.user_id, ds.date)
+),
 year_days as (
   select ds.status, ds.sleep_floor
     from public.daily_status ds, who, params p
-   where ds.user_id = who.user_id and ds.date <= p.week_start + 6 and ds.status <> 'none'
+   where ds.user_id = who.user_id and ds.date <= coalesce(p.year_to, p.week_start + 6) and ds.status <> 'none'
 )
 select * from (
   select 1 as o, 'Sync' as target, 'sync_a: days with an accepted daily post' as measure,
@@ -112,7 +146,7 @@ select * from (
          (select count(*) from year_days)
   union all select 9, 'Check-ins against status', 'days the first check-in agrees with the status shown',
          (select count(*) from shown s join first_checkin c using (d)
-           where (c.answer in ('great', 'okay') and s.status = 'ready')
+           where (c.answer in ('good', 'okay') and s.status = 'ready')
               or (c.answer = 'off' and s.status in ('ease_off', 'rest'))),
          (select count(*) from shown s join first_checkin c using (d))
   union all select 10, 'Check-in completion', 'days a check-in was answered, out of days the card was opened',
@@ -122,5 +156,16 @@ select * from (
          (select count(*) from shown where status in ('ease_off', 'rest'))
   union all select 12, 'Partial data', 'days a status was shown on fewer than three readings',
          (select count(*) from shown where readings_used < 3), (select count(*) from shown)
+  union all select 13, 'Check-ins against status', 'strict: first answers given before the status was seen that agree',
+         (select count(*) from shown s join first_checkin c using (d)
+           where not c.status_seen_before
+             and ((c.answer in ('good', 'okay') and s.status = 'ready')
+               or (c.answer = 'off' and s.status in ('ease_off', 'rest')))),
+         (select count(*) from shown s join first_checkin c using (d) where not c.status_seen_before)
+  union all select 14, 'Action', 'strict: change days with a nudge shown where the latest answer was yes',
+         (select count(*) from shown where status in ('ease_off', 'rest') and nudge is not null and d in (select d from followed_yes)),
+         (select count(*) from shown where status in ('ease_off', 'rest') and nudge is not null)
+  union all select 15, 'Notifications', 'strict: days a status came from a sync before noon whose morning notification was sent',
+         (select count(*) from status_before_noon where d in (select d from morning_sent)), (select count(*) from status_before_noon)
 ) r
 order by o;

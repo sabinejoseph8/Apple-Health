@@ -61,6 +61,9 @@ SERVER_ONLY = [
     ('ai_enqueue', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY}),
     ('ai_fail', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY, 'p_error': 'x'}),
     ('ai_finish', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY}),
+    ('ai_save', {'p_user': NOBODY, 'p_kind': 'morning', 'p_date': OLD_DAY, 'p_body': {}, 'p_model': 'x',
+                 'p_instruction': 'x', 'p_hash': 'x', 'p_status': 'failed', 'p_nudge': None, 'p_tries': 0,
+                 'p_latency_ms': 0, 'p_input_tokens': 0, 'p_output_tokens': 0}),
     ('issue_upload_token', {'p_user': NOBODY, 'p_token_hash': '0' * 64}),
     ('local_moment', {'p_user': NOBODY, 'p_date': OLD_DAY, 'p_time': '12:00'}),
     ('local_now', {'p_user': NOBODY}),
@@ -70,12 +73,14 @@ SERVER_ONLY = [
     ('rebuild_status', {'p_user': NOBODY, 'p_from': '2000-01-01', 'p_to': '2000-01-02'}),
     ('recompute', {'p_user': NOBODY, 'p_from': '2000-01-01', 'p_to': '2000-01-02'}),
     ('shown_change_nudge', {'p_user': NOBODY, 'p_date': OLD_DAY}),
+    ('synced_after_noon', {'p_user': NOBODY, 'p_date': OLD_DAY}),
     ('withdraw_consent', {'p_user': NOBODY}),
 ]
-# Server-only functions that take no person (build_due_digests,
-# claim_due_notifications, plan_notifications, run_analysis_queue,
-# send_due_notifications) are left to the catalog check: calling them, if
-# a rule were broken, would do real work.
+# Server-only functions that take no person are left to the catalog check
+# (scripts/live-privacy-catalog.sql): calling them, if a rule were broken,
+# would do real work.
+LEFT_TO_CATALOG = {'ai_claim_jobs', 'ai_start', 'build_due_digests', 'claim_due_notifications',
+                   'plan_notifications', 'run_analysis_queue', 'send_due_notifications'}
 
 # Owner-only functions, with input they would refuse even if run.
 OWNER_ONLY = [
@@ -105,6 +110,27 @@ def tables_from_migrations() -> List[str]:
     for path in sorted(MIGRATIONS.glob('*.sql')):
         found.update(re.findall(r'create table (?:if not exists )?public\.([a-z_]+)', path.read_text(), re.I))
     return sorted(found)
+
+
+def functions_from_migrations() -> List[str]:
+    """Every function the migrations create in the public schema, less the
+    ones a later migration drops and the trigger functions (which can't be called)."""
+    found, triggers = set(), set()
+    for path in sorted(MIGRATIONS.glob('*.sql')):
+        text = path.read_text()
+        for name, tail in re.findall(r'create (?:or replace )?function public\.([a-z_0-9]+)\s*\((.*?)\bas \$', text, re.I | re.S):
+            found.add(name)
+            if re.search(r'returns\s+trigger', tail, re.I):
+                triggers.add(name)
+        found.difference_update(re.findall(r'drop function (?:if exists )?public\.([a-z_0-9]+)', text, re.I))
+    return sorted(found - triggers)
+
+
+def unlisted_functions() -> List[str]:
+    """Functions in the migrations that no list here covers. A new function has
+    to be put in a list (or left to the catalog) before the check passes."""
+    listed = {name for name, _ in SERVER_ONLY + OWNER_ONLY + SIGNED_IN_ONLY} | LEFT_TO_CATALOG
+    return [f for f in functions_from_migrations() if f not in listed]
 
 
 def refused(status: int, body) -> bool:
@@ -153,6 +179,11 @@ def run_checks(url: str, key: str, session: Dict[str, str], me: str, password: s
     report = Report()
     anon = {'apikey': key}
 
+    print('\n0. Coverage')
+    missing = unlisted_functions()
+    report.check(not missing, 'every function in the migrations is in a list here'
+                 + (f' (missing: {", ".join(missing)})' if missing else ''))
+
     print('\n1. Signed out')
     for t in tables:
         status, body = api.call(f'{url}/rest/v1/{t}?select=*&limit=1', anon)
@@ -177,6 +208,10 @@ def run_checks(url: str, key: str, session: Dict[str, str], me: str, password: s
     status, body = api.call(f'{url}/functions/v1/owner-reset-password', session, 'POST',
                             {'email': 'nobody@example.invalid', 'password': 'not-a-real-password'})
     report.check(status == 403, 'owner-reset-password: refuses the test account')
+
+    # A sign-in that ran out part-way would make every refusal above look like a pass.
+    status, body = api.call(f'{url}/rest/v1/profiles?select=user_id', session)
+    report.check(status == 200 and body == [{'user_id': me}], 'still signed in at the end of the signed-in checks')
 
     print('\n3. The upload path')
     status, _ = ping(url, None)
