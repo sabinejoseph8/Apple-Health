@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run typecheck && vite build && node scripts/check-build-secrets.mjs",
+    "build": "npm run typecheck && vite build && node scripts/check-build-secrets.mjs && node scripts/check-demo-bundle.mjs live dist",
     "build:demo": "npm run typecheck && vite build --mode demo && node scripts/check-demo-bundle.mjs demo dist-demo",
     "dev:demo": "vite --mode demo",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",

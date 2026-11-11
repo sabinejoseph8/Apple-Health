@@ -63,7 +63,7 @@ export interface MockReply {
 
 const json = (body: unknown, status = 200): MockReply => ({ status, body })
 
-// An answer, or null when the request is not for the database.
+// The answer the database would give to this request.
 export function answerRequest(state: MockState, req: MockRequest): MockReply {
   const { tables } = state
   const url = new URL(req.url)

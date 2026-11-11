@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci
+      # The publishing checks: numbers that must agree, no secrets or addresses, no audience words.
+      - name: Publishing checks
+        run: python3 checks/run_all.py
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:functions

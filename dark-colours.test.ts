@@ -10,6 +10,14 @@ function tokens(block: string): Record<string, string> {
   return Object.fromEntries([...block.matchAll(/--([a-z-]+):\s*(#[0-9a-f]{6});/g)].map((m) => [m[1], m[2]]))
 }
 
+// Every colour token must be one this test can read: a six-digit lower-case hex. A short hex or an
+// rgb() value would otherwise drop out of both sets without a word.
+function unreadable(block: string): string[] {
+  return [...block.matchAll(/--([a-z-]+):\s*(#[0-9a-fA-F]+|rgba?\([^)]*\)|hsla?\([^)]*\));/g)]
+    .filter((m) => !/^#[0-9a-f]{6}$/.test(m[2]))
+    .map((m) => `${m[1]}: ${m[2]}`)
+}
+
 const light = tokens(css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-reduced-motion')))
 const dark = tokens(css.match(/@media \(prefers-color-scheme: dark\) \{([\s\S]*?)\n\}\n/)?.[1] ?? '')
 
@@ -53,6 +61,13 @@ describe('dark colours', () => {
   it('read both sets from the stylesheet', () => {
     expect(Object.keys(light).length).toBeGreaterThan(30)
     expect(Object.keys(dark).length).toBeGreaterThan(30)
+  })
+
+  it('holds only colours this test can read', () => {
+    const lightBlock = css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-reduced-motion'))
+    const darkBlock = css.match(/@media \(prefers-color-scheme: dark\) \{([\s\S]*?)\n\}\n/)?.[1] ?? ''
+    expect(unreadable(lightBlock)).toEqual([])
+    expect(unreadable(darkBlock)).toEqual([])
   })
 
   it('give every light colour a dark partner of the same name', () => {

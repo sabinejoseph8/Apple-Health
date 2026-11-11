@@ -61,6 +61,11 @@ SECRET_PATTERNS = [
     ("Private key block", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")),
     ("Key or password assignment", re.compile(
         r"(?i)\b(?:api[_\-]?key|secret|token|password|passwd)\b[\"']?\s*[:=]\s*[\"']([^\"'\s]{12,})[\"']")),
+    # Environment-style names (VAPID_PRIVATE_KEY=..., service_role_key: "...", client_secret = ...),
+    # quoted or not, with a value long enough to be a real secret.
+    ("Named key or secret", re.compile(
+        r"(?i)(?<![A-Za-z0-9])[A-Za-z0-9_]*(?:private_key|service_role_key|secret_key|client_secret|access_token|auth_token)[A-Za-z0-9_]*"
+        r"[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_\-+/=.]{20,})")),
 ]
 EMAIL_RE = re.compile(r"(?<![\w.%+\-])[A-Za-z0-9][A-Za-z0-9._%+\-]*@[A-Za-z0-9][A-Za-z0-9.\-]*\.[A-Za-z]{2,}")
 NOT_EMAIL_TLDS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "js", "ts", "tsx", "css", "mjs", "json"}
@@ -245,7 +250,7 @@ def check_em_dashes(root: Path, cfg: dict) -> Result:
         text = read_text(path)
         if text is None:
             continue
-        text = text.replace("&mdash;", EM_DASH).replace("&#8212;", EM_DASH)
+        text = html.unescape(text)
         for n, line in enumerate(text.splitlines(), 1):
             if EM_DASH in line:
                 problems.append(f"em dash: {path.relative_to(root)}:{n}")
@@ -262,7 +267,7 @@ def check_headline_numbers(root: Path, cfg: dict) -> Result:
             text = read_text(root / f)
             if text is None:
                 problems.append(f"{f} missing (needed for {number})")
-            elif number not in html.unescape(text):
+            elif not re.search(r"(?<![0-9,.])" + re.escape(number) + r"(?![0-9])", html.unescape(text)):
                 problems.append(f"'{number}' not found in {f}")
     return ("fail" if problems else "pass", problems)
 
@@ -301,6 +306,18 @@ def scan_text_for_secrets(text: str, cfg: dict) -> List[str]:
     return hits
 
 
+def email_allowed(email: str, allowed: List[str]) -> bool:
+    """An entry with an @ is one whole address; any other entry is a domain."""
+    email = email.lower()
+    for a in (x.lower() for x in allowed):
+        if "@" in a:
+            if email == a:
+                return True
+        elif email.endswith("@" + a) or email.endswith("." + a):
+            return True
+    return False
+
+
 def scan_text_for_emails(text: str, cfg: dict) -> List[str]:
     hits = []
     for m in EMAIL_RE.finditer(text):
@@ -308,7 +325,7 @@ def scan_text_for_emails(text: str, cfg: dict) -> List[str]:
         tld = email.rsplit(".", 1)[-1].lower()
         if tld in NOT_EMAIL_TLDS:
             continue
-        if any(email.lower().endswith(a.lower()) for a in cfg["allowed_emails"]):
+        if email_allowed(email, cfg["allowed_emails"]):
             continue
         hits.append(email)
     return sorted(set(hits))
@@ -345,7 +362,7 @@ def check_no_personal_emails(root: Path, cfg: dict) -> Result:
 # Public files describe the work, not its audience: these words stay out of
 # every tracked file, apart from file and folder names and the one sentence in
 # the product spec's overview that may say "portfolio".
-AUDIENCE_RE = re.compile(r"recruit\w*|hiring manager\w*|interview\w*|job application\w*|target role\w*|portfolio\w*", re.I)
+AUDIENCE_RE = re.compile(r"recruit\w*|hiring\w*|interview\w*|job (?:application|search|hunt)\w*|target role\w*|portfolio\w*", re.I)
 AUDIENCE_NAME_TOKENS = ("interview-notes", "interview notes", "portfolio-private", "portfolio.json", "Portfolio-Kit")
 # The checks themselves have to spell the words; nothing else may.
 AUDIENCE_SKIP_PREFIX = "checks/"
@@ -355,8 +372,12 @@ def scan_text_for_audience_words(text: str, allowed_portfolio_lines: int = 0) ->
     hits = []
     portfolio_lines = 0
     for n, line in enumerate(text.splitlines(), 1):
+        # A word is let through only where it is part of one of the file or folder names itself.
+        low = line.lower()
+        spans = [(i, i + len(tok)) for tok in AUDIENCE_NAME_TOKENS
+                 for i in range(len(low)) if low.startswith(tok.lower(), i)]
         words = [m.group(0) for m in AUDIENCE_RE.finditer(line)
-                 if not any(tok.lower() in line[max(0, m.start() - 24):m.end() + 24].lower() for tok in AUDIENCE_NAME_TOKENS)]
+                 if not any(a <= m.start() and m.end() <= b + 1 for a, b in spans)]
         if not words:
             continue
         if all(w.lower().startswith("portfolio") for w in words) and portfolio_lines < allowed_portfolio_lines:
