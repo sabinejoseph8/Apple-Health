@@ -703,9 +703,9 @@
  "p8-08": {
   "phase": "8",
   "texts": [
+   "Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status (asked for by Sabine on 8 October 2026 as the D86 review; D92 on 16 October made them count). Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year (done 10 November 2026, D121: stage-less nights keep counting from 2 hours, as now; 9 of 271 nights, none a disrupted morning; the late check now goes by the first sync after sleep ended)",
    "Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status (asked for by Sabine on 8 October 2026 as the D86 review; D92 on 16 October made them count). Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year",
-   "Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status. Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year",
-   "Review D86 with Sabine: whether nights the Watch records without stages should count toward the status"
+   "Review D92 with Sabine after the test: whether nights the Watch records without stages should keep counting toward the status. Look at how often such nights came during the test and how they compare with stage-built nights. Nights recorded without stages so far: 8, 12 and 13 October 2026, no status until D92 gave them one (12 October: the stages had still not arrived later in the morning, Sabine confirmed), plus four older nights of her year"
   ]
  },
  "p8-06": {
@@ -783,6 +783,7 @@
  "p9-09": {
   "phase": "9",
   "texts": [
+   "Private kit PDF outside the repository (2-minute and 10-minute stories, likely questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings) (finished 10 November 2026: the 2-minute and 10-minute stories, both weeks' numbers, 17 questions with answers, the reader test and the video, done under D116; outside the repository)",
    "Private kit PDF outside the repository (2-minute and 10-minute stories, likely questions, a reader test, a demo video script; the video is recorded on the demo build, never on real readings)"
   ]
  },
