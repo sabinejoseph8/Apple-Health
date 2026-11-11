@@ -29,6 +29,7 @@
   "style_files": [
     "README.md",
     "docs/*.md",
+    "docs/**/*.md",
     "docs/case-study.html"
   ],
   "_style_note": "docs/design-screens.html is left out of the dash check: it is a saved copy of the Clarivi Screens canvas, and the dashes sit in its own script and style comments, not in anything written for a reader.",

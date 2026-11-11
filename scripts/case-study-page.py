@@ -5,7 +5,7 @@
 The words and numbers stay in docs/case-study.html, which also makes the PDF. This script
 reads that file, puts the architecture diagram in as a drawing instead of an image, and wraps it in
 a page that works at phone width and in light and dark. Publish the result to the page's own address;
-after week two, update docs/case-study.html first and run this again. Standard library only.
+When the case study changes, update docs/case-study.html first and run this again. Standard library only.
 """
 import argparse
 import os

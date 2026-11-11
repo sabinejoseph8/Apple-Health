@@ -95,7 +95,7 @@
 }
 
 /* Dark mode (D111, R76): the dark colour set from docs/design.md, section 2. It follows the
-   phone's setting and nothing else changes. src/dark-colours.test.ts checks every pair. */
+   phone's setting and nothing else changes. dark-colours.test.ts checks every pair. */
 :root { color-scheme: light dark; }
 @media (prefers-color-scheme: dark) {
   :root {
