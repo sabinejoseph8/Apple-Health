@@ -72,7 +72,7 @@
 <rect x="40" y="503" width="1120" height="150" rx="12" fill="#FFF4E0" stroke="#B26A00" stroke-width="2" stroke-dasharray="8 6"/>
 <text x="60" y="533" font-size="17" font-weight="700" fill="#1F2937">How quality is checked</text>
 <text x="60" y="563" font-size="14" font-weight="700" fill="#B26A00">Reference check</text>
-<text x="60" y="585" font-size="14" fill="#4B5563">A pandas notebook recalculates</text>
+<text x="60" y="585" font-size="14" fill="#4B5563">A pandas script recalculates</text>
 <text x="60" y="604" font-size="14" fill="#4B5563">your whole year on its own, and the</text>
 <text x="60" y="623" font-size="14" fill="#4B5563">database must agree, value for value.</text>
 <text x="430" y="563" font-size="14" font-weight="700" fill="#B26A00">Tests</text>
@@ -80,7 +80,7 @@
 <text x="430" y="604" font-size="14" fill="#4B5563">another person's rows, and an outside-in</text>
 <text x="430" y="623" font-size="14" fill="#4B5563">privacy check and screen tests run too.</text>
 <text x="800" y="563" font-size="14" font-weight="700" fill="#B26A00">AI test set</text>
-<text x="800" y="585" font-size="14" fill="#4B5563">Invented cases written before any code,</text>
+<text x="800" y="585" font-size="14" fill="#4B5563">Invented cases written before the AI code,</text>
 <text x="800" y="604" font-size="14" fill="#4B5563">plus a sealed set. Every miss is</text>
 <text x="800" y="623" font-size="14" fill="#4B5563">reported next to its target.</text>
 </svg>

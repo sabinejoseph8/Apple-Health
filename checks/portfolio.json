@@ -35,7 +35,7 @@
   "case_study_pdf": "docs/case-study.pdf",
   "case_study_max_pages": 2,
   "headline_numbers": {
-    "_note": "Numbers that must read the same wherever they appear. Week one's (31 October 2026) and week two's (11 November 2026) are listed for the README and the case study.",
+    "_note": "Numbers that must read the same wherever they appear. Week one's (31 October 2026) and week two's (10 November 2026) are listed for the README and the case study.",
     "52 of 231": [
       "docs/mvp.md",
       "docs/evaluation.md",

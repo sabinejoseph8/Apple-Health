@@ -1,6 +1,6 @@
 # Evaluation: Clarivi
 
-The first half was written on 29 October 2026, before week two of the test began. It sets down what good looks like and how it is counted, with week one's results, the AI feature's test results and the module check. Week two's results were added to section 3 on 11 November 2026, counted with the same file and the same rules, together with reruns of the isolation, correctness and Signal checks. No reading from anyone's Watch appears here: only totals and counts.
+The first half was written on 29 October 2026, before week two of the test began. It sets down what good looks like and how it is counted, with week one's results, the AI feature's test results and the module check. Week two's results were added to section 3 on 10 November 2026, counted with the same file and the same rules, together with reruns of the isolation, correctness and Signal checks. No reading from anyone's Watch appears here: only totals and counts.
 
 ## 1. What good looks like
 
@@ -60,7 +60,7 @@ A second try on 31 October tested nothing: the Watch was not worn, so there was 
 
 ### Week two (2 to 8 November 2026), calculated 8 November 2026
 
-The same file, `scripts/reference/week-results.sql`, with only the week's start date changed. The targets are the ones set before week one; the sync count is the one chosen before week two (D99): the morning's status worked out and shown before noon. Statuses are the ones she was shown (score version 3). Nothing about the sync or the score changed during the week. The isolation, correctness and Signal checks were rerun on 10 and 11 November 2026.
+The same file, `scripts/reference/week-results.sql`, with only the week's start date changed. The targets are the ones set before week one; the sync count is the one chosen before week two (D99): the morning's status worked out and shown before noon. Statuses are the ones she was shown (score version 3). Nothing about the sync or the score changed during the week. The isolation, correctness and Signal checks were rerun on 10 November 2026.
 
 | Measure | Target | Result | Met? | Caveat |
 |---|---|---|---|---|
@@ -73,7 +73,7 @@ The same file, `scripts/reference/week-results.sql`, with only the week's start 
 | Check-ins against status | More than chance | 3 of 6 first answers agreed | Indicative only | Every status shown was Ready, so this only shows how often she felt great or okay on a Ready day. |
 | Engagement | 5 of 7 days | 7 of 7 days | Yes | On Saturday the card was opened although no status could be shown. |
 | Action | About half | No Ease off or Rest was shown, so no question was asked | Not measurable | Untested for the second week running. |
-| Her account | Written | Written and approved 11 November 2026 | Yes | Below. |
+| Her account | Written | Written and approved 10 November 2026 | Yes | Below. |
 
 **Her account (week two):** "The morning status still needed me to sync by hand, or relied on the alarm, and it had to happen before noon. I don't set an alarm on most days, so the alarm route didn't fit how I actually live."
 
@@ -127,7 +127,7 @@ None was built (decided 29 October 2026).
 - The module check led to dropping all three modules (D94, 29 October).
 - The alarm trigger's first real morning, which started but did not sync because the 10-minute wait ended at a locked phone and the night had not reached Health, led to dropping the wait and to a reminder that also covers a night that is still unfinished (D103). The earlier reminder was silenced by a partial post, as on 22 and 30 October.
 - Her account, that she would not keep using it as it was, points at the sync and the noon rule; the noon rule is reopened only if week two shows syncs still arriving after noon (D94).
-- Week two met the sync target, but only with four different triggers between them, two mornings rescued by the 11:30 reminder and an alarm run that worked on 1 of 2 clean tries. Her week-two account says the same thing in her words: the sync still needed her, and the alarm route doesn't fit mornings without an alarm. That led to the iPhone app, which reads Health and syncs on its own (D115, decided 4 November during the week and built then), and to retiring the Shortcut when the app was installed (D118).
+- Week two met the sync target, but the nights came in four different ways (one of them Sync now, by hand), two mornings needed the 11:30 reminder, and the alarm run worked on 1 of 2 clean tries. By 4 November, when an alarm run had left no trace, that record led to the iPhone app, which reads Health and syncs on its own (D115, decided that day and built during the week), and later to retiring the Shortcut when the app was installed (D118). Her week-two account at the end of the week says the same thing in her words: the sync still needed her, and the alarm route doesn't fit mornings without an alarm.
 - With the app syncing on its own, noon only bit on a morning like Saturday, when the phone was off. Together with her week-one account, that led to a late status after noon, with no nudge and no 8pm question, instead of no status at all (D119). The sync target still counts a status shown before noon.
 - The digest's two faults were kept as they are (D117), and are reported here instead.
 
