@@ -129,7 +129,6 @@ The app is served by Vercel, which never sees readings. Readings and results are
 - **The iPhone app is not measured yet.** Both test weeks ran on the Shortcut. The app's mornings count against the same sync target from 10 November 2026.
 - **Thin Signal evidence.** My year has no illness or major events on the calendar.
 - **The Watch decides when the night arrives.** Its sleep sometimes reaches Health hours after I wake, and no fixed wait on the phone can fix that.
-- **A weekly reinstall.** With a free Apple ID, the iPhone app stops opening after 7 days unless I reinstall it from my Mac.
 - **Not a medical device.** It gives no medical advice and names no condition.
 
 ## Repository structure
