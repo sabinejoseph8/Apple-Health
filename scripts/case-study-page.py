@@ -89,11 +89,11 @@ CSS = """
   }
 """
 
-# The same words as the README's note at the top. Rewrite both when week two's results are added.
-STATUS = ('<strong>Project in progress.</strong> Week one (19 to 25 October 2026) is done: the calculations matched an independent check '
-          'on my whole year (0 of 261 nights differ), and the sync target was missed (4 of 7 days against 6). Week two, the same test '
-          'with a changed sync, runs until Sunday 8 November 2026; its results and a review follow when it ends. '
-          'Every result on this page is from week one.')
+# The same words as the README's note at the top. Rewrite both together.
+STATUS = ('<strong>Project in progress.</strong> Two test weeks are done, both with an iPhone Shortcut doing the sync. '
+          'Week one (19 to 25 October 2026) missed the sync target (4 of 7 days against 6); week two (2 to 8 November) met it '
+          '(6 of 7). Both times the calculations matched an independent check on my whole year, with 0 values different. '
+          'Since 10 November 2026 the sync is a native iPhone app that reads Health on its own; its mornings are not counted yet.')
 
 LINKS = [
     ('The repository', 'https://github.com/sabinejoseph8/Apple-Health'),

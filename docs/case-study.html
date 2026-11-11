@@ -61,7 +61,7 @@
 </head>
 <body>
   <header class="head">
-    <div class="eyebrow">AI product management case study &middot; Week one done, week two under way &middot; November 2026</div>
+    <div class="eyebrow">AI product management case study &middot; Two test weeks done &middot; November 2026</div>
     <h1>Clarivi</h1>
     <div class="sub">A plain-words morning answer from my own Apple Watch data</div>
     <p class="lede">For Apple Watch users who train and sleep with the watch on. It says what last night's readings mean against your own normal, why the day's status was set, and one thing to do today. I built it and tested it on myself (I wrote the specs and decisions; Claude Code wrote the code to them), and I report what missed next to what worked.</p>
@@ -74,15 +74,15 @@
   </section>
 
   <div class="kpis">
-    <div class="kpi"><b>261 nights</b><span>My year's nights, usual ranges and daily status agree with an independent check: 0 values differ. Same author, so independent code, not an independent person.</span></div>
+    <div class="kpi"><b>0 differ</b><span>My year's nights, usual ranges and daily status agree with an independent check in both weeks (261 nights, then 271). Same author, so independent code, not an independent person.</span></div>
+    <div class="kpi"><b>6 of 7</b><span>Mornings with the status shown before noon in week two: met. Week one missed, with 4 of 7 days synced at all.</span></div>
     <div class="kpi"><b>38 of 40</b><span>Invented cases passed the AI's safety filter on one live attempt. The filter was tuned on these cases.</span></div>
-    <div class="kpi miss"><b>4 of 7</b><span>Days with a sync in week one, against a target of 6: missed. Only 2 of 7 had a status before noon.</span></div>
     <div class="kpi miss"><b>2 of 13</b><span>Disrupted mornings the score flagged, against a target of 2 in 3: missed. One person, thin evidence.</span></div>
   </div>
 
   <div class="figure">
         <img src="architecture.png" alt="Architecture diagram">
-        <div class="cap">Readings flow in from an iPhone Shortcut, are scored on the server, and the AI only writes the words.</div>
+        <div class="cap">Readings flow in from the Clarivi iPhone app, are scored on the server, and the AI only writes the words.</div>
       </div>
 
   <div class="cols">
@@ -93,7 +93,7 @@
           <li><strong>The card:</strong> Ready, Ease off or Rest in a few plain sentences, one action for the day, and a "Why today" screen that shows how it was decided.</li>
           <li><strong>The score:</strong> fixed arithmetic in SQL against my own last 42 nights, checked by separate pandas code. A night with sleep far below my usual cannot be Ready.</li>
           <li><strong>The AI</strong> (added after week one): Claude Opus 5.5 writes the wording and never sets the status. It sees an allow-list of results only, and its text goes through a filter, a retry and a fixed fallback.</li>
-          <li><strong>The sync:</strong> an iPhone Shortcut on three triggers (alarm stopped, charger unplugged, app opened), with an 11:30 reminder if the status is missing.</li>
+          <li><strong>The sync:</strong> for both test weeks, an iPhone Shortcut on three triggers (alarm stopped, charger unplugged, app opened), with an 11:30 reminder. Since 10 November, a native iPhone app that reads Health on its own.</li>
           <li><strong>Private by default:</strong> row-level security on every table, no third-party scripts, three separate consent boxes.</li>
         </ul>
       </section>
@@ -103,6 +103,7 @@
           <li><strong>A fixed score, not a learned model:</strong> every status is explainable and checkable. The cost: it cannot adapt to me.</li>
           <li><strong>The AI explains, never decides:</strong> a wrong sentence cannot change what the card says. The cost: a short wait, and a US AI provider that needs its own consent.</li>
           <li><strong>A smaller test, set before any result:</strong> four people for 28 days became one person for a week. The cost: it cannot speak for anyone else.</li>
+          <li><strong>From a Shortcut to an iPhone app:</strong> week two met the sync target only by leaning on four triggers and a reminder, and my own account said it still needed me. The cost: Swift to maintain and, on a free Apple ID, a reinstall every 7 days.</li>
           <li><strong>Test before building:</strong> I tried three planned analysis modules on my own year first. Two found nothing the data could support (0 of 12 each) and the third missed its target, so I built none.</li>
         </ul>
       </section>
@@ -110,28 +111,29 @@
     <div>
       <section>
         <h2>How I measured quality</h2>
-        <p>Ten targets, set on 29 September 2026, before any result. The six that could be counted; week one, 19 to 25 October:</p>
+        <p>Ten targets, set on 29 September 2026, before any result. The six that could be counted, in week one (19 to 25 October) and week two (2 to 8 November):</p>
         <table>
-          <tr><th>Measure</th><th>Target</th><th>Result</th></tr>
-          <tr><td>Sync</td><td>6 of 7 days</td><td class="no">4 of 7</td></tr>
-          <tr><td>Correctness</td><td>Match the reference</td><td class="yes">0 of 261 nights differ</td></tr>
-          <tr><td>Isolation</td><td>No tolerance</td><td class="yes">Held</td></tr>
-          <tr><td>Signal, my year</td><td>2 in 3</td><td class="no">2 of 13</td></tr>
-          <tr><td>Quiet by default, my year</td><td>About 1 in 7</td><td class="no">52 of 231 days (1 in 4.4)</td></tr>
-          <tr><td>Engagement</td><td>5 of 7 days</td><td class="no">3 of 7</td></tr>
+          <tr><th>Measure</th><th>Target</th><th>Week one</th><th>Week two</th></tr>
+          <tr><td>Sync</td><td>6 of 7 days</td><td class="no">4 of 7</td><td class="yes">6 of 7</td></tr>
+          <tr><td>Correctness</td><td>Match the reference</td><td class="yes">0 of 261 nights differ</td><td class="yes">0 of 271 differ</td></tr>
+          <tr><td>Isolation</td><td>No tolerance</td><td class="yes">Held</td><td class="yes">Held</td></tr>
+          <tr><td>Signal, my year</td><td>2 in 3</td><td class="no">2 of 13</td><td class="no">2 of 13</td></tr>
+          <tr><td>Quiet by default, my year</td><td>About 1 in 7</td><td class="no">52 of 231 days (1 in 4.4)</td><td class="no">53 of 244 (1 in 4.6)</td></tr>
+          <tr><td>Engagement</td><td>5 of 7 days</td><td class="no">3 of 7</td><td class="yes">7 of 7</td></tr>
         </table>
-        <p>The other four (notifications, check-ins, action and my own account) are in docs/evaluation.md: two days with a status were too few to count the first three, and my own account is under What I learned.</p>
+        <p>The other four are in docs/evaluation.md. Notifications went out on every day with a status (2 of 2, then 6 of 6). Check-ins and action could not be judged, because every status shown was Ready. My own account is under What I learned.</p>
       </section>
       <section>
         <h2>What I learned</h2>
         <ul>
           <li>The sync miss was partly the Watch: its sleep can reach Health hours after waking. A fixed wait failed on its first real morning, so I dropped it and made the reminder cover an unfinished night.</li>
           <li>A Ready on a very short night led to a sleep floor. It made the score louder than my "quiet" target (52 of 231 days, against 29 of 231 before it), and I report that as a miss.</li>
-          <li>Counting the sync three ways showed that "4 of 7" counted any post, so week two counts the status shown before noon.</li>
-          <li>My own account: it never changed a decision, and I would not keep using it as it was. Both point at the sync, which week two tests.</li>
+          <li>Counting the sync three ways showed that "4 of 7" counted any post, so week two counted the status shown before noon, and met the target.</li>
+          <li>My own account after week one: I would not keep using it as it was. After week two: the status still needed me to sync by hand or stop an alarm I don't set on most days. That is why the sync is now an iPhone app.</li>
+          <li>The week's one Ease off fell on the morning my phone was off, so the action target is still untested.</li>
         </ul>
       </section>
-      <div class="note"><strong>Limits:</strong> one person, one week so far. The same author built the system and counted the results. Week two is not included yet. <strong>Next:</strong> week two (2 to 8 November) with the alarm trigger and the AI explanation live, counted as the status shown before noon; then a second real user.</div>
+      <div class="note"><strong>Limits:</strong> one person, two weeks. The same author built the system and counted the results. Both weeks ran on the Shortcut, so the iPhone app is not counted yet. <strong>Next:</strong> the app's mornings against the same sync target, a morning with Ease off shown, then a second real user.</div>
     </div>
   </div>
 
