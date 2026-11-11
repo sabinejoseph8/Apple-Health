@@ -46,7 +46,7 @@ Statuses are the ones she was shown (score version 2). The score had not changed
 | Check-ins against status | More than chance | 2 of 2 first answers agreed | Indicative only | Both statuses were Ready, so the week could not show agreement beyond chance. |
 | Engagement | 5 of 7 days | 3 of 7 days | No | No notification tap was logged. |
 | Action | About half | No Ease off or Rest was shown, so no question was asked | Not measurable | |
-| Her account | Written | Written and approved 29 October 2026 | Yes | In her words: she would not keep using it as it was, because of remembering to sync and because after the noon cutoff the card gives no status. |
+| Her account | Written | Written and approved 29 October 2026 | Yes | In her words: "After week one, I said Clarivi hadn't changed any decision I made, and I wouldn't keep using it as it was: I had to remember to sync, and after noon the card showed no status." |
 
 Also from week one: check-ins were answered on 3 of the 3 days the card was opened, and no day rested on fewer than three readings.
 
@@ -126,8 +126,8 @@ None was built (decided 29 October 2026).
 - The held-out set's one slip, a digest describing a day-to-day change the data did not show, led to a second model checking every claim in each digest before it is shown (D95).
 - The module check led to dropping all three modules (D94, 29 October).
 - The alarm trigger's first real morning, which started but did not sync because the 10-minute wait ended at a locked phone and the night had not reached Health, led to dropping the wait and to a reminder that also covers a night that is still unfinished (D103). The earlier reminder was silenced by a partial post, as on 22 and 30 October.
-- Her account, that she would not keep using it as it was, points at the sync and the noon rule; the noon rule is reopened only if week two shows syncs still arriving after noon (D94).
-- Week two met the sync target, but the nights came in four different ways (one of them Sync now, by hand), two mornings needed the 11:30 reminder, and the alarm run worked on 1 of 2 clean tries. By 4 November, when an alarm run had left no trace, that record led to the iPhone app, which reads Health and syncs on its own (D115, decided that day and built during the week), and later to retiring the Shortcut when the app was installed (D118). Her week-two account at the end of the week says the same thing in her words: the sync still needed her, and the alarm route doesn't fit mornings without an alarm.
+- Her account after week one, that she wouldn't keep using it as it was because she had to remember to sync and after noon the card showed no status, points at the sync and the noon rule; the noon rule is reopened only if week two shows syncs still arriving after noon (D94).
+- Week two met the sync target, but the nights came in four different ways (one of them Sync now, by hand), two mornings needed the 11:30 reminder, and the alarm run worked on 1 of 2 clean tries. By 4 November, when an alarm run had left no trace, that record led to the iPhone app, which reads Health and syncs on its own (D115, decided that day and built during the week), and later to retiring the Shortcut when the app was installed (D118). Her account after week two says the same thing: the status still needed her to sync by hand or stop an alarm, all before noon, and she doesn't set an alarm on most days, so that route didn't fit how she actually lives.
 - With the app syncing on its own, noon only bit on a morning like Saturday, when the phone was off. Together with her week-one account, that led to a late status after noon, with no nudge and no 8pm question, instead of no status at all (D119). The sync target still counts a status shown before noon.
 - The digest's two faults were kept as they are (D117), and are reported here instead.
 
