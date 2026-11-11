@@ -840,6 +840,12 @@
    "10e Status after noon: when last night arrives after noon, the card shows today's status marked late with \"Last night's readings arrived after noon, so there's no nudge today.\", and no nudge, no 8pm question or morning notification; the server records it as shown with no nudge (synced_after_noon, migration 20261110000000_status_after_noon.sql); the iPhone app syncs on its own from 4am to 8pm; the card says sleep is in progress until 8pm and, between noon and 8pm with no sync, that a status can still come; the demo gets an after-noon morning; unit, database and browser tests."
   ]
  },
+ "p10-08": {
+  "phase": "10",
+  "texts": [
+   "10f A card counts as seen only on screen: iOS also starts the iPhone app out of sight when the Watch saves sleep, and the card then logged a card view, and could record a status as shown, with no one looking (card views at 2:54am, 3:37am and 9:27am on 10 November with no one looking). The plugin's appState says whether the app is on screen and when that changes; until it is, the card logs no view, records nothing as shown and runs no open sync, and coming to the front reloads it; the evaluation's caveats and week-results.sql note the views logged before the fix; unit tests, the browser tests and an iPhone simulator build"
+  ]
+ },
  "p10-06": {
   "phase": "10",
   "texts": [

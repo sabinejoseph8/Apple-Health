@@ -35,7 +35,7 @@
   "case_study_pdf": "docs/case-study.pdf",
   "case_study_max_pages": 2,
   "headline_numbers": {
-    "_note": "Numbers that must read the same wherever they appear. The README (31 October 2026) and the case study (31 October 2026) are listed; week two's numbers are added to every list after it ends.",
+    "_note": "Numbers that must read the same wherever they appear. Week one's (31 October 2026) and week two's (10 November 2026) are listed for the README and the case study.",
     "52 of 231": [
       "docs/mvp.md",
       "docs/evaluation.md",
@@ -64,6 +64,39 @@
       "docs/evaluation.md",
       "README.md",
       "docs/case-study.html"
+    ],
+    "6 of 7": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
+    ],
+    "2 of 13": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
+    ],
+    "53 of 244": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md",
+      "docs/case-study.html"
+    ],
+    "271 nights": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md"
+    ],
+    "485 database checks": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md"
+    ],
+    "133 outside-in checks": [
+      "docs/mvp.md",
+      "docs/evaluation.md",
+      "README.md"
     ]
   },
   "private_paths": [
