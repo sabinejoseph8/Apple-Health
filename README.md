@@ -47,6 +47,12 @@ One morning, from my side:
 
 The full picture is in the [architecture diagram](docs/architecture.pdf) and the [tech spec](docs/tech-spec.md).
 
+## Planned and tested like a product
+
+- **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
+- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the publishing checks.
+- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Both test weeks' results.
+
 ## Key design choices and tradeoffs
 
 - **Plain words before charts.** The card's briefing uses no numbers; they sit behind "Why today" and "Show the numbers". The cost: less detail on the first screen, and more work on wording.
@@ -110,7 +116,7 @@ Pick how deep to go:
 1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
 2. **Read** the [case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and both weeks' results with every miss.
-4. **Run** the tests and checks on made-up data (Vitest, Playwright, pgTAP, Deno and the pandas reference): [how to run](docs/how-to-run.md).
+4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
 5. **Browse** the [Project Memory website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe): the spec, design, tech spec, plan and decisions, with live plan ticks.
 
 ## Where the data goes
