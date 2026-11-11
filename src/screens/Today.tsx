@@ -30,7 +30,7 @@ const s = wording.states
 
 // While a sync could arrive at any moment, the card checks again each minute.
 // On a morning without sleep stages that's only until noon, when Sync now goes
-// too, as sleep in progress becomes not enough data at noon.
+// too, as sleep in progress becomes not enough data then.
 const WATCHING: CardState['kind'][] = ['waiting', 'analysing', 'night_unfinished', 'missed']
 function watching(state: CardState | undefined): boolean {
   if (state?.kind === 'no_sleep_stages') return state.beforeNoon
@@ -169,6 +169,9 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   const onCard = !checkin && !askingYesterday
   useEffect(() => {
     if (!data || !kind || !onCard || !inFront) return
+    // A page loaded on an earlier day and only now brought to the front holds that day's card:
+    // it reloads, and the reloaded card is the one that counts.
+    if (data.inputs.today !== localDate(new Date())) return
     const key = `${data.inputs.today}:${kind}`
     if (logged.current.has(key)) return
     logged.current.add(key)
@@ -192,10 +195,10 @@ export default function Today({ push, fromFollowUp }: { push: PushState | null; 
   const followDate = followToday?.date ?? null
   const followAnswered = followToday?.answer != null
   useEffect(() => {
-    if (!isNative() || !followDate) return
+    if (!isNative() || !followDate || !inFront) return
     if (followAnswered) notifications.cancelFollowUp(followDate)
     else notifications.planFollowUp(followDate)
-  }, [followDate, followAnswered])
+  }, [followDate, followAnswered, inFront])
 
   async function answerFollow(day: 'today' | 'yesterday', date: string, a: FollowAnswer) {
     // The server checks what was shown, so make sure the card's record is in.

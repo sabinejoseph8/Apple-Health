@@ -1,5 +1,6 @@
 import Foundation
 import HealthKit
+import UIKit
 
 // The native sync (D115, Phase 10, 10b): what the Clarivi Sync Shortcut does,
 // done by the app itself. One run is one morning's attempt:
@@ -20,7 +21,9 @@ final class HealthSync {
     private let store = HKHealthStore()
     private let defaults = UserDefaults.standard
     private let lock = NSLock()
-    private var running = false
+    // The run in progress, if any: a second caller waits for it and gets its
+    // outcome, so two triggers at once make one sync, not a sync and a refusal.
+    private var current: Task<[String: Any], Never>?
     // The one observer query for new sleep data; set up once per launch.
     private var observer: HKObserverQuery?
 
@@ -113,14 +116,20 @@ final class HealthSync {
     // The handler runs a morning sync under the same rules as any automatic
     // run, so a wake outside 4am to 8pm, or after today's sync, does nothing.
     func enableBackgroundDelivery() {
-        guard Self.available, observer == nil else { return }
+        guard Self.available else { return }
+        lock.lock()
+        let alreadySet = observer != nil
+        lock.unlock()
+        guard !alreadySet else { return }
         let query = HKObserverQuery(sampleType: Self.sleepType, predicate: nil) { _, completion, _ in
             Task {
                 _ = await HealthSync.shared.run(trigger: "health_background", byHand: false)
                 completion()
             }
         }
+        lock.lock()
         observer = query
+        lock.unlock()
         store.execute(query)
         store.enableBackgroundDelivery(for: Self.sleepType, frequency: .immediate) { _, _ in }
     }
@@ -128,23 +137,47 @@ final class HealthSync {
     // MARK: The run
 
     // Returns the outcome for the app: result, message, at, trigger. Results:
-    // no_token, no_url, no_permission, outside_window, done_today, busy,
+    // no_token, no_url, no_permission, outside_window, done_today,
     // already_complete, night_complete, night_not_finished, unreadable,
     // refused, failed. The message is the
     // server's own sentence when it sent one (from its wording module) and
     // empty otherwise: the app puts words to each result from the wording
     // module, so no sentence for the person lives here.
     func run(trigger: String, byHand: Bool) async -> [String: Any] {
-        lock.lock()
-        if running {
-            lock.unlock()
-            return outcome("busy", trigger: trigger, keep: false)
-        }
-        running = true
-        lock.unlock()
-        defer { lock.lock(); running = false; lock.unlock() }
+        let (task, started) = joinOrStart(trigger: trigger, byHand: byHand)
+        let out = await task.value
+        if started { finished() }
+        return out
+    }
 
+    // The run in progress, or a new one. Locking happens here, outside any
+    // async code.
+    private func joinOrStart(trigger: String, byHand: Bool) -> (Task<[String: Any], Never>, Bool) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let inFlight = current { return (inFlight, false) }
+        let task = Task { await self.runOnce(trigger: trigger, byHand: byHand) }
+        current = task
+        return (task, true)
+    }
+
+    private func finished() {
+        lock.lock()
+        current = nil
+        lock.unlock()
+    }
+
+    // Whether the app is on screen. Health's observer also calls back when
+    // the app has just been opened, and that run is an open run, not a
+    // background one.
+    private func onScreen() async -> Bool {
+        await MainActor.run { UIApplication.shared.applicationState == .active }
+    }
+
+    private func runOnce(trigger asked: String, byHand: Bool) async -> [String: Any] {
         let now = Date()
+        let inFront = await onScreen()
+        let trigger = asked == "health_background" && inFront ? "health_open" : asked
         let timeout = trigger == "health_background" ? Self.backgroundTimeout : Self.foregroundTimeout
         guard let token else {
             return outcome("no_token", trigger: trigger)
@@ -209,7 +242,7 @@ final class HealthSync {
         // 10c: the reminder goes once the night is in; a background sync that
         // completed it says so about a minute later, when the status is ready.
         LocalNotifications.planReminders(todayDone: complete, now: now)
-        if complete && trigger == "health_background" { LocalNotifications.readingsIn(after: 75) }
+        if complete && trigger == "health_background" && !inFront { LocalNotifications.readingsIn(after: 75) }
         return outcome(complete ? "night_complete" : "night_not_finished", reply["message"] as? String, trigger: trigger)
     }
 
@@ -266,8 +299,12 @@ final class HealthSync {
         request.httpBody = data
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        guard let (reply, _) = try? await URLSession.shared.data(for: request) else { return nil }
-        return (try? JSONSerialization.jsonObject(with: reply)) as? [String: Any]
+        guard let (reply, response) = try? await URLSession.shared.data(for: request) else { return nil }
+        guard let json = (try? JSONSerialization.jsonObject(with: reply)) as? [String: Any] else { return nil }
+        // The ingest function answers 200, or an error with its own "error"
+        // field. Anything else (a gateway's error page in JSON) is a failed run.
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        return status == 200 || json["error"] != nil ? json : nil
     }
 
     // MARK: Bookkeeping
@@ -290,7 +327,7 @@ final class HealthSync {
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone.current
+        f.timeZone = .autoupdatingCurrent
         f.dateFormat = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
         return f
     }()
@@ -298,7 +335,7 @@ final class HealthSync {
     private static let dayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone.current
+        f.timeZone = .autoupdatingCurrent
         f.dateFormat = "yyyy-MM-dd"
         return f
     }()

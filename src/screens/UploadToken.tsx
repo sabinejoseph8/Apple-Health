@@ -26,6 +26,7 @@ export default function UploadToken() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [token, setToken] = useState<string | null>(null)
+  const [saved, setSaved] = useState(true)
   const [copied, setCopied] = useState(false)
   const native = isNative()
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
@@ -91,7 +92,10 @@ export default function UploadToken() {
     setToken(result.data.token)
     // The native app keeps the new token itself (D115); it's still shown
     // once, for a Shortcut that should keep working beside it.
-    if (native) await health.setToken(result.data.token).catch(() => setError(wording.general.offline))
+    if (native) {
+      const kept = await health.setToken(result.data.token).then(() => true, () => false)
+      setSaved(kept)
+    }
     await load()
   }
 
@@ -163,7 +167,9 @@ export default function UploadToken() {
 
       {token && (
         <>
-          <p className="body" role="status">{native ? n.tokenCreatedSaved : w.showOnce}</p>
+          <p className="body" role={native && !saved ? 'alert' : 'status'}>
+            {native ? (saved ? n.tokenCreatedSaved : n.tokenNotSaved) : w.showOnce}
+          </p>
           <output className="token">{token}</output>
           <button className="primary" type="button" onClick={onCopy}>
             {copied ? w.copied : w.copy}

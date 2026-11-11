@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { wording } from '../supabase/functions/_shared/wording'
 import { useRoute } from './lib/route'
 import { configured, supabase } from './lib/supabase'
+import { health, isNative } from './lib/native'
 import { screenFor } from './lib/screens'
 import ConsentGate from './screens/ConsentGate'
 import Guide from './screens/Guide'
@@ -20,7 +21,12 @@ export default function App() {
       setSession(data.session)
       setReady(true)
     })
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s)
+      // Signed out from anywhere (another device, or a session that ran out): the iPhone app
+      // forgets its upload token too, so it stops syncing for an account no longer signed in here.
+      if (event === 'SIGNED_OUT' && isNative()) health.clearToken().catch(() => undefined)
+    })
     return () => data.subscription.unsubscribe()
   }, [])
 
