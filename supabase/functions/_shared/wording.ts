@@ -124,6 +124,7 @@ export const wording = {
     tokenSave: 'Save in this app',
     tokenRemove: 'Remove from this app',
     tokenCreatedSaved: "Saved in this app. If your Shortcut should keep working too, copy the token into it now: it's shown only once.",
+    tokenNotSaved: "This app couldn't save the new token. Copy it now, then tap Done and choose Paste an existing token: it's shown only once.",
     lastRun: (when: string, message: string) => `Last sync ${when}: ${message}`,
     healthUnavailable: (why: string) => `The Health sync isn't available in this app (${why}).`,
     // 10c: the notifications the app schedules on the phone itself. The

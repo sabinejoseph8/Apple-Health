@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
 )
 
 // The native app (D115) has no service worker: it is served from the app
-// bundle and its notifications come through Apple's push service later.
+// bundle and its notifications are scheduled on the phone itself.
 if (!demo && !isNative() && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
 }
