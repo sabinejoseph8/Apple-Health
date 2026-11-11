@@ -47,6 +47,12 @@ One morning, from my side:
 
 The full picture is in the [architecture diagram](docs/architecture.pdf) and the [tech spec](docs/tech-spec.md).
 
+## Planned and tested like a product
+
+- **Project Memory:** the [product spec](docs/product-spec.md), [design](docs/design.md), [tech spec](docs/tech-spec.md), [phased plan](docs/progress.md) and [MVP decisions](docs/mvp.md), each agreed before building. Also published as a [website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe) with live plan ticks.
+- **Automated tests:** unit and screen tests (Vitest, Playwright), database tests (pgTAP), server function tests (Deno), and the pandas reference check. Run `python3 checks/run_all.py` for the publishing checks.
+- **Case study:** [read it as a web page](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC). Both test weeks' results.
+
 ## Key design choices and tradeoffs
 
 - **Plain words before charts.** The card's briefing uses no numbers; they sit behind "Why today" and "Show the numbers". The cost: less detail on the first screen, and more work on wording.
@@ -92,7 +98,7 @@ Before any result, the test shrank from four people over 28 days to one person o
 | Action | About half | No Ease off or Rest day, so no question was asked | The week's one Ease off fell on the day my phone was off, so it was never shown | Not measurable |
 | My own account | Written | Written (below) | Written (below) | Yes, both |
 
-**My own account.** After week one: it never changed a decision, and I would not keep using it as it was, because of remembering to sync and because after noon the card gives no status. After week two: "The morning status still needed me to sync by hand, or relied on the alarm, and it had to happen before noon. I don't set an alarm on most days, so the alarm route didn't fit how I actually live."
+**My own account.** After week one, I said Clarivi hadn't changed any decision I made, and I wouldn't keep using it as it was: I had to remember to sync, and after noon the card showed no status. After week two, I said the status still needed me to sync by hand or stop an alarm, all before noon. I don't set an alarm on most days, so that route didn't fit how I actually live.
 
 **The AI explanations** were added after week one, so they are not one of the ten targets. Their checks were written on 29 October, before any prompt existed, with no pass mark. In the live check 38 of 40 development cases passed on a single attempt (the instruction and filter were tuned on these, so that result is in-sample). Of 20 held-out cases, 20 of 20 passed the filter and 19 of 20 matched the numbers: one digest described a change the data did not show, which led to a second AI check on every digest (D95). The filter was tightened after the held-out set was graded, so its filter result is partly in-sample. On real nights in week two, the six morning explanations held no false claim, though one said "nothing standing out" while Why today listed two small reasons. The weekly digest called an Ease off day that was never shown "unanswered" and misnamed a night; I kept it as it is and report it (D117). [Details and every caveat](docs/evaluation.md).
 
@@ -110,7 +116,7 @@ Pick how deep to go:
 1. **Open** the [demo on made-up data](https://apple-health-rust.vercel.app): pick a morning (Ready, Ease off, a short night, still learning, waiting, no sync, evening) and tap through the card and "Why today". Nothing in it is real, and the AI texts are fixed examples.
 2. **Read** the [case study](https://claude.ai/artifact/KMTsEC7RWHn3aHfmUtYFaC) as a web page.
 3. **Inspect** the [evaluation](docs/evaluation.md): what good looks like, how it was counted, and both weeks' results with every miss.
-4. **Run** the tests and checks on made-up data (Vitest, Playwright, pgTAP, Deno and the pandas reference): [how to run](docs/how-to-run.md).
+4. **Run** the checks on made-up data: [how to run](docs/how-to-run.md).
 5. **Browse** the [Project Memory website](https://claude.ai/artifact/5Aw5x3PYAro7pDXQRkapTe): the spec, design, tech spec, plan and decisions, with live plan ticks.
 
 ## Where the data goes
@@ -123,7 +129,6 @@ The app is served by Vercel, which never sees readings. Readings and results are
 - **The iPhone app is not measured yet.** Both test weeks ran on the Shortcut. The app's mornings count against the same sync target from 10 November 2026.
 - **Thin Signal evidence.** My year has no illness or major events on the calendar.
 - **The Watch decides when the night arrives.** Its sleep sometimes reaches Health hours after I wake, and no fixed wait on the phone can fix that.
-- **A weekly reinstall.** With a free Apple ID, the iPhone app stops opening after 7 days unless I reinstall it from my Mac.
 - **Not a medical device.** It gives no medical advice and names no condition.
 
 ## Repository structure
