@@ -75,7 +75,7 @@ The same file, `scripts/reference/week-results.sql`, with only the week's start 
 | Action | About half | No Ease off or Rest was shown, so no question was asked | Not measurable | Untested for the second week running. |
 | Her account | Written | Written and approved 10 November 2026 | Yes | Below. |
 
-**Her account (week two):** "The morning status still needed me to sync by hand, or relied on the alarm, and it had to happen before noon. I don't set an alarm on most days, so the alarm route didn't fit how I actually live."
+**Her account, in her own words (both weeks, approved 10 November 2026):** After week one, I said Clarivi hadn't changed any decision I made, and I wouldn't keep using it as it was: I had to remember to sync, and after noon the card showed no status. After week two, I said the status still needed me to sync by hand or stop an alarm, all before noon. I don't set an alarm on most days, so that route didn't fit how I actually live.
 
 Also from week two:
 
