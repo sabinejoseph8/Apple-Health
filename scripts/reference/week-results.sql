@@ -50,9 +50,14 @@
 --       the morning notification was sent; a day leaves the first count when nothing was shown.
 --   The year rows count up to `year_to` (default: the week's last day), so a later rerun can be
 --   reproduced.
---   Not valid yet for weeks synced by the iPhone app (from 10 November 2026): the app's own
---   notifications are scheduled on the phone and leave no row here. A rule for those weeks is
---   written down before they are counted.
+--   Weeks synced by the iPhone app (from 10 November 2026, D120, decided before any of them was
+--   counted): the app's notifications are scheduled on the phone and leave no row here, so rows
+--   2, 4 and 15 do not apply. Read instead:
+--     row 16 (Sync): days the status was worked out from a sync before local noon;
+--     row 5 (Engagement): card views, logged only while the app is on screen (task 10f);
+--     the per-day list after the totals: which run completed the night, when it arrived, and when
+--       the card was first viewed, to set beside her rough wake time.
+--   Notifications are not counted for these weeks.
 --
 -- Isolation and correctness are not counted here: they come from the database tests, the privacy
 -- check and the reference check (docs/mvp.md, week one's results).
@@ -167,5 +172,38 @@ select * from (
          (select count(*) from shown where status in ('ease_off', 'rest') and nudge is not null)
   union all select 15, 'Notifications', 'strict: days a status came from a sync before noon whose morning notification was sent',
          (select count(*) from status_before_noon where d in (select d from morning_sent)), (select count(*) from status_before_noon)
+  union all select 16, 'Sync', 'app weeks (D120): days the status was worked out from a sync before noon',
+         (select count(*) from status_before_noon), 7
 ) r
 order by o;
+
+-- App weeks (D120): one line per day, no readings. The run that completed the night (or else the
+-- latest), when it arrived, and when the card was first viewed, in the owner's time zone.
+with params as (
+  select date '2026-11-10' as week_start, 'America/Cayman'::text as tz
+),
+who as (
+  select user_id from public.profiles where is_owner limit 1
+),
+days as (
+  select (p.week_start + g)::date as d from params p, generate_series(0, 6) g
+),
+run as (
+  select distinct on (u.local_date) u.local_date as d, u.run_trigger, u.received_at, u.night_complete
+    from public.uploads u, who, days
+   where u.user_id = who.user_id and u.local_date = days.d and u.kind = 'daily' and u.status = 'accepted'
+   order by u.local_date, u.night_complete desc, case when u.night_complete then u.received_at end asc, u.received_at desc
+),
+first_view as (
+  select (e.at at time zone p.tz)::date as d, min(e.at) as at
+    from public.usage_events e, who, params p
+   where e.user_id = who.user_id and e.event = 'card_view'
+   group by 1
+)
+select days.d as day, run.run_trigger as completing_run, run.night_complete,
+       to_char(run.received_at at time zone p.tz, 'HH24:MI') as arrived,
+       to_char(fv.at at time zone p.tz, 'HH24:MI') as first_card_view
+  from days cross join params p
+  left join run on run.d = days.d
+  left join first_view fv on fv.d = days.d
+ order by days.d;
